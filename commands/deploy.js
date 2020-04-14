@@ -1,9 +1,6 @@
-const log = require("../log.js");
+const { log, utils, CICDError, common } = require("@boomerang-worker/core");
 const path = require("path");
-const utils = require("../utils.js");
-const { CICDError } = require("../error.js");
 const shell = require("shelljs");
-const fileCommand = require("./file.js");
 
 function exec(command) {
   return new Promise(function(resolve, reject) {
@@ -78,7 +75,7 @@ module.exports = {
           kubePath = taskProps["deploy.kubernetes.path"] !== undefined ? "/data/workspace" + taskProps["deploy.kubernetes.path"] : "/data/workspace";
           kubeFile = taskProps["deploy.kubernetes.file"];
         }
-        var kubeFiles = await fileCommand.replaceTokensInFileWithProps(kubePath, kubeFile, "@", "@", taskProps, "g", "g", true);
+        var kubeFiles = await common.replaceTokensInFileWithProps(kubePath, kubeFile, "@", "@", taskProps, "g", "g", true);
         log.sys("Kubernetes files: ", kubeFiles);
         await exec(shellDir + "/deploy/kubernetes.sh " + kubeFiles);
       } else if (taskProps["deploy.type"] === "helm" && taskProps["system.mode"] === "helm.chart") {

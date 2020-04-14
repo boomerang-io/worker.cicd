@@ -16,6 +16,7 @@
     "node:cli:nodebug": "cross-env NODE_ENV=local boomerang-worker-cli",
     "test": "cross-env NODE_ENV=test mocha tests/**/*.spec.js",
     "test:watch": "nodemon --exec npm test",
+    "dev": "cross-env NODE_ENV=local DEBUG=true boomerang-worker-cli",
     "start": "boomerang-worker-cli -d"
   },
   "preferGlobal": true,
