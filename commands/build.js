@@ -1,6 +1,4 @@
-const log = require("../log.js");
-const utils = require("../utils.js");
-const { CICDError } = require("../error.js");
+const { log, utils, CICDError } = require("@boomerang-worker/core");
 const shell = require("shelljs");
 
 function exec(command) {
@@ -23,7 +21,7 @@ module.exports = {
     //Destructure and get properties ready.
     const taskProps = utils.resolveCICDTaskInputProps();
     // const { path, script } = taskProps;
-    const shellDir = "/cli/cicd";
+    const shellDir = "./cicd";
     config = {
       verbose: true
     };
