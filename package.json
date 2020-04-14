@@ -7,16 +7,16 @@
   "author": "Tyson Lawrie <twlawrie@us.ibm.com>",
   "license": "MIT",
   "dependencies": {
-    "@boomerang-worker/cli": "^0.1.2",
-    "@boomerang-worker/core": "^0.1.0",
+    "@boomerang-worker/cli": "^0.2.0",
+    "@boomerang-worker/core": "^0.1.2",
     "shelljs": "^0.8.3"
   },
   "scripts": {
-    "node:cli": "cross-env NODE_ENV=local DEBUG=true node cli",
-    "node:cli:nodebug": "cross-env NODE_ENV=local node cli",
+    "node:cli": "cross-env NODE_ENV=local DEBUG=true boomerang-worker-cli",
+    "node:cli:nodebug": "cross-env NODE_ENV=local boomerang-worker-cli",
     "test": "cross-env NODE_ENV=test mocha tests/**/*.spec.js",
     "test:watch": "nodemon --exec npm test",
-    "start": "@boomerang-worker/cli"
+    "start": "boomerang-worker-cli -d"
   },
   "preferGlobal": true,
   "devDependencies": {
