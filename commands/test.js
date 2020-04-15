@@ -20,7 +20,7 @@ module.exports = {
     log.debug("Started CICD Test Activity");
 
     const taskProps = utils.resolveCICDTaskInputProps();
-    const shellDir = "/cli/cicd";
+    const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };

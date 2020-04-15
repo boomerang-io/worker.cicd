@@ -182,7 +182,7 @@ if [ "$DEPLOY_TYPE" == "helm" ]; then
             K8S_CLUSTER_VERSION=$DEPLOY_KUBE_VERSION
             K8S_CLUSTER_MAJOR_VERSION=`echo $K8S_CLUSTER_VERSION | cut -d "." -f 1`
             K8S_CLUSTER_SSH_USER=root
-            K8S_CLUSTER_SSH_PRIVATE_KEY=/cli/cicd/config/rsa-bmrgicp
+            K8S_CLUSTER_SSH_PRIVATE_KEY=/cli/scripts/config/rsa-bmrgicp
             if [ -f "$K8S_CLUSTER_SSH_PRIVATE_KEY" ]; then
                 echo "     ⋯ Adjusting permissions and checking SSH key exists."
                 chmod 700 $K8S_CLUSTER_SSH_PRIVATE_KEY

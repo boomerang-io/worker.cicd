@@ -1,5 +1,5 @@
-#Import the base worker
-FROM tools.boomerangplatform.net:8500/ise/bmrg-worker-base:2.0.0
+#Import the base Alpine image
+FROM alpine:3.11.3
 
 WORKDIR /opt/bin
 
@@ -9,8 +9,8 @@ RUN apk add --no-cache bash sed grep curl coreutils nodejs npm ca-certificates m
 
 WORKDIR /cli
 ADD ./package.json ./package-lock.json ./
-ADD ./cicd ./cicd
+ADD ./scripts ./scripts
 ADD ./commands ./commands
 RUN npm install
 
-ENTRYPOINT [ "node", "cli" ]
+ENTRYPOINT [ "npm", "start" ]
