@@ -1,5 +1,4 @@
 const { log, utils, CICDError, common } = require("@boomerang-worker/core");
-const path = require("path");
 const shell = require("shelljs");
 
 function exec(command) {
