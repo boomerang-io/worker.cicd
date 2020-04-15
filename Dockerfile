@@ -8,7 +8,7 @@ RUN apk add --no-cache bash sed grep curl coreutils nodejs npm ca-certificates m
     curl -fSL "https://github.com/genuinetools/img/releases/download/v0.5.7/img-linux-amd64" -o "/opt/bin/img" && chmod a+x "/opt/bin/img"
 
 WORKDIR /cli
-ADD ./package.json ./package-lock.json ./
+ADD ./package.json ./package-lock.json ./.npmrc ./
 ADD ./scripts ./scripts
 ADD ./commands ./commands
 RUN npm install
