@@ -51,6 +51,7 @@ if [ "$SCRIPT" != "undefined" ]; then
     else
         exit 99
     fi
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
 else
     exit 95
 fi
