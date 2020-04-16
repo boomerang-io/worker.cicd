@@ -47,11 +47,11 @@ if [ "$DEPLOY_TYPE" == "helm" ] || [ "$DEPLOY_TYPE" == "kubernetes" ]; then
     export HELM_HOME=~/.helm
     BIN_HOME=/usr/local/bin
     KUBE_CLI=$BIN_HOME/kubectl
-    KUBE_CLI_VERSION=v1.13.5 #ICP 3.2.1
-    if [[ "$DEPLOY_KUBE_VERSION" =~ 3.2.[0-9] ]]; then
-        KUBE_CLI_VERSION=v1.13.5
-    elif [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
+    if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
         KUBE_CLI_VERSION=v$DEPLOY_KUBE_VERSION
+    else
+        echo "Defaulting kubectl version..."
+        KUBE_CLI_VERSION=v1.13.5 #ICP 3.2.1
     fi
 
     # Relies on proxy settings coming through if there is a proxy
@@ -148,90 +148,24 @@ if [ "$DEPLOY_TYPE" == "helm" ]; then
 
     if [[ $DEPLOY_HELM_TLS == "true" ]]; then
         export HELM_HOME=$(helm home)
-        if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
-            # echo "   ⋯ Retrieving TLS from tiller-secret in cluster..."
-            # KUBE_CLI_VERSION=v$DEPLOY_KUBE_VERSION
-            # # echo `$KUBE_CLI get secrets -n kube-system tiller-secret -o jsonpath="{.data.ca\\.crt}"` > $HELM_RESOURCE_PATH/encoded.tmp && base64 -d $HELM_RESOURCE_PATH/encoded.tmp > $HELM_RESOURCE_PATH/ca.crt
-            # $KUBE_CLI get secret tiller-secret -n kube-system -o jsonpath="{.data.ca\\.crt}" | base64 -d > $(helm home)/ca.pem
-            # # echo `$KUBE_CLI get secrets -n kube-system tiller-secret -o jsonpath="{.data.tls\\.crt}"` > $HELM_RESOURCE_PATH/encoded.tmp && base64 -d $HELM_RESOURCE_PATH/encoded.tmp > $HELM_RESOURCE_PATH/admin.crt
-            # $KUBE_CLI get secret tiller-secret -n kube-system -o jsonpath="{.data.tls\\.crt}" | base64 -d > $(helm home)/cert.pem
-            # # echo `$KUBE_CLI get secrets -n kube-system tiller-secret -o jsonpath="{.data.tls\\.key}"` > $HELM_RESOURCE_PATH/encoded.tmp && base64 -d $HELM_RESOURCE_PATH/encoded.tmp > $HELM_RESOURCE_PATH/admin.key
-            # $KUBE_CLI get secret tiller-secret -n kube-system -o jsonpath="{.data.tls\\.key}" | base64 -d > $(helm home)/key.pem
-            # Set the exit status $? to the exit code of the last program to exit non-zero (or zero if all exited successfully)
-            set -o pipefail
-            echo "   ⋯ Retrieving Cluster CA certs from cluster..."
-            $KUBE_CLI -n kube-system get secret cluster-ca-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > $HELM_HOME/ca.pem
-            if [ $? -ne 0 ]; then echo "Failure to get ca.crt" && exit 1; fi
-            echo "Checking ca.crt"
-            less $HELM_HOME/ca.pem
-            $KUBE_CLI -n kube-system get secret cluster-ca-cert -o jsonpath='{.data.tls\.key}' | base64 -d > $HELM_HOME/ca-key.pem
-            if [ $? -ne 0 ]; then echo "Failure to get ca.key" && exit 1; fi
-            echo "Checking ca.key"
-            less $HELM_HOME/ca-key.pem
-            echo "     ⋯ Generating Helm TLS certs..."
-            openssl genrsa -out $HELM_HOME/key.pem 4096
-            openssl req -new -key $HELM_HOME/key.pem -out $HELM_HOME/csr.pem -subj "/C=US/ST=New York/L=Armonk/O=IBM Cloud Private/CN=admin"
-            openssl x509 -req -in $HELM_HOME/csr.pem -extensions v3_usr -CA $HELM_HOME/ca.pem -CAkey $HELM_HOME/ca-key.pem -CAcreateserial -out $HELM_HOME/cert.pem
-            # Sleep is required otherwise sometimes the certificate is created prior to the service clock if there is time draft on target server.
-            echo "Sleeping..."
-            sleep 10
-            echo "   ↣ Helm TLS configured."
-        else
-            echo "   ⋯ Retrieving Helm TLS from cluster..."
-            K8S_CLUSTER_MASTER_IP=$DEPLOY_KUBE_IP
-            K8S_CLUSTER_VERSION=$DEPLOY_KUBE_VERSION
-            K8S_CLUSTER_MAJOR_VERSION=`echo $K8S_CLUSTER_VERSION | cut -d "." -f 1`
-            K8S_CLUSTER_SSH_USER=root
-            K8S_CLUSTER_SSH_PRIVATE_KEY=/cli/scripts/config/rsa-bmrgicp
-            if [ -f "$K8S_CLUSTER_SSH_PRIVATE_KEY" ]; then
-                echo "     ⋯ Adjusting permissions and checking SSH key exists."
-                chmod 700 $K8S_CLUSTER_SSH_PRIVATE_KEY
-            else
-                echo "     ✗ SSH Key not found."
-                exit 1
-            fi
-
-            HELM_SSH_BASTION=$K8S_CLUSTER_MASTER_IP
-            HELM_SSH_USER=$K8S_CLUSTER_SSH_USER
-            HELM_SSH_PRIVATE_KEY=$K8S_CLUSTER_SSH_PRIVATE_KEY
-            HELM_SSH_TUNNEL=$HELM_SSH_USER@$HELM_SSH_BASTION
-            HELM_SSH_SOCK=/tmp/helm-$HELM_SSH_TUNNEL
-            HELM_SSH_OPTS="-A -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $HELM_SSH_PRIVATE_KEY -S $HELM_SSH_SOCK"
-            if [ "$DEBUG" == "true" ]; then
-                echo "Enabling SSH debug logging..."
-                HELM_SSH_OPTS+=" -o LogLevel=debug"
-            fi
-            HELM_SSH_CMD="ssh $HELM_SSH_OPTS $HELM_SSH_TUNNEL"
-            echo "Copying K8S certificates to Helm config folder for ICP v$K8S_CLUSTER_VERSION"
-            if [[ "$DEPLOY_KUBE_VERSION" =~ [2-3].[0-1].[0-9] ]]; then
-                #Prior to ICP 3.2
-                HELM_CA_CRT_PATH=cfc-keys
-            else
-                HELM_CA_CRT_PATH=cfc-certs/root-ca
-            fi
-
-            echo "     ⋯ Setting SSH Config"
-            mkdir -p ~/.ssh
-            cat >> ~/.ssh/config <<EOL
-host $GIT_REPO_HOST
-    StrictHostKeyChecking no
-    IdentityFile $K8S_CLUSTER_SSH_PRIVATE_KEY
-EOL
-
-            echo "     ⋯ Retrieving clusters certificates..."
-            export HELM_HOME=~/.helm
-            $HELM_SSH_CMD '/bin/bash -c '"'"'sudo cat /opt/ibm-cp-app-mod-'$K8S_CLUSTER_VERSION'/cluster/'$HELM_CA_CRT_PATH'/ca.crt'"'"'' > $HELM_HOME/ca.pem && \
-            $HELM_SSH_CMD '/bin/bash -c '"'"'sudo cat /opt/ibm-cp-app-mod-'$K8S_CLUSTER_VERSION'/cluster/cfc-certs/helm/admin.crt'"'"'' > $HELM_HOME/cert.pem && \
-            $HELM_SSH_CMD '/bin/bash -c '"'"'sudo cat /opt/ibm-cp-app-mod-'$K8S_CLUSTER_VERSION'/cluster/cfc-certs/helm/admin.key'"'"'' > $HELM_HOME/key.pem
-            RESULT=$?
-            if [ $RESULT -ne 0 ] ; then
-                echo
-                echo  "   ✗ An error occurred configuring Helm TLS. Please see output for details or talk to a support representative." "error"
-                echo
-                exit 1
-            fi
-            echo "   ↣ Helm TLS configured."
-        fi
+        set -o pipefail
+        echo "   ⋯ Retrieving Cluster CA certs from cluster..."
+        $KUBE_CLI -n kube-system get secret cluster-ca-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > $HELM_HOME/ca.pem
+        if [ $? -ne 0 ]; then echo "Failure to get ca.crt" && exit 1; fi
+        echo "Checking ca.crt"
+        less $HELM_HOME/ca.pem
+        $KUBE_CLI -n kube-system get secret cluster-ca-cert -o jsonpath='{.data.tls\.key}' | base64 -d > $HELM_HOME/ca-key.pem
+        if [ $? -ne 0 ]; then echo "Failure to get ca.key" && exit 1; fi
+        echo "Checking ca.key"
+        less $HELM_HOME/ca-key.pem
+        echo "     ⋯ Generating Helm TLS certs..."
+        openssl genrsa -out $HELM_HOME/key.pem 4096
+        openssl req -new -key $HELM_HOME/key.pem -out $HELM_HOME/csr.pem -subj "/C=US/ST=New York/L=Armonk/O=IBM Cloud Private/CN=admin"
+        openssl x509 -req -in $HELM_HOME/csr.pem -extensions v3_usr -CA $HELM_HOME/ca.pem -CAkey $HELM_HOME/ca-key.pem -CAcreateserial -out $HELM_HOME/cert.pem
+        # Sleep is required otherwise sometimes the certificate is created prior to the service clock if there is time draft on target server.
+        echo "Sleeping..."
+        sleep 10
+        echo "   ↣ Helm TLS configured."
     fi
 
     if [ "$DEBUG" == "true" ]; then
