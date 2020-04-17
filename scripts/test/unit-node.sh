@@ -9,6 +9,8 @@ SONAR_APIKEY=$4
 SONAR_GATEID=2
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
+TEST_REPORTER=$7
+COMMAND_ARGS=$8
 
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
@@ -42,12 +44,25 @@ else
     exit 99
 fi
 
+if [ -d "./node_modules/jest" ]; then
+    TEST_REPORTER="jest-sonar-reporter"
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.spec.js,**/*.test.js"
+    if [ "$BUILD_TOOL" == "npm" ]; then
+        COMMAND_ARGS="$-- --testResultsProcessor $TEST_REPORTER"
+        npm i -D $TEST_REPORTER
+    elif [ "$BUILD_TOOL" == "yarn" ]; then
+        COMMAND_ARGS="$--testResultsProcessor $TEST_REPORTER"
+        yarn add -D $TEST_REPORTER
+fi
+
 SCRIPT=$(node -pe "require('./package.json').scripts.test");
 if [ "$SCRIPT" != "undefined" ]; then
     if [ "$BUILD_TOOL" == "npm" ]; then
-        npm run test
+        npm run test $COMMAND_ARGS
     elif [ "$BUILD_TOOL" == "yarn" ]; then
-        yarn test
+        yarn test $COMMAND_ARGS
     else
         exit 99
     fi
