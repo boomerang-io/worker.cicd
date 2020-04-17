@@ -40,6 +40,11 @@ module.exports = {
         await exec(shellDir + "/common/initialize-dependencies-helm.sh " + taskProps["kube.version"]);
       }
 
+      if (taskProps["build.before_clone.enable"] === "true") {
+        log.ci("Retrieving Before_Clone Source Code");
+        await exec(shellDir + '/common/git-clone.sh "' + taskProps["git.private.key"] + '" "undefined" "' + JSON.stringify(taskProps["stage/build.before_clone.git.repo.url"]) + '" "' + taskProps["stage/build.before_clone.git.commit.id"] + '" "' + taskProps["stage/build.before_clone.git.lfs"] + '"');
+      }
+
       log.ci("Retrieving Source Code");
       await exec(shellDir + '/common/git-clone.sh "' + taskProps["git.private.key"] + '" "' + JSON.stringify(taskProps["component/repoSshUrl"]) + '" "' + JSON.stringify(taskProps["component/repoUrl"]) + '" "' + taskProps["git.commit.id"] + '" "' + taskProps["git.lfs"] + '"');
 
