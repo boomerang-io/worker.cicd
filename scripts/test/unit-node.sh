@@ -12,14 +12,14 @@ COMPONENT_NAME=$6
 
 # fail fast if testing script or build tool is not present
 SCRIPT=$(node -pe "require('./package.json').scripts.test");
-if [ "$SCRIPT" == "undefined" ]; then
+if [[ "$SCRIPT" == "undefined" ]]; then
     exit 95
 fi
 
-[ "$BUILD_TOOL" == "npm" ] && USE_NPM=true || USE_NPM=false
-[ "$BUILD_TOOL" == "yarn" ] && USE_YARN=true || USE_YARN=false
+[[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
+[[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
 
-if [ "$USE_NPM" == false ] && [ "$USE_YARN" == false ]; then
+if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]]; then
     exit 99
 fi
 
@@ -35,33 +35,32 @@ curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Dis
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
-if [ "$DEBUG" == "true" ]; then
+if [[ "$DEBUG" == "true" ]]; then
     SONAR_FLAGS="-Dsonar.verbose=true"
 else
     SONAR_FLAGS=
 fi
 
-if [ -d "./node_modules/jest" ]; then
+if [[ -d "./node_modules/jest" ]]; then
     TEST_REPORTER="jest-sonar-reporter"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.spec.js"
-    if [ "$USE_NPM" == true ]; then
+    if [[ "$USE_NPM" == true ]]; then
         echo "Installing $TEST_REPORTER"
         COMMAND_ARGS="-- --testResultsProcessor $TEST_REPORTER"
         npm i -D $TEST_REPORTER
-    elif [ "$USE_YARN" == true ]; then
+    elif [[ "$USE_YARN" == true ]]; then
         echo "Installing $TEST_REPORTER"
         COMMAND_ARGS="--testResultsProcessor $TEST_REPORTER"
         yarn add -D $TEST_REPORTER
     fi
 fi
 
-CI=true
-if [ "$USE_NPM" == true ]; then
-    npm run test $COMMAND_ARGS
-elif [ "$USE_YARN" == true ]; then
-    yarn test $COMMAND_ARGS
+if [[ "$USE_NPM" == true ]]; then
+    CI=true npm run test $COMMAND_ARGS
+elif [[ "$USE_YARN" == true ]]; then
+    CI=true yarn test $COMMAND_ARGS
 fi
 
 SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
