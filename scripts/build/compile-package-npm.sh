@@ -7,13 +7,13 @@ BUILD_TOOL=$1
 if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
     if [ -e 'yarn.lock' ]; then
         echo "Running YARN install..."
-        yarn install --verbose
+        yarn install
     elif [ -e 'package-lock.json' ]; then
         echo "Running NPM ci..."
-        npm ci --verbose
+        npm ci
     else
         echo "Running NPM install..."
-        npm install --verbose
+        npm install
     fi
 else
     exit 99
