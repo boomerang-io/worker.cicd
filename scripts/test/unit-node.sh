@@ -58,9 +58,9 @@ if [[ -d "./node_modules/jest" ]]; then
 fi
 
 if [[ "$USE_NPM" == true ]]; then
-    CI=true npm run test $COMMAND_ARGS
+    npm run test $COMMAND_ARGS
 elif [[ "$USE_YARN" == true ]]; then
-    CI=true yarn test $COMMAND_ARGS
+    yarn test $COMMAND_ARGS
 fi
 
 SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
