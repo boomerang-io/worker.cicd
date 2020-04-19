@@ -3,19 +3,19 @@
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Build Artifact '; printf '%.0s-' {1..30}; printf '\n\n' )
 
 BUILD_TOOL=$1
-BUILD_SCRIPT=$2
-if [ "$BUILD_SCRIPT" == "undefined" ]; then
-    echo "Defaulting npm script to 'build'..."
-    BUILD_SCRIPT=build
+TEST_SCRIPT=$2
+if [ "$TEST_SCRIPT" == "undefined" ]; then
+    echo "Defaulting npm script to 'test'..."
+    TEST_SCRIPT=build
 else
-    echo "Setting npm script to $BUILD_SCRIPT..."
+    echo "Setting npm script to $TEST_SCRIPT..."
 fi
 CYPRESS_INSTALL_BINARY=$3
 
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
     echo "Enabling debug logging..."
-    DEBUG_OPTS+="--verbose"
+    DEBUG_OPTS+=""
 fi
 
 if [ "$CYPRESS_INSTALL_BINARY" == "undefined" ]; then
