@@ -142,7 +142,7 @@ module.exports = {
             '" "' +
             taskProps["deploy.container.registry.port"] +
             '" "' +
-            taskProps["deploy.container.registry.username"] +
+            taskProps["deploy.container.registry.user"] +
             '" "' +
             taskProps["deploy.container.registry.password"] +
             '" "' +
