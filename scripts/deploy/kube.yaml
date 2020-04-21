@@ -26,7 +26,7 @@ spec:
         env: @system/stage.name@
     spec:
       containers:
-        - image: @process/container.registry.host@:@process/container.registry.port@/@process/container.registry.path@/@process/docker.image.name@:@version.name@
+        - image: @process/container.registry.host@:@process/container.registry.port@@process/container.registry.path@/@process/docker.image.name@:@version.name@
           imagePullPolicy: Always
           name: cntr
           ports:
