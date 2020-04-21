@@ -52,8 +52,6 @@ module.exports = {
 
       log.ci("Deploy Artifacts");
       if (taskProps["deploy.type"] === "kubernetes") {
-        taskProps["process/container.port"] = taskProps["deploy.kubernetes.container.port"] !== undefined ? taskProps["deploy.kubernetes.container.port"] : "8080";
-        taskProps["process/service.port"] = taskProps["deploy.kubernetes.service.port"] !== undefined ? taskProps["deploy.kubernetes.service.port"] : "80";
         taskProps["process/org"] = taskProps["team.name"]
           .toString()
           .replace(/[^a-zA-Z0-9]/g, "")
@@ -62,6 +60,11 @@ module.exports = {
           .toString()
           .replace(/[^a-zA-Z0-9]/g, "")
           .toLowerCase();
+        taskProps["process/container.port"] = taskProps["deploy.kubernetes.container.port"] !== undefined ? taskProps["deploy.kubernetes.container.port"] : "8080";
+        taskProps["process/service.port"] = taskProps["deploy.kubernetes.service.port"] !== undefined ? taskProps["deploy.kubernetes.service.port"] : "80";
+        taskProps["process/container.registry.host"] = taskProps["deploy.container.registry.host"] !== undefined ? taskProps["deploy.container.registry.host"] : taskProps["global/container.registry.host"];
+        taskProps["process/container.registry.port"] = taskProps["deploy.container.registry.port"] !== undefined ? taskProps["deploy.container.registry.port"] : taskProps["global/container.registry.port"];
+        taskProps["process/container.registry.path"] = taskProps["deploy.container.registry.path"] !== undefined ? taskProps["deploy.container.registry.path"] : taskProps["process/org"];
         var dockerImageName = taskProps["docker.image.name"] !== undefined ? taskProps["docker.image.name"] : taskProps["system.component.name"];
         // Name specification reference: https://docs.docker.com/engine/reference/commandline/tag/
         taskProps["process/docker.image.name"] = dockerImageName
