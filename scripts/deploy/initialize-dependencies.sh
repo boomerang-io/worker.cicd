@@ -148,6 +148,7 @@ if [ "$DEPLOY_TYPE" == "helm" ]; then
 
     if [[ $DEPLOY_HELM_TLS == "true" ]]; then
         export HELM_HOME=$(helm home)
+        set -o pipefail
         echo "   ⋯ Retrieving Cluster CA certs from cluster..."
         $KUBE_CLI -n kube-system get secret cluster-ca-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > $HELM_HOME/ca.pem
         if [ $? -ne 0 ]; then echo "Failure to get ca.crt" && exit 1; fi
