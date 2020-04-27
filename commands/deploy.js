@@ -52,8 +52,6 @@ module.exports = {
 
       log.ci("Deploy Artifacts");
       if (taskProps["deploy.type"] === "kubernetes") {
-        taskProps["process/container.port"] = taskProps["deploy.kubernetes.container.port"] !== undefined ? taskProps["deploy.kubernetes.container.port"] : "8080";
-        taskProps["process/service.port"] = taskProps["deploy.kubernetes.service.port"] !== undefined ? taskProps["deploy.kubernetes.service.port"] : "80";
         taskProps["process/org"] = taskProps["team.name"]
           .toString()
           .replace(/[^a-zA-Z0-9]/g, "")
@@ -62,6 +60,25 @@ module.exports = {
           .toString()
           .replace(/[^a-zA-Z0-9]/g, "")
           .toLowerCase();
+        taskProps["process/env"] = taskProps["system/stage.name"]
+          .toString()
+          .replace(/[^a-zA-Z0-9]/g, "")
+          .toLowerCase();
+        taskProps["process/container.port"] = taskProps["deploy.kubernetes.container.port"] !== undefined ? taskProps["deploy.kubernetes.container.port"] : "8080";
+        taskProps["process/service.port"] = taskProps["deploy.kubernetes.service.port"] !== undefined ? taskProps["deploy.kubernetes.service.port"] : "80";
+        // The additional checks are required for deploy.container.registry.host/port/path as these properties are also used as STAGE properties which currently
+        // are set to "" if they have no value. This will be solved if we move away from default STAGE properties.
+        taskProps["process/container.registry.host"] =
+          taskProps["deploy.container.registry.host"] !== undefined && taskProps["deploy.container.registry.host"] !== '""' ? taskProps["deploy.container.registry.host"] : taskProps["global/container.registry.host"] + ":" + taskProps["global/container.registry.port"];
+        log.sys("Container Registry Host:", taskProps["process/container.registry.host"]);
+        if (taskProps["deploy.container.registry.port"] !== undefined && taskProps["deploy.container.registry.port"] !== '""') {
+          taskProps["process/container.registry.port"] = ":" + taskProps["deploy.container.registry.port"];
+        } else {
+          taskProps["process/container.registry.port"] = "";
+        }
+        log.sys("Container Registry Port:", taskProps["process/container.registry.port"]);
+        taskProps["process/container.registry.path"] = taskProps["deploy.container.registry.path"] !== undefined && taskProps["deploy.container.registry.path"] !== '""' ? taskProps["deploy.container.registry.path"] : "/" + taskProps["process/org"];
+        log.sys("Container Registry Path:", taskProps["process/container.registry.path"]);
         var dockerImageName = taskProps["docker.image.name"] !== undefined ? taskProps["docker.image.name"] : taskProps["system.component.name"];
         // Name specification reference: https://docs.docker.com/engine/reference/commandline/tag/
         taskProps["process/docker.image.name"] = dockerImageName
@@ -134,7 +151,7 @@ module.exports = {
             '" "' +
             taskProps["deploy.container.registry.port"] +
             '" "' +
-            taskProps["deploy.container.registry.username"] +
+            taskProps["deploy.container.registry.user"] +
             '" "' +
             taskProps["deploy.container.registry.password"] +
             '" "' +

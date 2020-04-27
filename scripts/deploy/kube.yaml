@@ -12,7 +12,7 @@ spec:
     matchLabels:
       org: @process/org@
       component: @process/component.name@
-      env: @system/stage.name@
+      env: @process/env@
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -23,10 +23,10 @@ spec:
       labels:
         org: @process/org@
         component: @process/component.name@
-        env: @system/stage.name@
+        env: @process/env@
     spec:
       containers:
-        - image: @global/container.registry.host@:@global/container.registry.port@/@process/org@/@process/docker.image.name@:@version.name@
+        - image: @process/container.registry.host@@process/container.registry.port@@process/container.registry.path@/@process/docker.image.name@:@version.name@
           imagePullPolicy: Always
           name: cntr
           ports:
@@ -35,7 +35,7 @@ spec:
               protocol: TCP
           env:
             - name: DEPLOY_TARGET
-              value: "@system/stage.name@"
+              value: "@process/env@"
       imagePullSecrets:
         - name: boomerang.registrykey
       restartPolicy: Always
@@ -54,5 +54,5 @@ spec:
   selector:
     org: @process/org@
     component: @process/component.name@
-    env: @system/stage.name@
+    env: @process/env@
   sessionAffinity: None
