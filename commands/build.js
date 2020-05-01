@@ -21,7 +21,7 @@ module.exports = {
     //Destructure and get properties ready.
     const taskProps = utils.resolveCICDTaskInputProps();
     // const { path, script } = taskProps;
-    const shellDir = "/scripts";
+    const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
