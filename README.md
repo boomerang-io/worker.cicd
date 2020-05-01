@@ -2,7 +2,7 @@
 
 This is the Boomerang CICD Worker that runs the build, test, and deploy activities for the out of the bose Component Modes.
 
-This is based on the Gen 1 worker design for CICD, meaning that there are fixed commands that punch out to shell scripts. This will evolve over time to match the Gen 2 design.
+This is based on the Gen 2 worker design for CICD, meaning that there are fixed commands that punch out to shell scripts. This will evolve over time to match the Gen 3 design.
 
 Depends on:
 
