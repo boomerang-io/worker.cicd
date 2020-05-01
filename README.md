@@ -2,6 +2,8 @@
 
 This is the Boomerang CICD Worker that runs the build, test, and deploy activities for the out of the bose Component Modes.
 
+This is based on the Gen 2 worker design for CICD, meaning that there are fixed commands that punch out to shell scripts. This will evolve over time to match the Gen 3 design.
+
 Depends on:
 
 - [Boomerang Worker CLI](https://github.ibm.com/Boomerang-Workers/boomerang.worker.base)
