@@ -60,9 +60,10 @@ module.exports = {
           .toString()
           .replace(/[^a-zA-Z0-9]/g, "")
           .toLowerCase();
+        // Needs to follow Kubernetes allowed characters and patterns.
         taskProps["process/env"] = taskProps["system/stage.name"]
           .toString()
-          .replace(/[^a-zA-Z0-9]/g, "")
+          .replace(/[^a-zA-Z0-9\-]/g, "")
           .toLowerCase();
         taskProps["process/container.port"] = taskProps["deploy.kubernetes.container.port"] !== undefined ? taskProps["deploy.kubernetes.container.port"] : "8080";
         taskProps["process/service.port"] = taskProps["deploy.kubernetes.service.port"] !== undefined ? taskProps["deploy.kubernetes.service.port"] : "80";
