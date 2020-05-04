@@ -146,7 +146,7 @@ module.exports = {
             '" "' +
             taskProps["version.name"] +
             '" "' +
-            JSON.stringify(taskProps["team.name"]) +
+            taskProps["team.name"] +
             '" "' +
             JSON.stringify(taskProps["deploy.container.registry.host"]) +
             '" "' +
