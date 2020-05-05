@@ -8,6 +8,10 @@ DEPLOY_KUBE_VERSION=$5
 DEPLOY_KUBE_NAMESPACE=$6
 DEPLOY_KUBE_HOST=$7
 GIT_REF=$8
+DEPLOY_HELM_TLS=$9
+if [ "$DEPLOY_HELM_TLS" == "undefined" ]; then
+    DEPLOY_HELM_TLS=true
+fi
 
 if [ "$DEBUG" == "true" ]; then
     echo "HELM_REPO_URL=$HELM_REPO_URL"
@@ -18,41 +22,42 @@ if [ "$DEBUG" == "true" ]; then
     echo "DEPLOY_KUBE_NAMESPACE=$DEPLOY_KUBE_NAMESPACE"
     echo "DEPLOY_KUBE_HOST=$DEPLOY_KUBE_HOST"
     echo "GIT_REF=$GIT_REF"
+    echo "DEPLOY_HELM_TLS=$DEPLOY_HELM_TLS"
 fi
 
 if [[ ! "$GIT_REF" =~ "refs/tags/" ]]; then
     exit 94
 fi
 
-# NOTE:
-#  THe following variables are shared with helm.sh for deploy step
-KUBE_CLUSTER_HOST=$DEPLOY_KUBE_HOST
-K8S_CLUSTER_NAME=$DEPLOY_KUBE_HOST
-HELM_RESOURCE_PATH="/tmp/.helm"
-HELM_TLS_STRING='--tls --tls-ca-cert "$HELM_RESOURCE_PATH/ca.crt" --tls-cert "$HELM_RESOURCE_PATH/admin.crt" --tls-key "$HELM_RESOURCE_PATH/admin.key"'
-if [[ "$DEPLOY_KUBE_VERSION" == "OCP" ]]; then
-    HELM_TLS_STRING='--tls'
+export KUBE_HOME=~/.kube
+export HELM_HOME=~/.helm
+BIN_HOME=/usr/local/bin
+KUBE_CLI=$BIN_HOME/kubectl
+
+# NOTE
+# THe following variables are shared across helm related scripts for deploy step
+HELM_VERSION=v2.12.1
+HELM_CHART_VERSION_COL=3 #the column output of helm list changed
+if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
+    HELM_VERSION=v2.12.3
 fi
+echo "   ↣ Helm version set at: $HELM_VERSION"
 # END
 
-# NOTE:
-#   The following script is shared with initialize-dependencies.sh
-HELM_VERSION=v2.7.2
-HELM_CHART_VERSION_COL=2
-if [[ "$K8S_CLUSTER_MAJOR_VERSION" =~ 2.[0-9].[0-9] ]]; then
-    HELM_VERSION=v2.7.2
-elif [[ "$K8S_CLUSTER_MAJOR_VERSION" =~ 3.[0-1].[0-9] ]]; then
-    HELM_VERSION=v2.9.1
+# THe following variables are shared across helm related scripts for deploy step
+# ch_helm_tls_string
+HELM_TLS_STRING=
+if [[ $DEPLOY_HELM_TLS == "true" ]]; then
+    HELM_TLS_STRING='--tls'
+    echo "   ↣ Helm TLS parameters configured as: $HELM_TLS_STRING"
 else
-    HELM_VERSION=v2.12.1
-    HELM_CHART_VERSION_COL=3 #the column output of helm list changed
+    echo "   ↣ Helm TLS disabled, skipping configuration..."
 fi
-# END
 
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
     echo "Enabling debug logging..."
-    DEBUG_OPTS+="--debug"
+    DEBUG_OPTS+='--debug'
 else
     # Bug in current version of helm that only checks if DEBUG is present
     # instead of checking for DEBUG=true
@@ -60,32 +65,67 @@ else
     unset DEBUG
 fi
 
+# Bug fix for custom certs and re initializing helm home
+export HELM_HOME=$(helm home)
+
 helm --home $HELM_RESOURCE_PATH repo add boomerang-charts $HELM_REPO_URL
 
+# Chart Name is blank. Chart Release is now required to fetch chart name.
 if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
-# if [ "$CHART_NAME" == "undefined" ] && [ "$CHART_RELEASE" != "undefined" ]; then
     echo "Auto detecting chart name..."
-    CHART_NAME=`helm list --home $HELM_RESOURCE_PATH --kube-context $KUBE_CLUSTER_HOST-context --tls --tls-ca-cert "$HELM_RESOURCE_PATH/ca.crt" --tls-cert "$HELM_RESOURCE_PATH/admin.crt" --tls-key "$HELM_RESOURCE_PATH/admin.key" ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$HELM_CHART_VERSION_COL '{print $COL}' | cut -d '-' -f 2- | rev`
+    CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$HELM_CHART_VERSION_COL '{print $COL}' | cut -d '-' -f 2- | rev`
+    if [ $? -ne 0 ]; then exit 92; fi
 elif [ -z "$CHART_NAME" ] && [ -z "$CHART_RELEASE" ]; then
-# elif [ "$CHART_NAME" == "undefined" ] && [ "$CHART_RELEASE" == "undefined" ]; then
     exit 92
 fi
 echo "Chart Name: $CHART_NAME"
-echo "Chart Version: $CHART_VERSION"
+echo "Chart Image Tag: $HELM_IMAGE_KEY"
+echo "Chart Image Version: $VERSION_NAME"
 
 # if [[ "$CHART_RELEASE" == "undefined" ]] && [ "$DEPLOY_KUBE_NAMESPACE" !=  == "undefined" ]; then
 if [[ -z "$CHART_RELEASE" ]] && [ ! -z "$DEPLOY_KUBE_NAMESPACE" ]; then
     echo "Auto detecting chart release..."
     echo "Note: This only works if there is only one release of the chart in the provided namespace."
-    CHART_RELEASE=`helm list --home $HELM_RESOURCE_PATH --kube-context $KUBE_CLUSTER_HOST-context --tls --tls-ca-cert "$HELM_RESOURCE_PATH/ca.crt" --tls-cert "$HELM_RESOURCE_PATH/admin.crt" --tls-key "$HELM_RESOURCE_PATH/admin.key" | grep $CHART_NAME | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
+    CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART_NAME | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
+    if [ $? -ne 0 ]; then exit 94; fi
 elif [ -z "$CHART_RELEASE" ] && [ -z "$DEPLOY_KUBE_NAMESPACE" ]; then
-# elif [ "$CHART_RELEASE" == "undefined" ] && [ "$DEPLOY_KUBE_NAMESPACE" == "undefined" ]; then
     exit 93
 fi
-echo "Current Chart Release: $CHART_RELEASE"
+echo "Chart Release: $CHART_RELEASE"
 
-helm upgrade --home $HELM_RESOURCE_PATH $DEBUG_OPTS --kube-context $KUBE_CLUSTER_HOST-context --tls --tls-ca-cert "$HELM_RESOURCE_PATH/ca.crt" --tls-cert "$HELM_RESOURCE_PATH/admin.crt" --tls-key "$HELM_RESOURCE_PATH/admin.key" --reuse-values --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART_NAME
-RESULT=$?
-if [ $RESULT -ne 0 ] ; then
-    exit 91
-fi
+echo "Retrieving current chart values..."
+
+helm get values -a $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ > $CHART_RELEASE-values.yaml
+if [ $? -ne 0 ]; then exit 91; fi
+
+echo "Upgrading helm chart..."
+SLEEP=30
+RETRIES=3
+echo "Note: Timeout is set at 5 minutes with 3 retries"
+# default timeout for helm commands is 300 seconds so no need to adjust
+INDEX=0
+while true; do
+    INDEX=$(( INDEX + 1 ))
+    if [[ $INDEX -eq $RETRIES ]]; then
+        echo "Failed to achieve the helm deployment within allotted time and retry count."
+        exit 91;
+        break
+    else
+        echo "Commencing deployment (attempt #$INDEX)..."
+        OUTPUT=$(helm upgrade $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context -f $CHART_RELEASE-values.yaml --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART)
+        RESULT=$?
+        if [ $RESULT -ne 0 ]; then 
+            if [[ $OUTPUT =~ "UPGRADE FAILED: timed out" ]]; then
+                echo "Time out reached. Retrying..."
+                sleep $SLEEP
+                continue
+            else
+                echo "Error encountered:"
+                echo $OUTPUT
+                exit 91
+            fi
+        fi
+        echo "Helm chart upgrade success!"
+        break
+    fi
+done

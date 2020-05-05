@@ -38,7 +38,6 @@ HELM_VERSION=v2.12.1
 HELM_CHART_VERSION_COL=3 #the column output of helm list changed
 if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
     HELM_VERSION=v2.12.3
-    HELM_CHART_VERSION_COL=3 #the column output of helm list changed
 fi
 echo "   ↣ Helm version set at: $HELM_VERSION"
 # END

@@ -98,22 +98,25 @@ module.exports = {
       } else if (taskProps["deploy.type"] === "helm" && taskProps["system.mode"] === "helm.chart") {
         await exec(
           shellDir +
-            "/deploy/helm-chart.sh " +
+            '/deploy/helm-chart.sh "' +
             JSON.stringify(taskProps["global/helm.repo.url"]) +
-            " " +
+            '" "' +
             taskProps["deploy.helm.chart"] +
-            " " +
+            '" "' +
             taskProps["deploy.helm.release"] +
-            " " +
+            '" "' +
             taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-")) +
-            " " +
+            '" "' +
             taskProps["deploy.kube.version"] +
-            " " +
+            '" "' +
             taskProps["deploy.kube.namespace"] +
-            " " +
+            '" "' +
             taskProps["deploy.kube.host"] +
-            " " +
-            taskProps["git.ref"]
+            '" "' +
+            taskProps["git.ref"] +
+            '" "' +
+            taskProps["deploy.helm.tls"] +
+            '"'
         );
       } else if (taskProps["deploy.type"] === "helm") {
         await exec(
