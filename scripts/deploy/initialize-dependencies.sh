@@ -152,18 +152,13 @@ if [ "$DEPLOY_TYPE" == "helm" ]; then
         echo "   ⋯ Retrieving Cluster CA certs from cluster..."
         $KUBE_CLI -n kube-system get secret cluster-ca-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > $HELM_HOME/ca.pem
         if [ $? -ne 0 ]; then echo "Failure to get ca.crt" && exit 1; fi
-        echo "Checking ca.crt"
-        less $HELM_HOME/ca.pem
         $KUBE_CLI -n kube-system get secret cluster-ca-cert -o jsonpath='{.data.tls\.key}' | base64 -d > $HELM_HOME/ca-key.pem
         if [ $? -ne 0 ]; then echo "Failure to get ca.key" && exit 1; fi
-        echo "Checking ca.key"
-        less $HELM_HOME/ca-key.pem
         echo "     ⋯ Generating Helm TLS certs..."
         openssl genrsa -out $HELM_HOME/key.pem 4096
         openssl req -new -key $HELM_HOME/key.pem -out $HELM_HOME/csr.pem -subj "/C=US/ST=New York/L=Armonk/O=IBM Cloud Private/CN=admin"
         openssl x509 -req -in $HELM_HOME/csr.pem -extensions v3_usr -CA $HELM_HOME/ca.pem -CAkey $HELM_HOME/ca-key.pem -CAcreateserial -out $HELM_HOME/cert.pem
         # Sleep is required otherwise sometimes the certificate is created prior to the service clock if there is time draft on target server.
-        echo "Sleeping..."
         sleep 10
         echo "   ↣ Helm TLS configured."
     fi

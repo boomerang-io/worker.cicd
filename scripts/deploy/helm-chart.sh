@@ -67,8 +67,10 @@ fi
 
 # Bug fix for custom certs and re initializing helm home
 export HELM_HOME=$(helm home)
+# Set the exit status $? to the exit code of the last program to exit non-zero (or zero if all exited successfully)
+set -o pipefail
 
-helm --home $HELM_RESOURCE_PATH repo add boomerang-charts $HELM_REPO_URL
+helm repo add boomerang-charts $HELM_REPO_URL && helm repo update
 
 # Chart Name is blank. Chart Release is now required to fetch chart name.
 if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
@@ -79,8 +81,7 @@ elif [ -z "$CHART_NAME" ] && [ -z "$CHART_RELEASE" ]; then
     exit 92
 fi
 echo "Chart Name: $CHART_NAME"
-echo "Chart Image Tag: $HELM_IMAGE_KEY"
-echo "Chart Image Version: $VERSION_NAME"
+echo "Chart Version: $CHART_VERSION"
 
 # if [[ "$CHART_RELEASE" == "undefined" ]] && [ "$DEPLOY_KUBE_NAMESPACE" !=  == "undefined" ]; then
 if [[ -z "$CHART_RELEASE" ]] && [ ! -z "$DEPLOY_KUBE_NAMESPACE" ]; then
@@ -95,7 +96,7 @@ echo "Chart Release: $CHART_RELEASE"
 
 echo "Retrieving current chart values..."
 
-helm get values -a $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ > $CHART_RELEASE-values.yaml
+helm get values -a $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context $CHART_RELEASE > values.yaml
 if [ $? -ne 0 ]; then exit 91; fi
 
 echo "Upgrading helm chart..."
@@ -112,7 +113,7 @@ while true; do
         break
     else
         echo "Commencing deployment (attempt #$INDEX)..."
-        OUTPUT=$(helm upgrade $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context -f $CHART_RELEASE-values.yaml --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART)
+        OUTPUT=$(helm upgrade $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context -f values.yaml --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART_NAME)
         RESULT=$?
         if [ $RESULT -ne 0 ]; then 
             if [[ $OUTPUT =~ "UPGRADE FAILED: timed out" ]]; then
