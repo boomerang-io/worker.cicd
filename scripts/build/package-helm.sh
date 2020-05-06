@@ -66,6 +66,24 @@ do
             chartVersion=`echo $GIT_REF | cut -d / -f3`
         fi
         printf "  Chart Version: $chartVersion\n"
+        printf "  Checking charts requirements.yaml for additional dependencies...\n"
+        REQUIREMENTS_YAML_FILE=$chartFolder/$chartName/requirements.yaml
+        if [ -f $REQUIREMENTS_YAML_FILE ]; then
+            printf "  Found requirements.yaml at: $REQUIREMENTS_YAML_FILE"
+            # Loop through and ensure all custom dependencies are added
+            read -ra DEP_ARRAY <<< $(yq read $REQUIREMENTS_YAML_FILE dependencies[*].repository)
+            for DEP in "${DEP_ARRAY[@]}"; do
+                if [[ $DEP =~ ^http ]]; then
+                    echo -e "Adding Dependency: $DEP"
+                    read -ra DEP_NAME <<< $(yq read $REQUIREMENTS_YAML_FILE dependencies[repository==$DEP].name)
+                    helm repo add $DEP_NAME $DEP
+                else
+                    echo "Skipping $DEP as not a URL"
+                fi
+            done
+        else
+            printf "  Skipping as no requirements.yaml found.\n"
+        fi
         helm dependency update ./$chartFolder/$chartName/ --home $HELM_RESOURCE_PATH
         helm package --version $chartVersion -d $chartStableDir/ ./$chartFolder/$chartName/ --home $HELM_RESOURCE_PATH
         RESULT=$?
