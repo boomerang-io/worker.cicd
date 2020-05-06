@@ -67,6 +67,7 @@ module.exports = {
           .toLowerCase();
         taskProps["process/container.port"] = taskProps["deploy.kubernetes.container.port"] !== undefined ? taskProps["deploy.kubernetes.container.port"] : "8080";
         taskProps["process/service.port"] = taskProps["deploy.kubernetes.service.port"] !== undefined ? taskProps["deploy.kubernetes.service.port"] : "80";
+        taskProps["process/registry.key"] = taskProps["deploy.kubernetes.registry.key"] !== undefined ? taskProps["deploy.kubernetes.registry.key"] : "boomerang.registrykey";
         // The additional checks are required for deploy.container.registry.host/port/path as these properties are also used as STAGE properties which currently
         // are set to "" if they have no value. This will be solved if we move away from default STAGE properties.
         taskProps["process/container.registry.host"] =
