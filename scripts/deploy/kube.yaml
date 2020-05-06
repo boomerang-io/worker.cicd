@@ -37,7 +37,7 @@ spec:
             - name: DEPLOY_TARGET
               value: "@process/env@"
       imagePullSecrets:
-        - name: boomerang.registrykey
+        - name: @process/registry.key@
       restartPolicy: Always
 ---
 apiVersion: v1
