@@ -47,7 +47,6 @@ fi
 for chart in $chartList
 do
     #use sed -E instead of -r when testing on Mac
-    #chartName=`echo "$chart" | sed 's@\/Chart.yaml@@g' | sed -r "s@\.(\/)?$chartFolder(\/)?@@g"`
     chartName=`echo "$chart" | sed -r "s@\.\/(.*\/)?([^\/]+)\/Chart.yaml@\2@g"`
     ( printf '\n'; printf '%.0s-' {1..30}; printf " Packaging Chart: $chartName "; printf '%.0s-' {1..30}; printf '\n' )
     printf "  Chart Path: $chart\n"
@@ -69,18 +68,25 @@ do
         printf "  Checking charts requirements.yaml for additional dependencies...\n"
         REQUIREMENTS_YAML_FILE=$chartFolder/$chartName/requirements.yaml
         if [ -f $REQUIREMENTS_YAML_FILE ]; then
-            printf "  Found requirements.yaml at: $REQUIREMENTS_YAML_FILE"
+            printf "  Found requirements.yaml at: $REQUIREMENTS_YAML_FILE\n"
             # Loop through and ensure all custom dependencies are added
-            read -ra DEP_ARRAY <<< $(yq read $REQUIREMENTS_YAML_FILE dependencies[*].repository)
+            echo $(yq read $REQUIREMENTS_YAML_FILE dependencies[*].repository)
+#             IFS='
+# ' #set as newline
+            DEP_ARRAY_STRING=`echo $(yq read $REQUIREMENTS_YAML_FILE dependencies[*].repository) | tr '\n' ' '`
+            echo "Dependencies found in string: $DEP_ARRAY_STRING"
+            read -ra DEP_ARRAY <<< $DEP_ARRAY_STRING
+            echo "Dependencies found array: ${DEP_ARRAY[@]}"
             for DEP in "${DEP_ARRAY[@]}"; do
                 if [[ $DEP =~ ^http ]]; then
-                    echo -e "Adding Dependency: $DEP"
+                    echo "Adding dependency $DEP..."
                     read -ra DEP_NAME <<< $(yq read $REQUIREMENTS_YAML_FILE dependencies[repository==$DEP].name)
-                    helm repo add $DEP_NAME $DEP
+                    helm repo add $DEP_NAME $DEP --home $HELM_RESOURCE_PATH
                 else
-                    echo "Skipping $DEP as not a URL"
+                    echo "Skipping '$DEP' as not a URL"
                 fi
             done
+            # IFS=$' '
         else
             printf "  Skipping as no requirements.yaml found.\n"
         fi

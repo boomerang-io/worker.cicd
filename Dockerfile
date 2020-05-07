@@ -1,10 +1,15 @@
-#Import the base Alpine image
+# Get 'yq' from the source
+FROM mikefarah/yq:3.2.1 as yq
+
+#Import the base docker image built on top of Alpine
 FROM alpine:3.11.3
+
+COPY --from=yq /usr/bin/yq /usr/bin/yq
 
 WORKDIR /opt/bin
 
 #Add Packages
-RUN apk add --no-cache bash sed grep curl coreutils nodejs npm ca-certificates make openssh-client git socat skopeo openssl yq && \
+RUN apk add --no-cache bash sed grep curl coreutils nodejs npm ca-certificates make openssh-client git socat skopeo openssl && \
     curl -fSL "https://github.com/genuinetools/img/releases/download/v0.5.7/img-linux-amd64" -o "/opt/bin/img" && chmod a+x "/opt/bin/img"
 
 WORKDIR /cli
