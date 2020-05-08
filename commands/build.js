@@ -135,7 +135,7 @@ module.exports = {
             ? taskProps["docker.image.name"]
             : taskProps["system.component.name"]
                 .toString()
-                .replace(/[^a-zA-Z0-9]/g, "")
+                .replace(/[^a-zA-Z0-9\-]/g, "")
                 .toLowerCase();
         await exec(
           shellDir +
