@@ -143,10 +143,17 @@ module.exports = {
             '"'
         );
       } else if (taskProps["deploy.type"] === "containerRegistry") {
+        var dockerImageName =
+          taskProps["docker.image.name"] !== undefined
+            ? taskProps["docker.image.name"]
+            : taskProps["system.component.name"]
+                .toString()
+                .replace(/[^a-zA-Z0-9]/g, "")
+                .toLowerCase();
         await exec(
           shellDir +
             '/deploy/containerregistry.sh "' +
-            taskProps["docker.image.name"] +
+            dockerImageName +
             '" "' +
             taskProps["version.name"] +
             '" "' +
