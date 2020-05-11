@@ -20,6 +20,6 @@ IFS=' ' # return to default delimiter
 
 if [ $KUBE_EXITCODE -ne 0 ]; then
     echo "Errors have been encountered. Please review the log and or contact a support representative"
-    echo "If you have received a message similar to 'unable to recognize <file>: Unauthorized' then this could be to do with permissions in kubernetes as is a bit misleading."
+    echo "If you have received 'unable to recognize <file>: Unauthorized' then this could be to do with permissions in kubernetes as is a bit misleading."
     exit 1
 fi
