@@ -9,7 +9,10 @@ IFS=',' # comma (,) is set as delimiter
 read -ra KUBE_FILES_ARRAY <<< "$KUBE_FILES"
 echo "Found (${#KUBE_FILES_ARRAY[@]}) files: $KUBE_FILES"
 for FILE in "${KUBE_FILES_ARRAY[@]}"; do
-    echo "Current Kubernetes File: $FILE"
+    echo "Current Kubernetes File: $FILE..."
+    cat $FILE
+    echo "\n"
+    echo "Applying Kubernetes File: $FILE..."
     $KUBE_CLI apply -f $FILE
     if [ $? -ne 0 ]; then KUBE_EXITCODE=1 && break; fi
 done
@@ -17,5 +20,6 @@ IFS=' ' # return to default delimiter
 
 if [ $KUBE_EXITCODE -ne 0 ]; then
     echo "Errors have been encountered. Please review the log and or contact a support representative"
+    echo "If you have received a message similar to 'unable to recognize <file>: Unauthorized' then this could be to do with permissions in kubernetes as is a bit misleading."
     exit 1
 fi
