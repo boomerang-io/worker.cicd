@@ -130,10 +130,17 @@ module.exports = {
       }
       if (taskProps["system.mode"] === "docker" || taskProps["docker.enable"]) {
         var dockerFile = taskProps["docker.file"] !== undefined && taskProps["docker.file"] !== null ? taskProps["docker.file"] : "";
+        var dockerImageName =
+          taskProps["docker.image.name"] !== undefined
+            ? taskProps["docker.image.name"]
+            : taskProps["system.component.name"]
+                .toString()
+                .replace(/[^a-zA-Z0-9\-]/g, "")
+                .toLowerCase();
         await exec(
           shellDir +
             "/build/package-docker.sh " +
-            taskProps["docker.image.name"] +
+            dockerImageName +
             " " +
             taskProps["version.name"] +
             " " +
