@@ -55,7 +55,7 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 		    echo "No requirements.txt file found in project"
 		fi
 	fi
-elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
+else
 	pip3 install --upgrade pip
 	RESULT=$?
 	if [ $RESULT -ne 0 ] ; then
@@ -89,6 +89,4 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
 		    echo "No requirements.txt file found in project"
 		fi
 	fi
-else
-	exit 99
 fi

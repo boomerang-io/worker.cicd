@@ -27,11 +27,9 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 	python setup.py sdist bdist_wheel
 	python setup.py bdist_wheel upload -r local
 	
-elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then	
+else
 	python3 -m pip install --user --upgrade setuptools wheel
 	
 	python3 setup.py sdist bdist_wheel
 	python3 setup.py bdist_wheel upload -r local		
-else
-	exit 99
 fi
