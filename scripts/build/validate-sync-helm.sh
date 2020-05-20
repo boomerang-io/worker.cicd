@@ -16,6 +16,7 @@ HELM_REPO_PASSWORD=$4
 GIT_OWNER=$5
 GIT_REPO=$6
 GIT_COMMIT_ID=$7
+GIT_API_URL=https://api.github.com
 
 if [ "$DEBUG" == "true" ]; then
     echo "HELM_REPO_TYPE=$HELM_REPO_TYPE"
@@ -32,7 +33,7 @@ fi
 #############
 
 function github_release() {
-    OUTPUT=`curl -f# -H "Authorization: token $HELM_REPO_PASSWORD" -X POST https://api.github.com/repos/${GIT_OWNER}/${GIT_REPO}/releases \
+    OUTPUT=`curl -f# -H "Authorization: token $HELM_REPO_PASSWORD" -X POST ${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/releases \
 -d "
 {
   \"tag_name\": \"$1\",
@@ -65,7 +66,7 @@ function github_release() {
 }
 
 function github_upload_index() {
-    OUTPUT=`curl -f# -H "Authorization: token $HELM_REPO_PASSWORD" -X GET https://api.github.com/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml`
+    OUTPUT=`curl -f# -H "Authorization: token $HELM_REPO_PASSWORD" -X GET ${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml`
     if [[ $? -eq 0 ]]; then
         echo "Retrieved current index.yaml"
     else
@@ -77,7 +78,7 @@ function github_upload_index() {
     echo "Index SHA: $SHA"
     CONTENTS=`base64 -i index.yaml`
     echo "Contents: $CONTENTS"
-    OUTPUT2=`curl -f# -H "Authorization: token $HELM_REPO_PASSWORD" -X PUT https://api.github.com/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml \
+    OUTPUT2=`curl -f# -H "Authorization: token $HELM_REPO_PASSWORD" -X PUT ${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml \
 -d "
 {
   \"sha\": \"$SHA\",
