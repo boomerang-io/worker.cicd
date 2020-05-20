@@ -90,7 +90,7 @@ do
         else
             printf "  Skipping as no requirements.yaml found.\n"
         fi
-        helm dependency update ./$chartFolder/$chartName/ --home $HELM_RESOURCE_PATH
+        helm dependency update ./$chartFolder/$chartName/ --home $HELM_RESOURCE_PATH && \
         helm package --version $chartVersion -d $chartStableDir/ ./$chartFolder/$chartName/ --home $HELM_RESOURCE_PATH
         RESULT=$?
         if [ $RESULT -ne 0 ] ; then
