@@ -166,7 +166,7 @@ do
     if [ -f $chartCurrentDir/$filename ]; then
         echo "Pushing chart package: $filename to $HELM_REPO_URL/$filename"
         if [ "$HELM_REPO_TYPE" == "Artifactory" ]; then
-            curl --insecure -u $HELM_REPO_USER:$HELM_REPO_USER -T $chartCurrentDir/$filename "$HELM_REPO_URL/$filename"
+            curl --insecure -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -T $chartCurrentDir/$filename "$HELM_REPO_URL/$filename"
         elif [ "$HELM_REPO_TYPE" == "GitHub" ]; then
             RELEASE_NAME=`echo $filename | sed -e 's@^(.*)(\.tgz)$@\1@g'`
             github_release $RELEASE_NAME "$chartCurrentDir/$filename"
@@ -182,7 +182,7 @@ done
 if [ "$HELM_REPO_TYPE" == "Artifactory" ]; then
     HELM_REPO_ID=`echo $HELM_REPO_URL | rev | cut -f1 -d'/' | rev`
     HELM_INDEX_URL=`echo $HELM_REPO_URL | sed -e 's@^(.*)(/\$HELM_REPO_ID)$@\1@g'`
-    curl -u $HELM_REPO_USER:$HELM_REPO_USER -X POST "$HELM_INDEX_URL/api/helm/$HELM_REPO_ID-local/reindex"
+    curl -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -X POST "$HELM_INDEX_URL/api/helm/$HELM_REPO_ID-local/reindex"
 elif [ "$HELM_REPO_TYPE" == "GitHub" ]; then
     github_upload_index
 fi
