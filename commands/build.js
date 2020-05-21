@@ -114,7 +114,7 @@ module.exports = {
             "/build/package-helm.sh " +
             taskProps["version.name"] +
             " " +
-            taskProps["global/helm.repo.url"] +
+            taskProps["helm.repo.url"] +
             " " +
             taskProps["helm.chart.directory"] +
             " " +
@@ -126,7 +126,24 @@ module.exports = {
             " " +
             taskProps["git.ref"]
         );
-        await exec(shellDir + "/build/validate-sync-helm.sh " + taskProps["global/helm.repo.url"] + " " + JSON.stringify(taskProps["global/artifactory.url"]) + " " + taskProps["global/artifactory.user"] + " " + taskProps["global/artifactory.password"]);
+        await exec(
+          shellDir +
+            '/build/validate-sync-helm.sh "' +
+            taskProps["helm.repo.type"] +
+            '" "' +
+            taskProps["helm.repo.url"] +
+            '" "' +
+            taskProps["helm.repo.user"] +
+            '" "' +
+            taskProps["helm.repo.password"] +
+            '" "' +
+            taskProps["component/repoOwner"] +
+            '" "' +
+            taskProps["component/repoName"] +
+            '" "' +
+            taskProps["git.commit.id"] +
+            '"'
+        );
       }
       if (taskProps["system.mode"] === "docker" || taskProps["docker.enable"]) {
         var dockerFile = taskProps["docker.file"] !== undefined && taskProps["docker.file"] !== null ? taskProps["docker.file"] : "";
