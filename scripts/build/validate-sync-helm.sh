@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Reference / Similar code can be found here: https://github.ibm.com/IBMPrivateCloud/content-tools/blob/master/travis-tools/github/bin/package.sh
+# Relies on github API: https://developer.github.com/v3/repos/releases
 
 #############
 # Inputs #
@@ -18,7 +19,7 @@ GIT_REPO=$6
 GIT_COMMIT_ID=$7
 GIT_API_URL=https://api.github.com
 
-if [ "$DEBUG" == "true" ]; then
+# if [ "$DEBUG" == "true" ]; then
     echo "HELM_REPO_TYPE=$HELM_REPO_TYPE"
     echo "HELM_REPO_URL=$HELM_REPO_URL"
     echo "HELM_REPO_USER=$HELM_REPO_USER"
@@ -26,14 +27,18 @@ if [ "$DEBUG" == "true" ]; then
     echo "GIT_OWNER=$GIT_OWNER"
     echo "GIT_REPO=$GIT_REPO"
     echo "GIT_COMMIT_ID=$GIT_COMMIT_ID"
-fi
+# fi
 
 #############
 # Functions #
 #############
 
 function github_release() {
-    OUTPUT=`curl -f# -H "Authorization: token $HELM_REPO_PASSWORD" -X POST ${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/releases \
+    echo "Name: $1"
+    echo "File Path: $2"
+    URL=${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/releases
+    echo "Release URL: $URL"
+    OUTPUT=`curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X POST $URL \
 -d "
 {
   \"tag_name\": \"$1\",
@@ -46,16 +51,19 @@ function github_release() {
     if [[ $? -eq 0 ]]; then
         echo "Release created for $1"
     else
-        echo "Error creating release for $1"
-        echo $OUTPUT
-        return
+        echo "Error creating release for $1. Checking if release already exists..."
+        OUTPUT=`curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X GET $URL/tags/$1`
+        if [[ $? -ne 0 ]]; then
+            echo "Error: Unable to create release and no release already exists."
+            exit 1
+        fi
     fi
     UPLOAD_URL=`echo $OUTPUT | jq .upload_url`
     echo "Upload URL: $UPLOAD_URL"
     UPLOAD_URL_REPLACER="?name=$1.tgz"
     UPLOAD_URL_REPLACED=`echo ${UPLOAD_URL/\{?name,label\}/$UPLOAD_URL_REPLACER} | tr -d '"'`
     echo "Updated Upload URL: $UPLOAD_URL_REPLACED"
-    OUTPUT2=`curl -f# -H "Authorization: token $HELM_REPO_PASSWORD" -H "Content-Type: application/gzip" -X POST "$UPLOAD_URL_REPLACED" --data-binary @"$2"`
+    OUTPUT2=`curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X POST -H "Content-Type: application/octet-stream" "$UPLOAD_URL_REPLACED" --upload-file "$2"`
     if [[ $? -eq 0 ]]; then
         echo "Chart ($1) uploaded to release"
     else
@@ -66,35 +74,35 @@ function github_release() {
 }
 
 function github_upload_index() {
-    OUTPUT=`curl -f# -H "Authorization: token $HELM_REPO_PASSWORD" -X GET ${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml`
+    URL=${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml
+    echo "Index URL: $URL"
+    OUTPUT=`curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X GET $URL`
     if [[ $? -eq 0 ]]; then
         echo "Retrieved current index.yaml"
     else
-        echo "Error getting current index file"
-        echo $OUTPUT
-        return
+        echo "Error getting current index file or does not exist"
     fi
     SHA=`echo $OUTPUT | jq .sha | tr -d '"'`
     echo "Index SHA: $SHA"
-    CONTENTS=`base64 -i index.yaml`
-    echo "Contents: $CONTENTS"
-    OUTPUT2=`curl -f# -H "Authorization: token $HELM_REPO_PASSWORD" -X PUT ${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml \
+    # this must use the openssl base64 to ensure its all on one consistent line
+    # Otherwise you will get a 400 bad request fro GitHub
+    curl -f -H "Authorization: token $HELM_REPO_PASSWORD" -X PUT $URL \
 -d "
 {
   \"sha\": \"$SHA\",
   \"message\": \":robot: Boomerang CICD automated helm repo index update\",
-  \"content\": \"$CONTENTS\",
+  \"content\": \"$(openssl base64 -A -in index.yaml)\",
   \"committer\": {
     \"name\": \"Boomerang Joe\",
     \"email\": \"boomrng@us.ibm.com\"
   }
-}"`
+}"
     if [[ $? -eq 0 ]]; then
         echo "Updated index.yaml"
     else
         echo "Error uploading chart repo index"
         echo $OUTPUT2
-        return
+        exit 1
     fi
 }
 
@@ -164,15 +172,16 @@ done
 for filename in `ls -1 $chartCurrentDir/*tgz | rev | cut -f1 -d/ | rev`
 do
     if [ -f $chartCurrentDir/$filename ]; then
-        echo "Pushing chart package: $filename to $HELM_REPO_URL/$filename"
+        echo "Pushing chart package: $filename"
         if [ "$HELM_REPO_TYPE" == "artifactory" ]; then
             curl -# --insecure -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -T $chartCurrentDir/$filename "$HELM_REPO_URL/$filename"
         elif [ "$HELM_REPO_TYPE" == "github" ]; then
             RELEASE_NAME=`echo $filename | sed -r 's@^(.*)(\.tgz)$@\1@g'`
-            github_release $RELEASE_NAME "$chartCurrentDir/$filename"
+            github_release $RELEASE_NAME $chartCurrentDir/$filename
             cp $chartCurrentDir/$filename $chartIndexDir/$filename
             helm repo index --home $HELM_RESOURCE_PATH --merge index.yaml --url https://github.com/${GIT_OWNER}/${GIT_REPO}/releases/download/${RELEASE_NAME} $chartIndexDir
             mv $chartIndexDir/index.yaml index.yaml
+            cat index.yaml
             rm $chartIndexDir/$filename
         fi
     fi
