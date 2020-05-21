@@ -65,10 +65,13 @@ do
             chartVersion=`echo $GIT_REF | cut -d / -f3`
         fi
         printf "  Chart Version: $chartVersion\n"
-        printf "  Checking charts requirements.yaml for additional dependencies...\n"
-        REQUIREMENTS_YAML_FILE=$chartFolder/$chartName/requirements.yaml
+        if [ -z "$chartFolder" ]; then
+            REQUIREMENTS_YAML_FILE=$chartName/requirements.yaml
+        else
+            REQUIREMENTS_YAML_FILE=$chartFolder/$chartName/requirements.yaml
+        fi
+        printf "  Checking for additional dependencies in $REQUIREMENTS_YAML_FILE...\n"
         if [ -f $REQUIREMENTS_YAML_FILE ]; then
-            printf "  Found requirements.yaml at: $REQUIREMENTS_YAML_FILE\n"
             # Loop through and ensure all custom dependencies are added
             echo $(yq read $REQUIREMENTS_YAML_FILE dependencies[*].repository)
 #             IFS='
