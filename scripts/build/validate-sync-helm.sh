@@ -19,7 +19,7 @@ GIT_REPO=$6
 GIT_COMMIT_ID=$7
 GIT_API_URL=https://api.github.com
 
-# if [ "$DEBUG" == "true" ]; then
+if [ "$DEBUG" == "true" ]; then
     echo "HELM_REPO_TYPE=$HELM_REPO_TYPE"
     echo "HELM_REPO_URL=$HELM_REPO_URL"
     echo "HELM_REPO_USER=$HELM_REPO_USER"
@@ -27,7 +27,7 @@ GIT_API_URL=https://api.github.com
     echo "GIT_OWNER=$GIT_OWNER"
     echo "GIT_REPO=$GIT_REPO"
     echo "GIT_COMMIT_ID=$GIT_COMMIT_ID"
-# fi
+fi
 
 #############
 # Functions #
@@ -92,6 +92,7 @@ function github_upload_index() {
   \"sha\": \"$SHA\",
   \"message\": \":robot: Boomerang CICD automated helm repo index update\",
   \"content\": \"$(openssl base64 -A -in index.yaml)\",
+  \"branch\": \"index\"
   \"committer\": {
     \"name\": \"Boomerang Joe\",
     \"email\": \"boomrng@us.ibm.com\"
