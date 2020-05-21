@@ -86,7 +86,7 @@ function github_upload_index() {
     echo "Index SHA: $SHA"
     # this must use the openssl base64 to ensure its all on one consistent line
     # Otherwise you will get a 400 bad request fro GitHub
-    curl -f -H "Authorization: token $HELM_REPO_PASSWORD" -X PUT $URL \
+    curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X PUT $URL \
 -d "
 {
   \"sha\": \"$SHA\",
