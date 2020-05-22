@@ -17,6 +17,10 @@ HELM_REPO_PASSWORD=$4
 GIT_OWNER=$5
 GIT_REPO=$6
 GIT_COMMIT_ID=$7
+HELM_INDEX_BRANCH=$8
+if [ "$HELM_INDEX_BRANCH" == "undefined" ]; then
+    HELM_INDEX_BRANCH="index"
+fi
 GIT_API_URL=https://api.github.com
 
 if [ "$DEBUG" == "true" ]; then
@@ -74,7 +78,7 @@ function github_release() {
 }
 
 function github_upload_index() {
-    URL=${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml
+    URL=${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml?ref=${HELM_INDEX_BRANCH}
     echo "Index URL: $URL"
     OUTPUT=`curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X GET $URL`
     if [[ $? -eq 0 ]]; then
@@ -92,7 +96,7 @@ function github_upload_index() {
   \"sha\": \"$SHA\",
   \"message\": \":robot: Boomerang CICD automated helm repo index update\",
   \"content\": \"$(openssl base64 -A -in index.yaml)\",
-  \"branch\": \"index\"
+  \"branch\": \"$HELM_INDEX_BRANCH\"
   \"committer\": {
     \"name\": \"Boomerang Joe\",
     \"email\": \"boomrng@us.ibm.com\"
@@ -182,7 +186,6 @@ do
             cp $chartCurrentDir/$filename $chartIndexDir/$filename
             helm repo index --home $HELM_RESOURCE_PATH --merge index.yaml --url https://github.com/${GIT_OWNER}/${GIT_REPO}/releases/download/${RELEASE_NAME} $chartIndexDir
             mv $chartIndexDir/index.yaml index.yaml
-            cat index.yaml
             rm $chartIndexDir/$filename
         fi
     fi

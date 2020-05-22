@@ -142,6 +142,8 @@ module.exports = {
             taskProps["component/repoName"] +
             '" "' +
             taskProps["git.commit.id"] +
+            '" "' +
+            taskProps["helm.repo.index.branch"] +
             '"'
         );
       }
