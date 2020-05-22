@@ -78,9 +78,9 @@ function github_release() {
 }
 
 function github_upload_index() {
-    URL=${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml?ref=${HELM_INDEX_BRANCH}
+    URL=${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml
     echo "Index URL: $URL"
-    OUTPUT=`curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X GET $URL`
+    OUTPUT=`curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X GET $URL?ref=${HELM_INDEX_BRANCH}`
     if [[ $? -eq 0 ]]; then
         echo "Retrieved current index.yaml"
     else
@@ -88,6 +88,7 @@ function github_upload_index() {
     fi
     SHA=`echo $OUTPUT | jq .sha | tr -d '"'`
     echo "Index SHA: $SHA"
+    echo "Index Branch: $HELM_INDEX_BRANCH"
     # this must use the openssl base64 to ensure its all on one consistent line
     # Otherwise you will get a 400 bad request fro GitHub
     curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X PUT $URL \
@@ -96,7 +97,7 @@ function github_upload_index() {
   \"sha\": \"$SHA\",
   \"message\": \":robot: Boomerang CICD automated helm repo index update\",
   \"content\": \"$(openssl base64 -A -in index.yaml)\",
-  \"branch\": \"$HELM_INDEX_BRANCH\"
+  \"branch\": \"$HELM_INDEX_BRANCH\",
   \"committer\": {
     \"name\": \"Boomerang Joe\",
     \"email\": \"boomrng@us.ibm.com\"
@@ -106,7 +107,6 @@ function github_upload_index() {
         echo "Updated index.yaml"
     else
         echo "Error uploading chart repo index"
-        echo $OUTPUT2
         exit 1
     fi
 }
