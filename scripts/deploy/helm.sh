@@ -42,6 +42,14 @@ fi
 echo "   ↣ Helm version set at: $HELM_VERSION"
 # END
 
+# Helm type used by default 
+HELM_VERSION_TYPE=2
+# Helm v2 cli will be under 'helm' and v3 will be under 'helm3'
+HELM_CMD="helm"
+# The following variable stores the helm3 version to be used
+HELM3_VERSION=v3.2.4
+echo "   ↣ Helm3 version set at: $HELM3_VERSION"
+
 # THe following variables are shared across helm related scripts for deploy step
 # ch_helm_tls_string
 HELM_TLS_STRING=
@@ -70,24 +78,40 @@ set -o pipefail
 
 # helm --home $HELM_RESOURCE_PATH repo add boomerang-charts $HELM_REPO_URL
 helm repo add boomerang-charts $HELM_REPO_URL && helm repo update
-
+# helm3 add repository and update it
+helm3 repo add boomerang-charts $HELM_REPO_URL && helm repo update
 # Chart Name is blank. Chart Release is now required to fetch chart name.
 if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
     echo "Auto detecting chart name..."
-    CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$HELM_CHART_VERSION_COL '{print $COL}' | cut -d '-' -f 2- | rev`
-    if [ $? -ne 0 ]; then exit 92; fi
+    # Check first for helm3 type of release
+    CHART_NAME=`helm3 list --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$HELM_CHART_VERSION_COL '{print $COL}' | cut -d '-' -f 2- | rev`
+    if [ $? -ne 0 ]; then 
+      echo "Helm v3 release not detected, checking for helm v2 release..."
+      CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$HELM_CHART_VERSION_COL '{print $COL}' | cut -d '-' -f 2- | rev`
+      if [ $? -ne 0 ]; then exit 92; fi
+    else
+      # helm3 release found, lets check for a helm2 one
+      HELM_VERSION_TYPE=3
+    fi      
 elif [ -z "$CHART_NAME" ] && [ -z "$CHART_RELEASE" ]; then
     exit 92
+fi
+# Helm v3 type of charts are not using Tiller, so no --tls 
+if [ $HELM_VERSION_TYPE -eq "3" ]; then 
+    HELM_TLS_STRING=''
+    HELM_CMD="helm3"
 fi
 echo "Chart Name(s): $CHART_NAME"
 echo "Chart Image Tag: $HELM_IMAGE_KEY"
 echo "Chart Image Version: $VERSION_NAME"
+echo "Helm Chart Type: $HELM_VERSION_TYPE"
 
 HELM_CHARTS_EXITCODE=0
 HELM_CHARTS_SUCCESS_COUNT=0
 IFS=',' # comma (,) is set as delimiter
 read -ra HELM_CHARTS_ARRAY <<< "$CHART_NAME"
 HELM_CHARTS_ARRAY_SIZE=${#HELM_CHARTS_ARRAY[@]}
+# We assume all the helm charts will be of the same type, either 2 all 3.
 if [[ $HELM_CHARTS_ARRAY_SIZE > 1 ]]; then
     echo "Multiple charts ($HELM_CHARTS_ARRAY_SIZE) found. Enabling 'warning' mode for failures - this will mark activity as successful if one or more charts succeed."
 fi
@@ -97,14 +121,14 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
     if [[ -z "$CHART_RELEASE" ]] && [ ! -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         echo "Auto detecting chart release..."
         echo "Note: This only works if there is only one release of the chart in the provided namespace."
-        CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
+        CHART_RELEASE=`$HELM_CMD list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
         if [ $? -ne 0 ]; then HELM_CHARTS_EXITCODE=94; fi
     elif [ -z "$CHART_RELEASE" ] && [ -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         HELM_CHARTS_EXITCODE=93
     fi
     if [ ! -z "$CHART_RELEASE" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Release: $CHART_RELEASE"
-        CHART_VERSION=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$HELM_CHART_VERSION_COL '{print $COL}' | cut -d '-' -f 1 | rev`
+        CHART_VERSION=`$HELM_CMD list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$HELM_CHART_VERSION_COL '{print $COL}' | cut -d '-' -f 1 | rev`
         if [ $? -ne 0 ]; then HELM_CHARTS_EXITCODE=94; fi
     fi
     if [ ! -z "$CHART_RELEASE" ] && [ ! -z "$CHART_VERSION" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
@@ -123,7 +147,7 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
                 break
             else
                 echo "Commencing deployment (attempt #$INDEX)..."
-                OUTPUT=$(helm upgrade $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --reuse-values --set $HELM_IMAGE_KEY=$VERSION_NAME --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART)
+                OUTPUT=$($HELM_CMD upgrade $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --reuse-values --set $HELM_IMAGE_KEY=$VERSION_NAME --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART)
                 RESULT=$?
                 if [ $RESULT -ne 0 ]; then 
                     if [[ $OUTPUT =~ "UPGRADE FAILED: timed out" ]]; then
