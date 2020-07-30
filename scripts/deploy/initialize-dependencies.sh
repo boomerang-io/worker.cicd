@@ -44,7 +44,6 @@ if [ "$DEPLOY_TYPE" == "helm" ] || [ "$DEPLOY_TYPE" == "helm3" ] || [ "$DEPLOY_T
     echo " ⋯ Configuring Kubernetes..."
     echo
     export KUBE_HOME=~/.kube
-    export HELM_HOME=~/.helm
     BIN_HOME=/usr/local/bin
     KUBE_CLI=$BIN_HOME/kubectl
     if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
@@ -85,9 +84,7 @@ if [ "$DEPLOY_TYPE" == "helm" ] || [ "$DEPLOY_TYPE" == "helm3" ] || [ "$DEPLOY_T
 fi
 
 if [ "$DEPLOY_TYPE" == "helm" ]; then
-    . ../common/initialize-dependencies-helm.sh $DEPLOY_TYPE
-
-    export HELM_HOME=$(helm home)
+    source /cli/scripts/common/initialize-dependencies-helm.sh $DEPLOY_TYPE
 
     if [[ $DEPLOY_HELM_TLS == "true" ]]; then
         echo "   ⋯ Configuring Helm TLS..."
@@ -121,5 +118,5 @@ if [ "$DEPLOY_TYPE" == "helm" ]; then
 fi
 
 if [ "$DEPLOY_TYPE" == "helm3" ]; then
-    . ../common/initialize-dependencies-helm.sh $DEPLOY_TYPE
+    source /cli/scripts/common/initialize-dependencies-helm.sh $DEPLOY_TYPE
 fi

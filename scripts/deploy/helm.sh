@@ -29,12 +29,14 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 export KUBE_HOME=~/.kube
-export HELM_HOME=~/.helm
 BIN_HOME=/usr/local/bin
 KUBE_CLI=$BIN_HOME/kubectl
 
 HELM_TLS_STRING=''
 if [ "$DEPLOY_TYPE" == "helm" ]; then
+    # Bug fix for custom certs and re initializing helm home
+    export HELM_HOME=/tmp/.helm
+    # export HELM_HOME=$(helm home)
     if [[ $DEPLOY_HELM_TLS == "true" ]]; then
         HELM_TLS_STRING='--tls'
         echo "   ↣ Helm TLS parameters configured as: $HELM_TLS_STRING"
@@ -54,8 +56,6 @@ else
     unset DEBUG
 fi
 
-# Bug fix for custom certs and re initializing helm home
-export HELM_HOME=$(helm home)
 # Set the exit status $? to the exit code of the last program to exit non-zero (or zero if all exited successfully)
 set -o pipefail
 
@@ -64,8 +64,14 @@ helm repo add boomerang-charts $HELM_REPO_URL && helm repo update
 # Chart Name is blank. Chart Release is now required to fetch chart name.
 if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
     echo "Auto detecting chart name..."
-    CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$3 '{print $COL}' | cut -d '-' -f 2- | rev`
-    if [ $? -ne 0 ]; then exit 92; fi
+    # This is needed as helm3 uses --filter
+    if [ "$DEPLOY_TYPE" == "helm3" ]; then
+        CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
+        if [ $? -ne 0 ]; then exit 92; fi
+    else
+        CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
+        if [ $? -ne 0 ]; then exit 92; fi
+    fi
 elif [ -z "$CHART_NAME" ] && [ -z "$CHART_RELEASE" ]; then
     exit 92
 fi
@@ -73,7 +79,6 @@ fi
 echo "Chart Name(s): $CHART_NAME"
 echo "Chart Image Tag: $HELM_IMAGE_KEY"
 echo "Chart Image Version: $VERSION_NAME"
-echo "Helm Chart Type: $HELM_VERSION_TYPE"
 
 HELM_CHARTS_EXITCODE=0
 HELM_CHARTS_SUCCESS_COUNT=0
@@ -97,8 +102,14 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
     fi
     if [ ! -z "$CHART_RELEASE" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Release: $CHART_RELEASE"
-        CHART_VERSION=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$3 '{print $COL}' | cut -d '-' -f 1 | rev`
-        if [ $? -ne 0 ]; then HELM_CHARTS_EXITCODE=94; fi
+        # This is needed as helm3 uses --filter
+        if [ "$DEPLOY_TYPE" == "helm3" ]; then
+            CHART_VERSION=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $2}' | cut -d '-' -f 1 | rev`
+            if [ $? -ne 0 ]; then exit 94; fi
+        else
+            CHART_VERSION=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 1 | rev`
+            if [ $? -ne 0 ]; then HELM_CHARTS_EXITCODE=94; fi
+        fi
     fi
     if [ ! -z "$CHART_RELEASE" ] && [ ! -z "$CHART_VERSION" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Version: $CHART_VERSION"

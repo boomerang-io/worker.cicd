@@ -132,7 +132,7 @@ module.exports = {
           shellDir +
             '/build/validate-sync-helm.sh "' +
             taskProps["build.tool"] +
-            " " +
+            '" "' +
             taskProps["helm.repo.type"] +
             '" "' +
             taskProps["helm.repo.url"] +

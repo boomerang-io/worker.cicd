@@ -24,7 +24,7 @@ else
     HELM_VERSION=v2.12.1
     HELM_URL=https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-$HELM_PLATFORM-$HELM_ARCH.tar.gz
 fi
-HELM_HOME=/opt/bin/helm
+HELM_BIN=/opt/bin/helm
 echo 
 echo "   ⋯ Installing Helm $HELM_VERSION ($HELM_PLATFORM-$HELM_ARCH) from $HELM_URL"
 echo 
@@ -36,7 +36,7 @@ if [ $? -ne 0 ] ; then
     exit 1
 fi
 tar xzf /tmp/helm.tar.gz -C /tmp
-mv /tmp/$HELM_PLATFORM-$HELM_ARCH/helm $HELM_HOME
+mv /tmp/$HELM_PLATFORM-$HELM_ARCH/helm $HELM_BIN
 rm -f /tmp/helm.tar.gz
 rm -rf /tmp/$HELM_PLATFORM-$HELM_ARCH
 echo "   ↣ Helm installed."
@@ -46,12 +46,14 @@ if [ -f /usr/bin/helm ]; then
 echo "   ↣ Link already exists"
 else
 echo "   ↣ Creating symbolic link for Helm in /usr/bin"
-ln -s $HELM_HOME /usr/bin/helm
+ln -s $HELM_BIN /usr/bin/helm
 fi
+
+HELM_HOME=/tmp/.helm
 
 echo "   ⋯ Verifying Helm client..."
 if [ "$BUILD_TOOL" == "helm3" ]; then
-    helm version
+    helm version --short
     if [ $? -ne 0 ] ; then
         echo
         echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
@@ -67,7 +69,6 @@ else
         exit 1
     fi
     echo "   ⋯ Initializing Helm"
-    helm init --client-only --skip-refresh
+    helm init --client-only --skip-refresh --home $HELM_HOME
+    echo "   ↣ Helm home set as: $(helm home)"
 fi
-
-echo "   ↣ Helm home set as: $(helm home)"
