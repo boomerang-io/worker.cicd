@@ -37,7 +37,7 @@ module.exports = {
       } else if (taskProps["system.mode"] === "python" || taskProps["system.mode"] === "lib.wheel") {
         await exec(shellDir + "/common/initialize-dependencies-python.sh " + taskProps["language.version"]);
       } else if (taskProps["system.mode"] === "helm.chart") {
-        await exec(shellDir + "/common/initialize-dependencies-helm.sh " + taskProps["kube.version"]);
+        await exec(shellDir + "/common/initialize-dependencies-helm.sh " + taskProps["build.tool"]);
       }
 
       if (taskProps["build.before_clone.enable"] === "true") {
@@ -112,6 +112,8 @@ module.exports = {
         await exec(
           shellDir +
             "/build/package-helm.sh " +
+            taskProps["build.tool"] +
+            " " +
             taskProps["version.name"] +
             " " +
             taskProps["helm.repo.url"] +
@@ -129,6 +131,8 @@ module.exports = {
         await exec(
           shellDir +
             '/build/validate-sync-helm.sh "' +
+            taskProps["build.tool"] +
+            " " +
             taskProps["helm.repo.type"] +
             '" "' +
             taskProps["helm.repo.url"] +

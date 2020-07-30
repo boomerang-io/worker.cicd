@@ -1,12 +1,13 @@
 #!/bin/bash
 
-VERSION_NAME=$1
-HELM_REPO_URL=$2
-HELM_CHART_DIR=$3
-HELM_CHART_IGNORE=$4
-HELM_CHART_VERSION_INCREMENT=$5
-HELM_CHART_VERSION_TAG=$6
-GIT_REF=$7
+BUILD_TOOL=$1
+VERSION_NAME=$2
+HELM_REPO_URL=$3
+HELM_CHART_DIR=$4
+HELM_CHART_IGNORE=$5
+HELM_CHART_VERSION_INCREMENT=$6
+HELM_CHART_VERSION_TAG=$7
+GIT_REF=$8
 
 if [ "$DEBUG" == "true" ]; then
     echo "VERSION_NAME=$VERSION_NAME"
@@ -18,12 +19,10 @@ if [ "$DEBUG" == "true" ]; then
     echo "GIT_REF=$GIT_REF"
 fi
 
-# NOTE:
-#  THe following variables are shared with helm.sh for deploy step
-HELM_RESOURCE_PATH=/tmp/.helm
-# END
+# Bug fix for custom certs and re initializing helm home
+export HELM_HOME=$(helm home)
 
-helm repo add boomerang-charts $HELM_REPO_URL --home $HELM_RESOURCE_PATH
+helm repo add boomerang-charts $HELM_REPO_URL
 RESULT=$?
 if [ $RESULT -ne 0 ] ; then
     exit 89
@@ -51,7 +50,11 @@ do
     ( printf '\n'; printf '%.0s-' {1..30}; printf " Packaging Chart: $chartName "; printf '%.0s-' {1..30}; printf '\n' )
     printf "  Chart Path: $chart\n"
     if [[ ! " ${chartIgnoreList[@]} " =~ " $chartName " ]] && [[ "$chart" =~ ^\.(\/)?$chartFolder(\/)?$chartName\/.*$ ]]; then
-        chartVersion=`helm inspect chart ./$chartFolder/$chartName | grep version | sed 's@version: @@g'`
+        if [ "$BUILD_TOOL" == "helm3" ]; then
+            chartVersion=`helm show chart ./$chartFolder/$chartName | sed -nr 's@(^version: )(.+)@\2@p'`
+        else
+            chartVersion=`helm inspect chart ./$chartFolder/$chartName | grep version | sed 's@version: @@g'`
+        fi
         printf "  Existing Chart Version: $chartVersion\n"
         if [[ "$HELM_CHART_VERSION_INCREMENT" == "true" ]]; then
             printf "  Auto Incrementing Chart Version...\n"
@@ -65,26 +68,31 @@ do
             chartVersion=`echo $GIT_REF | cut -d / -f3`
         fi
         printf "  Chart Version: $chartVersion\n"
-        if [ -z "$chartFolder" ]; then
-            REQUIREMENTS_YAML_FILE=$chartName/requirements.yaml
+        if [ "$BUILD_TOOL" == "helm3" ]; then
+            DEPENDENCY_YAML_FILE='Chart.yaml'
         else
-            REQUIREMENTS_YAML_FILE=$chartFolder/$chartName/requirements.yaml
+            DEPENDENCY_YAML_FILE='requirements.yaml'
         fi
-        printf "  Checking for additional dependencies in $REQUIREMENTS_YAML_FILE...\n"
-        if [ -f $REQUIREMENTS_YAML_FILE ]; then
+        if [ -z "$chartFolder" ]; then
+            DEPENDENCY_YAML_PATH="$chartName/$DEPENDENCY_YAML_FILE"
+        else
+            DEPENDENCY_YAML_PATH="$chartFolder/$chartName/$DEPENDENCY_YAML_FILE"
+        fi
+        printf "  Checking for additional dependencies in $DEPENDENCY_YAML_PATH...\n"
+        if [ -f $DEPENDENCY_YAML_PATH ]; then
             # Loop through and ensure all custom dependencies are added
-            echo $(yq read $REQUIREMENTS_YAML_FILE dependencies[*].repository)
+            echo $(yq read $DEPENDENCY_YAML_PATH dependencies[*].repository)
 #             IFS='
 # ' #set as newline
-            DEP_ARRAY_STRING=`echo $(yq read $REQUIREMENTS_YAML_FILE dependencies[*].repository) | tr '\n' ' '`
+            DEP_ARRAY_STRING=`echo $(yq read $DEPENDENCY_YAML_PATH dependencies[*].repository) | tr '\n' ' '`
             echo "Dependencies found in string: $DEP_ARRAY_STRING"
             read -ra DEP_ARRAY <<< $DEP_ARRAY_STRING
             echo "Dependencies found array: ${DEP_ARRAY[@]}"
             for DEP in "${DEP_ARRAY[@]}"; do
                 if [[ $DEP =~ ^http ]]; then
                     echo "Adding dependency $DEP..."
-                    read -ra DEP_NAME <<< $(yq read $REQUIREMENTS_YAML_FILE dependencies[repository==$DEP].name)
-                    helm repo add $DEP_NAME $DEP --home $HELM_RESOURCE_PATH
+                    read -ra DEP_NAME <<< $(yq read $DEPENDENCY_YAML_PATH dependencies[repository==$DEP].name)
+                    helm repo add $DEP_NAME $DEP
                 else
                     echo "Skipping '$DEP' as not a URL"
                 fi
@@ -93,8 +101,8 @@ do
         else
             printf "  Skipping as no requirements.yaml found.\n"
         fi
-        helm dependency update ./$chartFolder/$chartName/ --home $HELM_RESOURCE_PATH && \
-        helm package --version $chartVersion -d $chartStableDir/ ./$chartFolder/$chartName/ --home $HELM_RESOURCE_PATH
+        helm dependency update ./$chartFolder/$chartName/ && \
+        helm package --version $chartVersion -d $chartStableDir/ ./$chartFolder/$chartName/
         RESULT=$?
         if [ $RESULT -ne 0 ] ; then
             exit 89

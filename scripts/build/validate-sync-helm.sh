@@ -7,23 +7,25 @@
 # Inputs #
 #############
 
-HELM_REPO_TYPE=`echo $1 | tr '[:upper:]' '[:lower:]'`
+BUILD_TOOL=$1
+HELM_REPO_TYPE=`echo $2 | tr '[:upper:]' '[:lower:]'`
 if [ "$HELM_REPO_TYPE" == "undefined" ]; then
     HELM_REPO_TYPE="artifactory"
 fi
-HELM_REPO_URL=$2
-HELM_REPO_USER=$3
-HELM_REPO_PASSWORD=$4
-GIT_OWNER=$5
-GIT_REPO=$6
-GIT_COMMIT_ID=$7
-HELM_INDEX_BRANCH=$8
+HELM_REPO_URL=$3
+HELM_REPO_USER=$4
+HELM_REPO_PASSWORD=$5
+GIT_OWNER=$6
+GIT_REPO=$7
+GIT_COMMIT_ID=$8
+HELM_INDEX_BRANCH=$9
 if [ "$HELM_INDEX_BRANCH" == "undefined" ]; then
     HELM_INDEX_BRANCH="index"
 fi
 GIT_API_URL=https://api.github.com
 
 if [ "$DEBUG" == "true" ]; then
+    echo "BUILD_TOOL=$BUILD_TOOL"
     echo "HELM_REPO_TYPE=$HELM_REPO_TYPE"
     echo "HELM_REPO_URL=$HELM_REPO_URL"
     echo "HELM_REPO_USER=$HELM_REPO_USER"
@@ -125,12 +127,8 @@ if [ "$DEBUG" == "true" ]; then
     ls -ltr /data/charts
 fi
 
-# NOTE:
-#  THe following variables are shared with helm.sh for deploy step
-HELM_RESOURCE_PATH=/tmp/.helm
-# END
-
-helm repo add boomerang-charts $HELM_REPO_URL --home $HELM_RESOURCE_PATH
+# Bug fix for custom certs and re initializing helm home
+export HELM_HOME=$(helm home)
 
 # Validate charts have correct version
 for chartPackage in `ls -1 $chartStableDir/*tgz | rev | cut -f1 -d/ | rev`
@@ -140,9 +138,11 @@ do
     # Attempt to pull down chart package from Artifactory
     chartName=`echo $chartPackage | sed 's/\(.*\)-.*/\1/'`
     chartVersion=`echo $chartPackage | rev | sed '/\..*\./s/^[^.]*\.//' | cut -d '-' -f 1 | rev`
-    
-    helm fetch --home $HELM_RESOURCE_PATH --version $chartVersion --destination $chartCurrentDir boomerang-charts/$chartName
-    
+    if [ "$BUILD_TOOL" == "helm3" ]; then
+        helm pull --version $chartVersion --destination $chartCurrentDir boomerang-charts/$chartName
+    else
+        helm fetch --version $chartVersion --destination $chartCurrentDir boomerang-charts/$chartName
+    fi    
     if [ -f $chartCurrentDir/$chartPackage ]; then
         # If there is an existing file, a check will be made to see if the content of the old tar and new tar are the exact same. 
         # The digest and sha of the tar are not trustworthy when containing tgz files. 
@@ -184,7 +184,7 @@ do
             RELEASE_NAME=`echo $filename | sed -r 's@^(.*)(\.tgz)$@\1@g'`
             github_release $RELEASE_NAME $chartCurrentDir/$filename
             cp $chartCurrentDir/$filename $chartIndexDir/$filename
-            helm repo index --home $HELM_RESOURCE_PATH --merge index.yaml --url https://github.com/${GIT_OWNER}/${GIT_REPO}/releases/download/${RELEASE_NAME} $chartIndexDir
+            helm repo index --merge index.yaml --url https://github.com/${GIT_OWNER}/${GIT_REPO}/releases/download/${RELEASE_NAME} $chartIndexDir
             mv $chartIndexDir/index.yaml index.yaml
             rm $chartIndexDir/$filename
         fi
