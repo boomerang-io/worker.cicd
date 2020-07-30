@@ -99,7 +99,7 @@ do
             done
             # IFS=$' '
         else
-            printf "  Skipping as no requirements.yaml found.\n"
+            printf "  Skipping as no dependencies found in $DEPENDENCY_YAML_FILE.\n"
         fi
         helm dependency update ./$chartFolder/$chartName/ && \
         helm package --version $chartVersion -d $chartStableDir/ ./$chartFolder/$chartName/
