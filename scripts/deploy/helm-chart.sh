@@ -37,7 +37,7 @@ KUBE_CLI=$BIN_HOME/kubectl
 # NOTE
 # THe following variables are shared across helm related scripts for deploy step
 HELM_VERSION=v2.12.1
-HELM_CHART_VERSION_COL=3 #the column output of helm list changed
+3=3 #the column output of helm list changed
 if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
     HELM_VERSION=v2.12.3
 fi
@@ -75,7 +75,7 @@ helm repo add boomerang-charts $HELM_REPO_URL && helm repo update
 # Chart Name is blank. Chart Release is now required to fetch chart name.
 if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
     echo "Auto detecting chart name..."
-    CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$HELM_CHART_VERSION_COL '{print $COL}' | cut -d '-' -f 2- | rev`
+    CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$3 '{print $COL}' | cut -d '-' -f 2- | rev`
     if [ $? -ne 0 ]; then exit 92; fi
 elif [ -z "$CHART_NAME" ] && [ -z "$CHART_RELEASE" ]; then
     exit 92

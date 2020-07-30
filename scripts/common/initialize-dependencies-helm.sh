@@ -10,6 +10,9 @@
 
 BUILD_TOOL=$1
 
+echo " ⋯ Configuring Helm..."
+echo
+
 BUILD_HARNESS_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 BUILD_HARNESS_ARCH=$(uname -m | sed 's/x86_64/amd64/g')
 HELM_PLATFORM=$BUILD_HARNESS_OS
@@ -22,8 +25,9 @@ else
     HELM_URL=https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-$HELM_PLATFORM-$HELM_ARCH.tar.gz
 fi
 HELM_HOME=/opt/bin/helm
-
-echo "Installing Helm $HELM_VERSION ($HELM_PLATFORM-$HELM_ARCH) from $HELM_URL"
+echo 
+echo "   ⋯ Installing Helm $HELM_VERSION ($HELM_PLATFORM-$HELM_ARCH) from $HELM_URL"
+echo 
 curl '-#' -fL -o /tmp/helm.tar.gz --retry 5 $HELM_URL
 if [ $? -ne 0 ] ; then
     echo
@@ -35,17 +39,18 @@ tar xzf /tmp/helm.tar.gz -C /tmp
 mv /tmp/$HELM_PLATFORM-$HELM_ARCH/helm $HELM_HOME
 rm -f /tmp/helm.tar.gz
 rm -rf /tmp/$HELM_PLATFORM-$HELM_ARCH
+echo "   ↣ Helm installed."
 
-echo "Symbolic link for Helm"
+echo "   ⋯ Verifying Symbolic link..."
 if [ -f /usr/bin/helm ]; then
-echo "Link already exists"
+echo "   ↣ Link already exists"
 else
-echo "Creating symbolic link for Helm in /usr/bin"
+echo "   ↣ Creating symbolic link for Helm in /usr/bin"
 ln -s $HELM_HOME /usr/bin/helm
 fi
 
+echo "   ⋯ Verifying Helm client..."
 if [ "$BUILD_TOOL" == "helm3" ]; then
-    echo "Verifying Helm client..."
     helm version
     if [ $? -ne 0 ] ; then
         echo
@@ -54,7 +59,6 @@ if [ "$BUILD_TOOL" == "helm3" ]; then
         exit 1
     fi
 else
-    echo "Verifying Helm client..."
     helm version --client --short
     if [ $? -ne 0 ] ; then
         echo
@@ -62,6 +66,8 @@ else
         echo
         exit 1
     fi
-    echo "Initializing Helm"
+    echo "   ⋯ Initializing Helm"
     helm init --client-only --skip-refresh
 fi
+
+echo "   ↣ Helm home set as: $(helm home)"
