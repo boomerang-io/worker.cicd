@@ -21,7 +21,7 @@ if [ "$BUILD_TOOL" == "helm3" ]; then
     HELM_VERSION=v3.2.4
     HELM_URL=https://get.helm.sh/helm-$HELM_VERSION-$HELM_PLATFORM-$HELM_ARCH.tar.gz
 else
-    HELM_VERSION=v2.12.1
+    HELM_VERSION=v2.12.3
     HELM_URL=https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-$HELM_PLATFORM-$HELM_ARCH.tar.gz
 fi
 HELM_BIN=/opt/bin/helm

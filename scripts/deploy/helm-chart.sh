@@ -34,16 +34,6 @@ export HELM_HOME=~/.helm
 BIN_HOME=/usr/local/bin
 KUBE_CLI=$BIN_HOME/kubectl
 
-# NOTE
-# THe following variables are shared across helm related scripts for deploy step
-HELM_VERSION=v2.12.1
-3=3 #the column output of helm list changed
-if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
-    HELM_VERSION=v2.12.3
-fi
-echo "   ↣ Helm version set at: $HELM_VERSION"
-# END
-
 # THe following variables are shared across helm related scripts for deploy step
 # ch_helm_tls_string
 HELM_TLS_STRING=

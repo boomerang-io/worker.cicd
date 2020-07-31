@@ -128,7 +128,9 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 # Bug fix for custom certs and re initializing helm home
-export HELM_HOME=$(helm home)
+if [ "$BUILD_TOOL" == "helm" ]; then
+    export HELM_HOME=$(helm home)
+fi
 
 # Validate charts have correct version
 for chartPackage in `ls -1 $chartStableDir/*tgz | rev | cut -f1 -d/ | rev`
