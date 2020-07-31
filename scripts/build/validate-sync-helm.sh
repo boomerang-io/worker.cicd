@@ -23,6 +23,7 @@ if [ "$HELM_INDEX_BRANCH" == "undefined" ]; then
     HELM_INDEX_BRANCH="index"
 fi
 GIT_API_URL=https://api.github.com
+INDEX_URL=${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml
 
 if [ "$DEBUG" == "true" ]; then
     echo "BUILD_TOOL=$BUILD_TOOL"
@@ -33,6 +34,7 @@ if [ "$DEBUG" == "true" ]; then
     echo "GIT_OWNER=$GIT_OWNER"
     echo "GIT_REPO=$GIT_REPO"
     echo "GIT_COMMIT_ID=$GIT_COMMIT_ID"
+    echo "INDEX_URL=$INDEX_URL"
 fi
 
 #############
@@ -79,21 +81,22 @@ function github_release() {
     fi
 }
 
-function github_upload_index() {
-    URL=${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml
-    echo "Index URL: $URL"
-    OUTPUT=`curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X GET $URL?ref=${HELM_INDEX_BRANCH}`
+function github_download_index() {
+    OUTPUT=`curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X GET $INDEX_URL?ref=${HELM_INDEX_BRANCH}`
     if [[ $? -eq 0 ]]; then
         echo "Retrieved current index.yaml"
     else
         echo "Error getting current index file or does not exist"
     fi
-    SHA=`echo $OUTPUT | jq .sha | tr -d '"'`
+    echo $OUTPUT | jq -r .content | openssl base64 -d -out index.yaml
+    SHA=`echo $OUTPUT | jq -r .sha`
     echo "Index SHA: $SHA"
-    echo "Index Branch: $HELM_INDEX_BRANCH"
+}
+
+function github_upload_index() {
     # this must use the openssl base64 to ensure its all on one consistent line
     # Otherwise you will get a 400 bad request fro GitHub
-    curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X PUT $URL \
+    curl -fs -H "Authorization: token $HELM_REPO_PASSWORD" -X PUT $INDEX_URL \
 -d "
 {
   \"sha\": \"$SHA\",
@@ -174,6 +177,10 @@ do
         cp $chartStableDir/$chartPackage $chartCurrentDir
     fi
 done
+
+if [ "$HELM_REPO_TYPE" == "github" ]; then
+    github_download_index
+fi
 
 # Release / Upload the packages
 for filename in `ls -1 $chartCurrentDir/*tgz | rev | cut -f1 -d/ | rev`
