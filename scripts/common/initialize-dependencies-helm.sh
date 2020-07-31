@@ -70,5 +70,5 @@ else
     fi
     echo "   ⋯ Initializing Helm"
     helm init --client-only --skip-refresh --home $HELM_HOME
-    echo "   ↣ Helm home set as: $(helm home)"
+    echo "   ↣ Helm home set as: $HELM_HOME"
 fi

@@ -132,7 +132,8 @@ fi
 
 # Bug fix for custom certs and re initializing helm home
 if [ "$BUILD_TOOL" == "helm" ]; then
-    export HELM_HOME=$(helm home)
+    export HELM_HOME=/tmp/.helm
+    # export HELM_HOME=$(helm home)
 fi
 
 # Validate charts have correct version
