@@ -10,6 +10,7 @@ HELM_CHART_VERSION_TAG=$7
 GIT_REF=$8
 
 if [ "$DEBUG" == "true" ]; then
+    echo "BUILD_TOOL=$BUILD_TOOL"
     echo "VERSION_NAME=$VERSION_NAME"
     echo "HELM_REPO_URL=$HELM_REPO_URL"
     echo "HELM_CHART_DIR=$HELM_CHART_DIR"
@@ -20,9 +21,10 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 # Bug fix for custom certs and re initializing helm home
-if [ "$BUILD_TOOL" == "helm" ]; then
+if [ "$BUILD_TOOL" != "helm3" ]; then
     export HELM_HOME=/tmp/.helm
     # export HELM_HOME=$(helm home)
+    echo "   ↣ Helm home set as: $HELM_HOME"
 fi
 
 helm repo add boomerang-charts $HELM_REPO_URL

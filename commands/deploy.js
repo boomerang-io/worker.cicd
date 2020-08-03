@@ -100,6 +100,8 @@ module.exports = {
         await exec(
           shellDir +
             '/deploy/helm-chart.sh "' +
+            taskProps["deploy.type"] +
+            '" "' +
             JSON.stringify(taskProps["global/helm.repo.url"]) +
             '" "' +
             taskProps["deploy.helm.chart"] +

@@ -131,9 +131,10 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 # Bug fix for custom certs and re initializing helm home
-if [ "$BUILD_TOOL" == "helm" ]; then
+if [ "$BUILD_TOOL" != "helm3" ]; then
     export HELM_HOME=/tmp/.helm
     # export HELM_HOME=$(helm home)
+    echo "   ↣ Helm home set as: $HELM_HOME"
 fi
 
 # Validate charts have correct version

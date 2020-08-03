@@ -36,6 +36,7 @@ HELM_TLS_STRING=''
 if [ "$DEPLOY_TYPE" == "helm" ]; then
     # Bug fix for custom certs and re initializing helm home
     export HELM_HOME=/tmp/.helm
+    echo "   ↣ Helm home set as: $HELM_HOME"
     # export HELM_HOME=$(helm home)
     if [[ $DEPLOY_HELM_TLS == "true" ]]; then
         HELM_TLS_STRING='--tls'
