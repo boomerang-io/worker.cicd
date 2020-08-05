@@ -4,53 +4,71 @@
 #   ICP 2.x
 #   ICP 3.1 - different versions of kube and helm
 #   ICP 3.2 - different versions of kube, helm, and cert locations
+#
+# Reference:
+#   Forked from: https://github.ibm.com/ICP-DevOps/build-harness/blob/master/modules/helm/Makefile
 
-KUBE_VERSION=$2
+BUILD_TOOL=$1
 
-# Forked from reference: https://github.ibm.com/ICP-DevOps/build-harness/blob/master/modules/helm/Makefile
+echo " ⋯ Configuring Helm..."
+echo
+
 BUILD_HARNESS_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 BUILD_HARNESS_ARCH=$(uname -m | sed 's/x86_64/amd64/g')
-
-# NOTE:
-#  THe following variables are shared with helm.sh for deploy step
-HELM_RESOURCE_PATH=/tmp/.helm
-# END
-
-# NOTE
-# The following script is shared with helm.sh
-HELM_VERSION=v2.7.2
-HELM_CHART_VERSION_COL=2
-if [[ "$KUBE_VERSION" =~ 2.[0-9].[0-9] ]]; then
-    HELM_VERSION=v2.7.2
-elif [[ "$KUBE_VERSION" =~ 3.[0-1].[0-9] ]]; then
-    HELM_VERSION=v2.9.1
-else
-    HELM_VERSION=v2.12.1
-    HELM_CHART_VERSION_COL=3 #the column output of helm list changed
-fi
-# END
 HELM_PLATFORM=$BUILD_HARNESS_OS
 HELM_ARCH=$BUILD_HARNESS_ARCH
-HELM_URL=https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-$HELM_PLATFORM-$HELM_ARCH.tar.gz
-HELM_HOME=/opt/bin/helm
-
-echo "Installing Helm $HELM_VERSION ($HELM_PLATFORM-$HELM_ARCH) from $HELM_URL"
+if [ "$BUILD_TOOL" == "helm3" ]; then
+    HELM_VERSION=v3.2.4
+    HELM_URL=https://get.helm.sh/helm-$HELM_VERSION-$HELM_PLATFORM-$HELM_ARCH.tar.gz
+else
+    HELM_VERSION=v2.12.3
+    HELM_URL=https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-$HELM_PLATFORM-$HELM_ARCH.tar.gz
+fi
+HELM_BIN=/opt/bin/helm
+echo 
+echo "   ⋯ Installing Helm $HELM_VERSION ($HELM_PLATFORM-$HELM_ARCH) from $HELM_URL"
+echo 
 curl '-#' -fL -o /tmp/helm.tar.gz --retry 5 $HELM_URL
+if [ $? -ne 0 ] ; then
+    echo
+    echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
+    echo
+    exit 1
+fi
 tar xzf /tmp/helm.tar.gz -C /tmp
-mv /tmp/$HELM_PLATFORM-$HELM_ARCH/helm $HELM_HOME
+mv /tmp/$HELM_PLATFORM-$HELM_ARCH/helm $HELM_BIN
 rm -f /tmp/helm.tar.gz
 rm -rf /tmp/$HELM_PLATFORM-$HELM_ARCH
+echo "   ↣ Helm installed."
 
-echo "Symbolic link for Helm"
+echo "   ⋯ Verifying Symbolic link..."
 if [ -f /usr/bin/helm ]; then
-echo "Link already exists"
+echo "   ↣ Link already exists"
 else
-echo "Creating symbolic link for Helm in /usr/bin"
-ln -s $HELM_HOME /usr/bin/helm
+echo "   ↣ Creating symbolic link for Helm in /usr/bin"
+ln -s $HELM_BIN /usr/bin/helm
 fi
 
-echo "Testing Helm client..."
-helm version --client
+HELM_HOME=/tmp/.helm
 
-echo "Initializing Helm"
-helm init --client-only --skip-refresh --home $HELM_RESOURCE_PATH
+echo "   ⋯ Verifying Helm client..."
+if [ "$BUILD_TOOL" == "helm3" ]; then
+    helm version --short
+    if [ $? -ne 0 ] ; then
+        echo
+        echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
+        echo
+        exit 1
+    fi
+else
+    helm version --client --short
+    if [ $? -ne 0 ] ; then
+        echo
+        echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
+        echo
+        exit 1
+    fi
+    echo "   ⋯ Initializing Helm"
+    helm init --client-only --skip-refresh --home $HELM_HOME
+    echo "   ↣ Helm home set as: $HELM_HOME"
+fi

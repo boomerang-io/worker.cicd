@@ -1,14 +1,15 @@
 #!/bin/bash
 
-HELM_REPO_URL=$1
-CHART_NAME=$2
-CHART_RELEASE=$3
-CHART_VERSION=$4
-DEPLOY_KUBE_VERSION=$5
-DEPLOY_KUBE_NAMESPACE=$6
-DEPLOY_KUBE_HOST=$7
-GIT_REF=$8
-DEPLOY_HELM_TLS=$9
+DEPLOY_TYPE=$1
+HELM_REPO_URL=$2
+CHART_NAME=$3
+CHART_RELEASE=$4
+CHART_VERSION=$5
+DEPLOY_KUBE_VERSION=$6
+DEPLOY_KUBE_NAMESPACE=$7
+DEPLOY_KUBE_HOST=$8
+GIT_REF=$9
+DEPLOY_HELM_TLS=${10}
 if [ "$DEPLOY_HELM_TLS" == "undefined" ]; then
     DEPLOY_HELM_TLS=true
 fi
@@ -30,28 +31,21 @@ if [[ ! "$GIT_REF" =~ "refs/tags/" ]]; then
 fi
 
 export KUBE_HOME=~/.kube
-export HELM_HOME=~/.helm
 BIN_HOME=/usr/local/bin
 KUBE_CLI=$BIN_HOME/kubectl
 
-# NOTE
-# THe following variables are shared across helm related scripts for deploy step
-HELM_VERSION=v2.12.1
-HELM_CHART_VERSION_COL=3 #the column output of helm list changed
-if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
-    HELM_VERSION=v2.12.3
-fi
-echo "   ↣ Helm version set at: $HELM_VERSION"
-# END
-
-# THe following variables are shared across helm related scripts for deploy step
-# ch_helm_tls_string
-HELM_TLS_STRING=
-if [[ $DEPLOY_HELM_TLS == "true" ]]; then
-    HELM_TLS_STRING='--tls'
-    echo "   ↣ Helm TLS parameters configured as: $HELM_TLS_STRING"
-else
-    echo "   ↣ Helm TLS disabled, skipping configuration..."
+HELM_TLS_STRING=''
+if [ "$DEPLOY_TYPE" == "helm" ]; then
+    # Bug fix for custom certs and re initializing helm home
+    export HELM_HOME=/tmp/.helm
+    echo "   ↣ Helm home set as: $HELM_HOME"
+    # export HELM_HOME=$(helm home)
+    if [[ $DEPLOY_HELM_TLS == "true" ]]; then
+        HELM_TLS_STRING='--tls'
+        echo "   ↣ Helm TLS parameters configured as: $HELM_TLS_STRING"
+    else
+        echo "   ↣ Helm TLS disabled, skipping configuration..."
+    fi
 fi
 
 DEBUG_OPTS=
@@ -65,8 +59,6 @@ else
     unset DEBUG
 fi
 
-# Bug fix for custom certs and re initializing helm home
-export HELM_HOME=$(helm home)
 # Set the exit status $? to the exit code of the last program to exit non-zero (or zero if all exited successfully)
 set -o pipefail
 
@@ -75,8 +67,14 @@ helm repo add boomerang-charts $HELM_REPO_URL && helm repo update
 # Chart Name is blank. Chart Release is now required to fetch chart name.
 if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
     echo "Auto detecting chart name..."
-    CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk -v COL=$HELM_CHART_VERSION_COL '{print $COL}' | cut -d '-' -f 2- | rev`
-    if [ $? -ne 0 ]; then exit 92; fi
+    # This is needed as helm3 uses --filter
+    if [ "$DEPLOY_TYPE" == "helm3" ]; then
+        CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
+        if [ $? -ne 0 ]; then exit 92; fi
+    else
+        CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
+        if [ $? -ne 0 ]; then exit 92; fi
+    fi
 elif [ -z "$CHART_NAME" ] && [ -z "$CHART_RELEASE" ]; then
     exit 92
 fi
@@ -95,7 +93,6 @@ fi
 echo "Chart Release: $CHART_RELEASE"
 
 echo "Retrieving current chart values..."
-
 helm get values -a $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context $CHART_RELEASE > values.yaml
 if [ $? -ne 0 ]; then exit 91; fi
 

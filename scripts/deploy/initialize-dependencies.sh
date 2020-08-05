@@ -40,11 +40,10 @@ if [ "$DEBUG" == "true" ]; then
     less /etc/hosts
 fi
 
-if [ "$DEPLOY_TYPE" == "helm" ] || [ "$DEPLOY_TYPE" == "kubernetes" ]; then
+if [ "$DEPLOY_TYPE" == "helm" ] || [ "$DEPLOY_TYPE" == "helm3" ] || [ "$DEPLOY_TYPE" == "kubernetes" ]; then
     echo " ⋯ Configuring Kubernetes..."
     echo
     export KUBE_HOME=~/.kube
-    export HELM_HOME=~/.helm
     BIN_HOME=/usr/local/bin
     KUBE_CLI=$BIN_HOME/kubectl
     if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
@@ -85,69 +84,12 @@ if [ "$DEPLOY_TYPE" == "helm" ] || [ "$DEPLOY_TYPE" == "kubernetes" ]; then
 fi
 
 if [ "$DEPLOY_TYPE" == "helm" ]; then
-    echo " ⋯ Configuring Helm..."
-    echo
-    # Forked from reference: https://github.ibm.com/ICP-DevOps/build-harness/blob/master/modules/helm/Makefile
+    source /cli/scripts/common/initialize-dependencies-helm.sh $DEPLOY_TYPE
 
-    # NOTE
-    # The following variables are shared across helm related scripts for deploy step
-    HELM_VERSION=v2.12.1
-    HELM_CHART_VERSION_COL=3 #the column output of helm list changed
-    if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
-        HELM_VERSION=v2.12.3
-        HELM_CHART_VERSION_COL=3 #the column output of helm list changed
-    fi
-    # END
-
-    HELM_PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')
-    HELM_ARCH=$(uname -m | sed 's/x86_64/amd64/g')
-    HELM_URL=https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-$HELM_PLATFORM-$HELM_ARCH.tar.gz
-    HELM_CLI=$BIN_HOME/helm
-    echo "   ⋯ Installing Helm $HELM_VERSION ($HELM_PLATFORM-$HELM_ARCH) from $HELM_URL"
-    curl --progress-bar -fL -o /tmp/helm.tar.gz --retry 5 $HELM_URL
-    tar xzf /tmp/helm.tar.gz -C /tmp
-    mv /tmp/$HELM_PLATFORM-$HELM_ARCH/helm $HELM_CLI
-    rm -f /tmp/helm.tar.gz
-    rm -rf /tmp/$HELM_PLATFORM-$HELM_ARCH
-    $HELM_CLI version --client --short
-    RESULT=$?
-    if [ $RESULT -ne 0 ] ; then
-        echo
-        echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
-        echo
-        exit 1
-    fi
-    echo "   ↣ Helm installed."
-
-    echo "   ⋯ Initializing Helm"
-    # if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
-        $HELM_CLI init --client-only --skip-refresh
-    # else
-    #     $HELM_CLI init --client-only --skip-refresh --home $HELM_RESOURCE_PATH
-    # fi
-
-    echo "   ↣ Helm home set as: $(helm home)"
-
-    # THe following variables are shared across helm related scripts for deploy step
-    # ch_helm_tls_string
-    HELM_RESOURCE_PATH=
-    HELM_TLS_STRING=
     if [[ $DEPLOY_HELM_TLS == "true" ]]; then
         echo "   ⋯ Configuring Helm TLS..."
-        # if [[ "$DEPLOY_KUBE_VERSION" =~ 1.[0-9]+.[0-9]+ ]]; then
         HELM_TLS_STRING='--tls'
-        # else
-        #     HELM_RESOURCE_PATH="/tmp/.helm"
-        #     mkdir -p $HELM_RESOURCE_PATH
-        #     HELM_TLS_STRING="--tls --tls-ca-cert $HELM_RESOURCE_PATH/ca.crt --tls-cert $HELM_RESOURCE_PATH/admin.crt --tls-key $HELM_RESOURCE_PATH/admin.key"
-        # fi
         echo "   ↣ Helm TLS parameters configured as: $HELM_TLS_STRING"
-    else
-        echo "   ↣ Helm TLS disabled, skipping configuration..."
-    fi
-
-    if [[ $DEPLOY_HELM_TLS == "true" ]]; then
-        export HELM_HOME=$(helm home)
         set -o pipefail
         echo "   ⋯ Retrieving Cluster CA certs from cluster..."
         $KUBE_CLI -n kube-system get secret cluster-ca-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > $HELM_HOME/ca.pem
@@ -161,14 +103,20 @@ if [ "$DEPLOY_TYPE" == "helm" ]; then
         # Sleep is required otherwise sometimes the certificate is created prior to the service clock if there is time draft on target server.
         sleep 10
         echo "   ↣ Helm TLS configured."
-    fi
 
-    if [ "$DEBUG" == "true" ]; then
-        echo "Listing Helm home folder"
-        ls -ltr $HELM_HOME
-        less $HELM_HOME/ca.pem
-        less $HELM_HOME/cert.pem
-        less $HELM_HOME/key.pem
-        echo "Cert.pem Date Time: $(openssl x509 -noout -dates -in $HELM_HOME/cert.pem)"
+        if [ "$DEBUG" == "true" ]; then
+            echo "Listing Helm home folder"
+            ls -ltr $HELM_HOME
+            less $HELM_HOME/ca.pem
+            less $HELM_HOME/cert.pem
+            less $HELM_HOME/key.pem
+            echo "Cert.pem Date Time: $(openssl x509 -noout -dates -in $HELM_HOME/cert.pem)"
+        fi
+    else
+        echo "   ↣ Helm TLS disabled, skipping configuration..."
     fi
+fi
+
+if [ "$DEPLOY_TYPE" == "helm3" ]; then
+    source /cli/scripts/common/initialize-dependencies-helm.sh $DEPLOY_TYPE
 fi
