@@ -165,8 +165,8 @@ do
   	        # These files are the same, and can be shipped
 			echo "  Previously shipped file."
 			rm -f $chartCurrentDir/$chartPackage
-        elif [[ `tar tvf $chartStableDir/$chartPackage | rev | cut -f1 -d' ' | rev | sort -k1 | grep -Ev '/charts/|requirements.lock' | xargs -i tar -xOf $chartStableDir/$chartPackage {} | sha1sum | cut -f1 -d' '` = \
-      		      `tar tvf $chartCurrentDir/$chartPackage | rev | cut -f1 -d' ' | rev | sort -k1 | grep -Ev '/charts/|requirements.lock' | xargs -i tar -xOf $chartCurrentDir/$chartPackage {} | sha1sum | cut -f1 -d' '` ]] ; then
+        elif [[ `tar tvf $chartStableDir/$chartPackage | rev | cut -f1 -d' ' | rev | sort -k1 | grep -Ev '/charts/|requirements.lock|Chart.lock' | xargs -i tar -xOf $chartStableDir/$chartPackage {} | sha1sum | cut -f1 -d' '` = \
+      		      `tar tvf $chartCurrentDir/$chartPackage | rev | cut -f1 -d' ' | rev | sort -k1 | grep -Ev '/charts/|requirements.lock|Chart.lock' | xargs -i tar -xOf $chartCurrentDir/$chartPackage {} | sha1sum | cut -f1 -d' '` ]] ; then
             echo "  Previously shipped version, with acceptable source change due to subchart version difference."
             rm -f $chartCurrentDir/$chartPackage
         else
