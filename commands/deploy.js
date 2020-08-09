@@ -27,9 +27,10 @@ module.exports = {
     try {
       shell.cd("/data");
 
-      if (taskProps["build.number.append"] === "false") {
-        log.ci("Stripping build number from version...");
+      if (taskProps["build.number.append"] === false) {
+        log.sys("Stripping build number from version...");
         taskProps["version.name"] = taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-"));
+        log.debug("  Version:", taskProps["version.name"]);
       }
 
       log.ci("Initializing Dependencies");
