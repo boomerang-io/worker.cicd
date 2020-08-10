@@ -28,6 +28,12 @@ module.exports = {
     var testTypes = taskProps["test.type"] !== undefined && taskProps["test.type"] !== null ? taskProps["test.type"].split(",") : [];
 
     try {
+      if (taskProps["build.number.append"] === false) {
+        log.sys("Stripping build number from version...");
+        taskProps["version.name"] = taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-"));
+        log.debug("  Version:", taskProps["version.name"]);
+      }
+
       if (!testTypes.length) {
         log.good("No test types specified.");
       } else {

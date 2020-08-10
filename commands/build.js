@@ -27,6 +27,12 @@ module.exports = {
     };
 
     try {
+      if (taskProps["build.number.append"] === false) {
+        log.sys("Stripping build number from version...");
+        taskProps["version.name"] = taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-"));
+        log.debug("  Version:", taskProps["version.name"]);
+      }
+
       await exec(shellDir + "/common/initialize.sh " + taskProps["language.version"]);
       log.ci("Initializing Dependencies");
       if (taskProps["system.mode"] === "lib.jar" || taskProps["system.mode"] === "java") {
