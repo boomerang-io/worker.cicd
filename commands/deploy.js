@@ -129,12 +129,13 @@ module.exports = {
             '"'
         );
       } else if (taskProps["deploy.type"] === "helm" || taskProps["deploy.type"] === "helm3") {
+        var helmRepoURL = taskProps["deploy.helm.repo.url"] !== undefined ? taskProps["deploy.helm.repo.url"] : taskProps["global/helm.repo.url"];
         await exec(
           shellDir +
             '/deploy/helm.sh "' +
             taskProps["deploy.type"] +
             '" "' +
-            taskProps["global/helm.repo.url"] +
+            helmRepoURL +
             '" "' +
             taskProps["deploy.helm.chart"] +
             '" "' +
