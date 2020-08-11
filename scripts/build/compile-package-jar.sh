@@ -47,6 +47,7 @@ EOL
         exit 89
     fi
 elif [ "$BUILD_TOOL" == "gradle" ]; then
+  export PATH=$PATH:/opt/gradle/gradle-$BUILD_TOOL_VERSION/bin
   mkdir -p ~/.gradle
   cat >> ~/.gradle/gradle.properties <<EOL
 artifactoryUser=$ART_REPO_USER
