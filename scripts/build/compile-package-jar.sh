@@ -11,6 +11,7 @@ ART_URL=$4
 ART_REPO_ID=$5
 ART_REPO_USER=$6
 ART_REPO_PASSWORD=$7
+ART_URL_BASE=$8
 ART_REPO_HOME=~/.m2/repository
 if [ -d "/cache" ]; then
     echo "Setting cache..."
@@ -46,8 +47,27 @@ EOL
         exit 89
     fi
 elif [ "$BUILD_TOOL" == "gradle" ]; then
-    echo "Gradle has not yet been implemented for this mode. Please speak to your DevOps representative."
-    exit 1
+  export PATH=$PATH:/opt/gradle/gradle-$BUILD_TOOL_VERSION/bin
+  mkdir -p ~/.gradle
+  cat >> ~/.gradle/gradle.properties <<EOL
+artifactoryUser=$ART_REPO_USER
+artifactoryPassword=$ART_REPO_PASSWORD
+artifactoryContextUrl=$ART_URL_BASE
+artifactoryRepoKey=$ART_REPO_ID
+componentVersion=$VERSION_NAME
+EOL
+  cat ~/.gradle/gradle.properties
+  if [ "$HTTP_PROXY" != "" ]; then
+      # Swap , for |
+      GRADLE_PROXY_IGNORE=`echo "$NO_PROXY" | sed -e 's/ //g' -e 's/\"\,\"/\|/g' -e 's/\,\"/\|/g' -e 's/\"$//' -e 's/\,/\|/g'`
+      export GRADLE_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts='$GRADLE_PROXY_IGNORE' -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT -Dhttps.nonProxyHosts='$GRADLE_PROXY_IGNORE'"
+  fi
+  echo "GRADLE_OPTS=$GRADLE_OPTS"
+  gradle clean artifactoryPublish
+  RESULT=$?
+  if [ $RESULT -ne 0 ] ; then
+      exit 89
+  fi
 else
     echo "ERROR: no build tool specified."
     exit 1
