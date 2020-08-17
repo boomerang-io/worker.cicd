@@ -152,6 +152,8 @@ module.exports = {
             taskProps["deploy.kube.host"] +
             '" "' +
             taskProps["deploy.helm.tls"] +
+            '" "' +
+            taskProps["global/helm.repo.url"] +
             '"'
         );
       } else if (taskProps["deploy.type"] === "containerRegistry") {
