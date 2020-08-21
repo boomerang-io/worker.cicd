@@ -101,7 +101,7 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
         if [ "$DEPLOY_TYPE" == "helm3" ]; then
             # CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
             # CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq read - [chart==$BMRG_CHART*].name`
-            CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq read - [chart==$BMRG_CHART*].name`
+            CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq read - '(chart==bmrg-cicd*).name'`
             if [ $? -ne 0 ]; then exit 94; fi
         else
             CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
