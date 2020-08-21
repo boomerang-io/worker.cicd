@@ -68,7 +68,8 @@ if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
     echo "Auto detecting chart name..."
     # This is needed as helm3 uses --filter
     if [ "$DEPLOY_TYPE" == "helm3" ]; then
-        CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
+        # CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
+        CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq read - .chart | rev | cut -d '-' -f 2- | rev`
         if [ $? -ne 0 ]; then exit 92; fi
     else
         CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
@@ -97,8 +98,14 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
     if [[ -z "$CHART_RELEASE" ]] && [ ! -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         echo "Auto detecting chart release..."
         echo "Note: This only works if there is only one release of the chart in the provided namespace."
-        CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
-        if [ $? -ne 0 ]; then HELM_CHARTS_EXITCODE=94; fi
+        if [ "$DEPLOY_TYPE" == "helm3" ]; then
+            # CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
+            CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq - [chart==$CHART*].name`
+            if [ $? -ne 0 ]; then exit 94; fi
+        else
+            CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
+            if [ $? -ne 0 ]; then HELM_CHARTS_EXITCODE=94; fi
+        fi
     elif [ -z "$CHART_RELEASE" ] && [ -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         HELM_CHARTS_EXITCODE=93
     fi
@@ -106,7 +113,8 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
         echo "Current Chart Release: $CHART_RELEASE"
         # This is needed as helm3 uses --filter
         if [ "$DEPLOY_TYPE" == "helm3" ]; then
-            CHART_VERSION=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $2}' | cut -d '-' -f 1 | rev`
+            # CHART_VERSION=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $2}' | cut -d '-' -f 1 | rev`
+            CHART_VERSION=`helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq read - .chart | rev | cut -d '-' -f 1 | rev`
             if [ $? -ne 0 ]; then exit 94; fi
         else
             CHART_VERSION=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 1 | rev`
