@@ -69,7 +69,7 @@ if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
     # This is needed as helm3 uses --filter
     if [ "$DEPLOY_TYPE" == "helm3" ]; then
         # CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
-        CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq read - .chart | rev | cut -d '-' -f 2- | rev`
+        CHART_NAME=`helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq read - .chart | rev | cut -d '-' -f 2- | rev`
         if [ $? -ne 0 ]; then exit 92; fi
     else
         CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
@@ -100,7 +100,8 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
         echo "Note: This only works if there is only one release of the chart in the provided namespace."
         if [ "$DEPLOY_TYPE" == "helm3" ]; then
             # CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
-            CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq - [chart==$CHART*].name`
+            # CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq read - [chart==$BMRG_CHART*].name`
+            CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq read - [chart==$BMRG_CHART*].name`
             if [ $? -ne 0 ]; then exit 94; fi
         else
             CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
