@@ -5,13 +5,13 @@
 IMAGE_NAME=`echo $1 | tr '[:upper:]' '[:lower:]'`
 VERSION_NAME=$2
 TEAM_NAME=$3
-IMAGE_ORG=`echo $TEAM_NAME | sed 's/[^a-zA-Z0-0]//g' | tr '[:upper:]' '[:lower:]'`
+IMAGE_ORG=`echo $TEAM_NAME | sed 's/[^a-zA-Z0-9]//g' | tr '[:upper:]' '[:lower:]'`
 # Registry Host will potentially required a NO_PROXY entry in the controller service
 DESTINATION_REGISTRY_HOST=`echo $4 | sed 's/"//g'`
 DESTINATION_REGISTRY_PORT=$5
 DESTINATION_REGISTRY_USER=$6
 DESTINATION_REGISTRY_PASSWORD=$7
-# DESTINATION_REGISTRY_IMAGE_PREFIX=`echo $8 | sed 's/[^a-zA-Z0-0]//g' | tr '[:upper:]' '[:lower:]'`
+# DESTINATION_REGISTRY_IMAGE_PREFIX=`echo $8 | sed 's/[^a-zA-Z0-9]//g' | tr '[:upper:]' '[:lower:]'`
 DESTINATION_REGISTRY_IMAGE_PATH=$8
 GLOBAL_REGISTRY_HOST=`echo $9 | sed 's/"//g'`
 GLOBAL_REGISTRY_PORT=${10}
