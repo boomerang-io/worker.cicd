@@ -71,7 +71,7 @@ fi
 IMG_STATE=/data/img
 mkdir -p $IMG_STATE
 if  [ -f "$DOCKER_FILE" ]; then
-    /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME -o type=tar,dest=$IMAGE_NAME_$VERSION_NAME.tar $IMG_OPTS --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY --build-arg ART_USER=$ART_USER --build-arg ART_PASSWORD=$ART_PASSWORD --build-arg ART_URL=$ART_URL $DOCKERFILE_OPTS .
+    /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME -o "type=docker,dest=$IMAGE_NAME_$VERSION_NAME.tar" $IMG_OPTS --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY --build-arg ART_USER=$ART_USER --build-arg ART_PASSWORD=$ART_PASSWORD --build-arg ART_URL=$ART_URL $DOCKERFILE_OPTS .
     # /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME $IMG_OPTS --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY --build-arg ART_USER=$ART_USER --build-arg ART_PASSWORD=$ART_PASSWORD --build-arg ART_URL=$ART_URL $DOCKERFILE_OPTS .
     RESULT=$?
     if [ $RESULT -ne 0 ] ; then
@@ -94,10 +94,15 @@ if [ "$DEBUG" == "true" ]; then
     /opt/bin/img du
     df -h
     ls -lhtr $IMAGE_NAME_$VERSION_NAME.tar
+    # ls -ltr
     # ping -c 3 $GLOBAL_REGISTRY_HOST
 fi
 
 skopeo $SKOPEO_OPTS copy --dest-tls-verify=false docker-archive:$IMAGE_NAME_$VERSION_NAME.tar docker://"$GLOBAL_REGISTRY_HOST:$GLOBAL_REGISTRY_PORT/$IMAGE_ORG/$IMAGE_NAME:$VERSION_NAME"
+RESULT=$?
+if [ $RESULT -ne 0 ] ; then
+    exit 90
+fi
 # skopeo $SKOPEO_OPTS copy --dest-tls-verify=false docker://"$IMAGE_NAME:$VERSION_NAME" docker://"$GLOBAL_REGISTRY_HOST:$GLOBAL_REGISTRY_PORT/$IMAGE_ORG/$IMAGE_NAME:$VERSION_NAME"
 
 if [ "$DEBUG" == "true" ]; then
