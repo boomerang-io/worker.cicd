@@ -168,6 +168,16 @@ module.exports = {
                 .toString()
                 .replace(/[^a-zA-Z0-9\-]/g, "")
                 .toLowerCase();
+        var dockerImagePath =
+          taskProps["docker.image.path"] !== undefined
+            ? taskProps["docker.image.path"]
+                .toString()
+                .replace(/[^a-zA-Z0-9\-]/g, "")
+                .toLowerCase()
+            : taskProps["team.name"]
+                .toString()
+                .replace(/[^a-zA-Z0-9\-]/g, "")
+                .toLowerCase();
         await exec(
           shellDir +
             "/build/package-docker.sh " +
@@ -175,7 +185,7 @@ module.exports = {
             " " +
             taskProps["version.name"] +
             " " +
-            JSON.stringify(taskProps["team.name"]) +
+            dockerImagePath +
             " " +
             JSON.stringify(taskProps["global/container.registry.host"]) +
             " " +
