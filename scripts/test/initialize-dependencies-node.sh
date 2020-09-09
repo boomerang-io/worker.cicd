@@ -3,14 +3,7 @@
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Build Artifact '; printf '%.0s-' {1..30}; printf '\n\n' )
 
 BUILD_TOOL=$1
-TEST_SCRIPT=$2
-if [ "$TEST_SCRIPT" == "undefined" ]; then
-    echo "Defaulting npm script to 'test'..."
-    TEST_SCRIPT=build
-else
-    echo "Setting npm script to $TEST_SCRIPT..."
-fi
-CYPRESS_INSTALL_BINARY=$3
+CYPRESS_INSTALL_BINARY=$2
 
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then

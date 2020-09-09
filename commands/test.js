@@ -141,7 +141,7 @@ module.exports = {
           }
         } else if (taskProps["system.mode"] === "nodejs") {
           log.debug("Install nodejs dependencies");
-          await exec(shellDir + "/test/initialize-dependencies-node.sh " + taskProps["build.tool"] + " " + taskProps["node.package.script"] + " " + taskProps["node.cypress.install.binary"]);
+          await exec(shellDir + "/test/initialize-dependencies-node.sh " + taskProps["build.tool"] + " " + taskProps["node.cypress.install.binary"]);
           if (testTypes.includes("static")) {
             log.debug("Commencing static tests");
             await exec(shellDir + "/test/static-node.sh " + taskProps["build.tool"] + " " + taskProps["version.name"] + " " + taskProps["global/sonar.url"] + " " + taskProps["global/sonar.api.key"] + " " + taskProps["system.component.id"] + " " + taskProps["system.component.name"]);
