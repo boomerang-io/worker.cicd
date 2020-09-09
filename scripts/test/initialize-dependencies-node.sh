@@ -15,7 +15,7 @@ CYPRESS_INSTALL_BINARY=$3
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
     echo "Enabling debug logging..."
-    DEBUG_OPTS+=""
+    DEBUG_OPTS+="--verbose"
 fi
 
 if [ "$CYPRESS_INSTALL_BINARY" == "undefined" ]; then

@@ -4,16 +4,22 @@
 
 BUILD_TOOL=$1
 
+DEBUG_OPTS=
+if [ "$DEBUG" == "true" ]; then
+    echo "Enabling debug logging..."
+    DEBUG_OPTS+="--verbose"
+fi
+
 if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
     if [ -e 'yarn.lock' ]; then
         echo "Running YARN install..."
-        yarn install
+        yarn install DEBUG_OPTS
     elif [ -e 'package-lock.json' ]; then
         echo "Running NPM ci..."
-        npm ci
+        npm ci DEBUG_OPTS
     else
         echo "Running NPM install..."
-        npm install
+        npm install DEBUG_OPTS
     fi
 else
     exit 99
