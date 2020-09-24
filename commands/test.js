@@ -44,7 +44,7 @@ module.exports = {
       verbose: true,
     };
 
-    const testTypes = Array.isArray(taskProps["test.type"]) ? taskProps["test.type"].split(",") : [];
+    const testTypes = typeof taskProps["test.type"] === "string" ? taskProps["test.type"].split(",") : [];
     const componentMode = taskProps["system.mode"];
 
     try {
