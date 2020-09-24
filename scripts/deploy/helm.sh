@@ -141,7 +141,7 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
                 OUTPUT=$(helm upgrade $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --reuse-values --set $HELM_IMAGE_KEY=$VERSION_NAME --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART)
                 RESULT=$?
                 if [ $RESULT -ne 0 ]; then 
-                    if [[ $OUTPUT =~ "UPGRADE FAILED: timed out" ]]; then
+                    if [[ $OUTPUT =~ "timed out" ]]; then
                         echo "Time out reached. Retrying..."
                         sleep $SLEEP
                         continue
