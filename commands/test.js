@@ -102,7 +102,7 @@ module.exports = {
           if (testTypes.includes(TestType.Unit)) {
             log.debug("Commencing unit tests");
             await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
-            await exec(`${shellDir}/test/unit-java.sh ${taskProps["build.tool"]} ${taskProps["build.tool"]} ${taskProps["version.name"]} ${taskProps["global/sonar.url"]} ${taskProps["global/sonar.api.key"]} ${taskProps["system.component.id"]} ${taskProps["system.component.name"]}`);
+            await exec(`${shellDir}/test/unit-java.sh ${taskProps["build.tool"]} ${taskProps["version.name"]} ${taskProps["global/sonar.url"]} ${taskProps["global/sonar.api.key"]} ${taskProps["system.component.id"]} ${taskProps["system.component.name"]}`);
           }
           if (testTypes.includes(TestType.Security)) {
             log.debug("Commencing security tests");
