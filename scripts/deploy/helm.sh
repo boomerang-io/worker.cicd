@@ -79,6 +79,7 @@ elif [ -z "$CHART_NAME" ] && [ -z "$CHART_RELEASE" ]; then
     exit 92
 fi
 
+echo "Chart Namespace: $DEPLOY_KUBE_NAMESPACE"
 echo "Chart Name(s): $CHART_NAME"
 echo "Chart Image Tag: $HELM_IMAGE_KEY"
 echo "Chart Image Version: $VERSION_NAME"
@@ -102,7 +103,7 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
             # CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
             # CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq read - [chart==$CHART*].name`
             CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq read - [chart==$CHART*].name`
-            if [ $? -ne 0 ]; then exit 94; fi
+            if [ $? -ne 0 ]; then echo "No Helm 3 chart release found in namespace: $DEPLOY_KUBE_NAMESPACE" && exit 94; fi
         else
             CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
             if [ $? -ne 0 ]; then HELM_CHARTS_EXITCODE=94; fi
