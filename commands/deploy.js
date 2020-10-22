@@ -2,10 +2,10 @@ const { log, utils, CICDError, common } = require("@boomerang-io/worker-core");
 const shell = require("shelljs");
 
 function exec(command) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     log.debug("Command directory:", shell.pwd().toString());
     log.debug("Command to execute:", command);
-    shell.exec(command, config, function(code, stdout, stderr) {
+    shell.exec(command, config, function (code, stdout, stderr) {
       if (code) {
         reject(new CICDError(code, stderr));
       }
@@ -36,20 +36,20 @@ module.exports = {
       log.ci("Initializing Dependencies");
       await exec(
         shellDir +
-          "/deploy/initialize-dependencies.sh " +
-          taskProps["deploy.type"] +
-          " " +
-          taskProps["deploy.kube.version"] +
-          " " +
-          taskProps["deploy.kube.namespace"] +
-          " " +
-          taskProps["deploy.kube.host"] +
-          " " +
-          taskProps["deploy.kube.ip"] +
-          " " +
-          taskProps["deploy.kube.token"] +
-          " " +
-          taskProps["deploy.helm.tls"]
+        "/deploy/initialize-dependencies.sh " +
+        taskProps["deploy.type"] +
+        " " +
+        taskProps["deploy.kube.version"] +
+        " " +
+        taskProps["deploy.kube.namespace"] +
+        " " +
+        taskProps["deploy.kube.host"] +
+        " " +
+        taskProps["deploy.kube.ip"] +
+        " " +
+        taskProps["deploy.kube.token"] +
+        " " +
+        taskProps["deploy.helm.tls"]
       );
 
       if (taskProps["deploy.git.clone"]) {
@@ -106,91 +106,101 @@ module.exports = {
       } else if (taskProps["deploy.type"] === "helm" && taskProps["system.mode"] === "helm.chart") {
         await exec(
           shellDir +
-            '/deploy/helm-chart.sh "' +
-            taskProps["deploy.type"] +
-            '" "' +
-            JSON.stringify(taskProps["global/helm.repo.url"]) +
-            '" "' +
-            taskProps["deploy.helm.chart"] +
-            '" "' +
-            taskProps["deploy.helm.release"] +
-            '" "' +
-            taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-")) +
-            '" "' +
-            taskProps["deploy.kube.version"] +
-            '" "' +
-            taskProps["deploy.kube.namespace"] +
-            '" "' +
-            taskProps["deploy.kube.host"] +
-            '" "' +
-            taskProps["git.ref"] +
-            '" "' +
-            taskProps["deploy.helm.tls"] +
-            '"'
+          '/deploy/helm-chart.sh "' +
+          taskProps["deploy.type"] +
+          '" "' +
+          JSON.stringify(taskProps["global/helm.repo.url"]) +
+          '" "' +
+          taskProps["deploy.helm.chart"] +
+          '" "' +
+          taskProps["deploy.helm.release"] +
+          '" "' +
+          taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-")) +
+          '" "' +
+          taskProps["deploy.kube.version"] +
+          '" "' +
+          taskProps["deploy.kube.namespace"] +
+          '" "' +
+          taskProps["deploy.kube.host"] +
+          '" "' +
+          taskProps["git.ref"] +
+          '" "' +
+          taskProps["deploy.helm.tls"] +
+          '"'
         );
       } else if (taskProps["deploy.type"] === "helm" || taskProps["deploy.type"] === "helm3") {
         var helmRepoURL = taskProps["deploy.helm.repo.url"] !== undefined ? taskProps["deploy.helm.repo.url"] : taskProps["global/helm.repo.url"];
         await exec(
           shellDir +
-            '/deploy/helm.sh "' +
-            taskProps["deploy.type"] +
-            '" "' +
-            helmRepoURL +
-            '" "' +
-            taskProps["deploy.helm.chart"] +
-            '" "' +
-            taskProps["deploy.helm.release"] +
-            '" "' +
-            taskProps["helm.image.tag"] +
-            '" "' +
-            taskProps["version.name"] +
-            '" "' +
-            taskProps["deploy.kube.version"] +
-            '" "' +
-            taskProps["deploy.kube.namespace"] +
-            '" "' +
-            taskProps["deploy.kube.host"] +
-            '" "' +
-            taskProps["deploy.helm.tls"] +
-            '" "' +
-            taskProps["global/helm.repo.url"] +
-            '"'
+          '/deploy/helm.sh "' +
+          taskProps["deploy.type"] +
+          '" "' +
+          helmRepoURL +
+          '" "' +
+          taskProps["deploy.helm.chart"] +
+          '" "' +
+          taskProps["deploy.helm.release"] +
+          '" "' +
+          taskProps["helm.image.tag"] +
+          '" "' +
+          taskProps["version.name"] +
+          '" "' +
+          taskProps["deploy.kube.version"] +
+          '" "' +
+          taskProps["deploy.kube.namespace"] +
+          '" "' +
+          taskProps["deploy.kube.host"] +
+          '" "' +
+          taskProps["deploy.helm.tls"] +
+          '" "' +
+          taskProps["global/helm.repo.url"] +
+          '"'
         );
       } else if (taskProps["deploy.type"] === "containerRegistry") {
         var dockerImageName =
           taskProps["docker.image.name"] !== undefined
             ? taskProps["docker.image.name"]
             : taskProps["system.component.name"]
-                .toString()
-                .replace(/[^a-zA-Z0-9\-]/g, "")
-                .toLowerCase();
+              .toString()
+              .replace(/[^a-zA-Z0-9\-]/g, "")
+              .toLowerCase();
+        var dockerImagePath =
+          taskProps["docker.image.path"] !== undefined
+            ? taskProps["docker.image.path"]
+              .toString()
+              .replace(/[^a-zA-Z0-9\-]/g, "")
+              .toLowerCase()
+            : taskProps["team.name"]
+              .toString()
+              .replace(/[^a-zA-Z0-9\-]/g, "")
+              .toLowerCase();
         await exec(
           shellDir +
-            '/deploy/containerregistry.sh "' +
-            dockerImageName +
-            '" "' +
-            taskProps["version.name"] +
-            '" "' +
-            taskProps["team.name"] +
-            '" "' +
-            JSON.stringify(taskProps["deploy.container.registry.host"]) +
-            '" "' +
-            taskProps["deploy.container.registry.port"] +
-            '" "' +
-            taskProps["deploy.container.registry.user"] +
-            '" "' +
-            taskProps["deploy.container.registry.password"] +
-            '" "' +
-            taskProps["deploy.container.registry.path"] +
-            '" "' +
-            JSON.stringify(taskProps["global/container.registry.host"]) +
-            '" "' +
-            taskProps["global/container.registry.port"] +
-            '" "' +
-            taskProps["global/container.registry.user"] +
-            '" "' +
-            taskProps["global/container.registry.password"] +
-            '"'
+          '/deploy/containerregistry.sh "' +
+          dockerImageName +
+          '" "' +
+          taskProps["version.name"] +
+          '" "' +
+          dockerImagePath +
+          '" "' +
+          JSON.stringify(taskProps["deploy.container.registry.host"]) +
+          '" "' +
+          taskProps["deploy.container.registry.port"] +
+          '" "' +
+          taskProps["deploy.container.registry.user"] +
+          '" "' +
+          taskProps["deploy.container.registry.password"] +
+          '" "' +
+          taskProps["deploy.container.registry.path"] +
+          '" "' +
+          JSON.stringify(taskProps["global/container.registry.host"]) +
+          '" "' +
+          taskProps["global/container.registry.port"] +
+          '" "' +
+          taskProps["global/container.registry.user"] +
+          '" "' +
+          taskProps["global/container.registry.password"] +
+          '"'
         );
       }
     } catch (e) {
