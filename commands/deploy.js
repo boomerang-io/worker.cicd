@@ -99,15 +99,9 @@ module.exports = {
         var kubeFiles = await common.replaceTokensInFileWithProps(kubePath, kubeFile, "@", "@", taskProps, "g", "g", true);
         log.sys("Kubernetes files: ", kubeFiles);
         await exec(`${shellDir}/deploy/kubernetes.sh "${kubeFiles}"`);
-<<<<<<< HEAD
-      } else if (taskProps["deploy.type"] === ComponentMode.Helm && taskProps["system.mode"] === "helm.chart") {
-        await exec(`${shellDir}/deploy/helm-chart.sh "${taskProps["deploy.type"]}" "${JSON.stringify(taskProps["global/helm.repo.url"])}" "${taskProps["deploy.helm.chart"]}" "${taskProps["deploy.helm.release"]}" "${taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-"))}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["git.ref"]}" "${taskProps["deploy.helm.tls"]}"`);
-      } else if (taskProps["deploy.type"] === ComponentMode.Helm || taskProps["deploy.type"] === ComponentMode.Helm3) {
-=======
       } else if (deployType === ComponentMode.Helm && taskProps["system.mode"] === "helm.chart") {
         await exec(`${shellDir}/deploy/helm-chart.sh "${taskProps["deploy.type"]}" "${JSON.stringify(taskProps["global/helm.repo.url"])} "${taskProps["deploy.helm.chart"]}" "${taskProps["deploy.helm.release"]}" "${taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-"))}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["git.ref"]}" "${taskProps["deploy.helm.tls"]}"`);
       } else if (deployType === ComponentMode.Helm || taskProps["deploy.type"] === ComponentMode.Helm3) {
->>>>>>> Updated deployType as a property based on review comments
         var helmRepoURL = taskProps["deploy.helm.repo.url"] !== undefined ? taskProps["deploy.helm.repo.url"] : taskProps["global/helm.repo.url"];
         await exec(`${shellDir}/deploy/helm.sh "${taskProps["deploy.type"]}" "${helmRepoURL}" "${taskProps["deploy.helm.chart"]}" "${taskProps["deploy.helm.release"]}" "${taskProps["helm.image.tag"]}" "${taskProps["version.name"]}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["deploy.helm.tls"]}" "${taskProps["global/helm.repo.url"]}"`);
       } else if (deployType === ComponentMode.ContainerRegistry) {
