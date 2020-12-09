@@ -43,7 +43,7 @@ else
     CUSTOM_DOCKER_SERVER="$CUSTOM_REGISTRY_HOST"
 fi
 # Log into custom repository if needed
-if [ "$CUSTOM_REGISTRY_USER" != "undefined" ] || [ ! -z "$DESTINATION_REGISTRY_PASSWORD" ]; then
+if [ "$CUSTOM_REGISTRY_USER" != "undefined" ] || [ ! -z "$CUSTOM_REGISTRY_PASSWORD" ]; then
     echo "Logging into Custom Container Registry ($CUSTOM_DOCKER_SERVER)..."
     /opt/bin/img login $IMG_OPTS -u=$CUSTOM_REGISTRY_USER -p=$CUSTOM_REGISTRY_PASSWORD "$CUSTOM_DOCKER_SERVER"
 else
