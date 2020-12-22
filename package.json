@@ -7,8 +7,8 @@
   "author": "Tyson Lawrie <twlawrie@us.ibm.com>",
   "license": "MIT",
   "dependencies": {
-    "@boomerang-io/worker-cli": "^0.7.6",
-    "@boomerang-io/worker-core": "^0.6.3",
+    "@boomerang-io/worker-cli": "^0.7.14",
+    "@boomerang-io/worker-core": "^0.9.0",
     "shelljs": "^0.8.3"
   },
   "scripts": {
