@@ -8,13 +8,13 @@ const ComponentMode = {
   Python: "python",
   Java: "java",
   Jar: "lib.jar",
-  Helm: "helm.chart",
+  Helm: "helm.chart"
 };
 
 const TestType = {
   Unit: "unit",
   Static: "static",
-  Security: "security",
+  Security: "security"
 };
 
 // Freeze so they can't be modified at runtime
@@ -22,10 +22,10 @@ Object.freeze(ComponentMode);
 Object.freeze(TestType);
 
 function exec(command) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     log.debug("Command directory:", shell.pwd().toString());
     log.debug("Command to execute:", command);
-    shell.exec(command, config, function (code, stdout, stderr) {
+    shell.exec(command, config, function(code, stdout, stderr) {
       if (code) {
         reject(new CICDError(code, stderr));
       }
@@ -38,10 +38,10 @@ module.exports = {
   async execute() {
     log.debug("Started CICD Test Activity");
 
-    const taskProps = utils.resolveCICDTaskInputProps();
+    const taskProps = utils.resolveCICDInputProperties();
     const shellDir = "/cli/scripts";
     config = {
-      verbose: true,
+      verbose: true
     };
 
     const testTypes = typeof taskProps["test.type"] === "string" ? taskProps["test.type"].split(",") : [];
@@ -107,11 +107,13 @@ module.exports = {
           if (testTypes.includes(TestType.Security)) {
             log.debug("Commencing security tests");
             await exec(
-              `${shellDir}/build/compile-java.sh ${taskProps["build.tool"]} ${taskProps["build.tool.version"]} ${taskProps["version.name"]} ${JSON.stringify(taskProps["global/maven.repo.url"])} ${taskProps["global/maven.repo.id"]} ${taskProps["global/artifactory.user"]} ${taskProps["global/artifactory.password"]
+              `${shellDir}/build/compile-java.sh ${taskProps["build.tool"]} ${taskProps["build.tool.version"]} ${taskProps["version.name"]} ${JSON.stringify(taskProps["global/maven.repo.url"])} ${taskProps["global/maven.repo.id"]} ${taskProps["global/artifactory.user"]} ${
+                taskProps["global/artifactory.password"]
               }`
             );
             await exec(
-              `${shellDir}/test/security-java.sh ${taskProps["system.component.name"]} ${taskProps["version.name"]} ${JSON.stringify(taskProps["global/asoc.repo.url"])} ${taskProps["global/asoc.repo.user"]} ${taskProps["global/asoc.repo.password"]} ${taskProps["global/asoc.app.id"]} ${taskProps["global/asoc.login.key.id"]
+              `${shellDir}/test/security-java.sh ${taskProps["system.component.name"]} ${taskProps["version.name"]} ${JSON.stringify(taskProps["global/asoc.repo.url"])} ${taskProps["global/asoc.repo.user"]} ${taskProps["global/asoc.repo.password"]} ${taskProps["global/asoc.app.id"]} ${
+                taskProps["global/asoc.login.key.id"]
               } ${taskProps["global/asoc.login.secret"]} ${taskProps["global/asoc.client.cli"]} ${taskProps["global/asoc.java.runtime"]} ${shellDir}`
             );
           }
@@ -129,7 +131,8 @@ module.exports = {
           if (testTypes.includes(TestType.Security)) {
             log.debug("Commencing security tests");
             await exec(
-              `${shellDir}/test/security-node.sh ${taskProps["system.component.name"]} ${taskProps["version.name"]} ${JSON.stringify(taskProps["global/asoc.repo.url"])} ${taskProps["global/asoc.repo.user"]} ${taskProps["global/asoc.repo.password"]} ${taskProps["global/asoc.app.id"]} ${taskProps["global/asoc.login.key.id"]
+              `${shellDir}/test/security-node.sh ${taskProps["system.component.name"]} ${taskProps["version.name"]} ${JSON.stringify(taskProps["global/asoc.repo.url"])} ${taskProps["global/asoc.repo.user"]} ${taskProps["global/asoc.repo.password"]} ${taskProps["global/asoc.app.id"]} ${
+                taskProps["global/asoc.login.key.id"]
               } ${taskProps["global/asoc.login.secret"]} ${taskProps["global/asoc.client.cli"]} ${taskProps["global/asoc.java.runtime"]} ${shellDir}`
             );
           }
@@ -159,5 +162,5 @@ module.exports = {
       await exec(`${shellDir}/common/footer.sh`);
       log.debug("Finished CICD Test Activity");
     }
-  },
+  }
 };

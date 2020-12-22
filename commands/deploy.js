@@ -5,7 +5,7 @@ const DeployTypes = {
   Kubernetes: "kubernetes",
   Helm: "helm",
   Helm3: "helm3",
-  ContainerRegistry: "containerRegistry",
+  ContainerRegistry: "containerRegistry"
 };
 
 const ComponentMode = {
@@ -13,7 +13,7 @@ const ComponentMode = {
   Python: "python",
   Java: "java",
   Jar: "lib.jar",
-  Helm: "helm.chart",
+  Helm: "helm.chart"
 };
 
 const SystemMode = {
@@ -24,7 +24,7 @@ const SystemMode = {
   Nodejs: "nodejs",
   Python: "python",
   Helm: "helm.chart",
-  Docker: "docker",
+  Docker: "docker"
 };
 
 // Freeze so they can't be modified at runtime
@@ -33,10 +33,10 @@ Object.freeze(ComponentMode);
 Object.freeze(SystemMode);
 
 function exec(command) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     log.debug("Command directory:", shell.pwd().toString());
     log.debug("Command to execute:", command);
-    shell.exec(command, config, function (code, stdout, stderr) {
+    shell.exec(command, config, function(code, stdout, stderr) {
       if (code) {
         reject(new CICDError(code, stderr));
       }
@@ -49,7 +49,7 @@ module.exports = {
   async execute() {
     log.debug("Started CICD Deploy Activity");
 
-    const taskProps = utils.resolveCICDTaskInputProps();
+    const taskProps = utils.resolveCICDInputProperties();
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
@@ -67,7 +67,9 @@ module.exports = {
       }
 
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/deploy/initialize-dependencies.sh "${taskProps["deploy.type"]}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["deploy.kube.ip"]}" "${taskProps["deploy.kube.token"]}" "${taskProps["deploy.helm.tls"]}"`);
+      await exec(
+        `${shellDir}/deploy/initialize-dependencies.sh "${taskProps["deploy.type"]}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["deploy.kube.ip"]}" "${taskProps["deploy.kube.token"]}" "${taskProps["deploy.helm.tls"]}"`
+      );
 
       if (taskProps["deploy.git.clone"]) {
         log.ci("Retrieving Source Code");
@@ -121,29 +123,39 @@ module.exports = {
         log.sys("Kubernetes files: ", kubeFiles);
         await exec(`${shellDir}/deploy/kubernetes.sh "${kubeFiles}"`);
       } else if (deployType === DeployTypes.Helm && taskProps["system.mode"] === "helm.chart") {
-        await exec(`${shellDir}/deploy/helm-chart.sh "${taskProps["deploy.type"]}" "${JSON.stringify(taskProps["global/helm.repo.url"])} "${taskProps["deploy.helm.chart"]}" "${taskProps["deploy.helm.release"]}" "${taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-"))}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["git.ref"]}" "${taskProps["deploy.helm.tls"]}"`);
+        await exec(
+          `${shellDir}/deploy/helm-chart.sh "${taskProps["deploy.type"]}" "${JSON.stringify(taskProps["global/helm.repo.url"])} "${taskProps["deploy.helm.chart"]}" "${taskProps["deploy.helm.release"]}" "${taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-"))}" "${
+            taskProps["deploy.kube.version"]
+          }" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["git.ref"]}" "${taskProps["deploy.helm.tls"]}"`
+        );
       } else if (deployType === DeployTypes.Helm || deployType === DeployTypes.Helm3) {
         var helmRepoURL = taskProps["deploy.helm.repo.url"] !== undefined ? taskProps["deploy.helm.repo.url"] : taskProps["global/helm.repo.url"];
-        await exec(`${shellDir}/deploy/helm.sh "${taskProps["deploy.type"]}" "${helmRepoURL}" "${taskProps["deploy.helm.chart"]}" "${taskProps["deploy.helm.release"]}" "${taskProps["helm.image.tag"]}" "${taskProps["version.name"]}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["deploy.helm.tls"]}" "${taskProps["global/helm.repo.url"]}"`);
+        await exec(
+          `${shellDir}/deploy/helm.sh "${taskProps["deploy.type"]}" "${helmRepoURL}" "${taskProps["deploy.helm.chart"]}" "${taskProps["deploy.helm.release"]}" "${taskProps["helm.image.tag"]}" "${taskProps["version.name"]}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["deploy.helm.tls"]}" "${taskProps["global/helm.repo.url"]}"`
+        );
       } else if (deployType === DeployTypes.ContainerRegistry) {
         var dockerImageName =
           taskProps["docker.image.name"] !== undefined
             ? taskProps["docker.image.name"]
             : taskProps["system.component.name"]
-              .toString()
-              .replace(/[^a-zA-Z0-9\-]/g, "")
-              .toLowerCase();
+                .toString()
+                .replace(/[^a-zA-Z0-9\-]/g, "")
+                .toLowerCase();
         var dockerImagePath =
           taskProps["docker.image.path"] !== undefined
             ? taskProps["docker.image.path"]
-              .toString()
-              .replace(/[^a-zA-Z0-9\-]/g, "")
-              .toLowerCase()
+                .toString()
+                .replace(/[^a-zA-Z0-9\-]/g, "")
+                .toLowerCase()
             : taskProps["team.name"]
-              .toString()
-              .replace(/[^a-zA-Z0-9\-]/g, "")
-              .toLowerCase();
-        await exec(`${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${taskProps["version.name"]}" "${dockerImagePath}" "${JSON.stringify(taskProps["deploy.container.registry.host"])}" "${taskProps["deploy.container.registry.port"]}" "${taskProps["deploy.container.registry.user"]}" "${taskProps["deploy.container.registry.password"]}" "${taskProps["deploy.container.registry.path"]}" "${JSON.stringify(taskProps["global/container.registry.host"])}" "${taskProps["global/container.registry.port"]}" "${taskProps["global/container.registry.user"]}" "${taskProps["global/container.registry.password"]}"`);
+                .toString()
+                .replace(/[^a-zA-Z0-9\-]/g, "")
+                .toLowerCase();
+        await exec(
+          `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${taskProps["version.name"]}" "${dockerImagePath}" "${JSON.stringify(taskProps["deploy.container.registry.host"])}" "${taskProps["deploy.container.registry.port"]}" "${taskProps["deploy.container.registry.user"]}" "${
+            taskProps["deploy.container.registry.password"]
+          }" "${taskProps["deploy.container.registry.path"]}" "${JSON.stringify(taskProps["global/container.registry.host"])}" "${taskProps["global/container.registry.port"]}" "${taskProps["global/container.registry.user"]}" "${taskProps["global/container.registry.password"]}"`
+        );
       }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
