@@ -24,29 +24,29 @@ module.exports = {
     // const { "version.name": versionName = '0.0.0', script } = taskProps;
     const shellDir = "/cli/scripts";
     // const shellDir = "./commands";
-    log.debug("  Version:", taskProps["version-name"]);
-    log.debug("  repoURL:", taskProps["repoUrl"]);
+    // log.debug("  Version:", taskProps["version-name"]);
+    // log.debug("  repoURL:", taskProps["repoUrl"]);
 
     try {
-      if (taskProps["build-number-append"] === false) {
-        log.sys("Stripping build number from version...");
-        taskProps["version-name"] = taskProps["version-name"].substr(0, taskProps["version-name"].lastIndexOf("-"));
-        log.debug("  Version:", taskProps["version-name"]);
-      }
+      //   if (taskProps["build-number-append"] === false) {
+      //     log.sys("Stripping build number from version...");
+      //     taskProps["version-name"] = taskProps["version-name"].substr(0, taskProps["version-name"].lastIndexOf("-"));
+      //     log.debug("  Version:", taskProps["version-name"]);
+      //   }
 
       log.ci("Retrieving Source Code...");
       await exec(
         shellDir +
           '/common/git-clone.sh "' +
-          utils.resolveInputParameters("git-private-key") +
+          utils.resolveInputParameters("privateKey") +
           '" "' +
-          JSON.stringify(utils.resolveInputParameters("component/repoSshUrl")) +
+          JSON.stringify(utils.resolveInputParameters("repoSshUrl")) +
           '" "' +
-          JSON.stringify(utils.resolveInputParameters("component/repoUrl")) +
+          JSON.stringify(utils.resolveInputParameters("repoUrl")) +
           '" "' +
-          utils.resolveInputParameters("git.commit.id") +
+          utils.resolveInputParameters("commitId") +
           '" "' +
-          utils.resolveInputParameters("git.lfs") +
+          utils.resolveInputParameters("lfsEnabled") +
           '"'
       );
 
