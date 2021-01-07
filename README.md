@@ -21,4 +21,4 @@ In turn, these commands rely on the bash scripts located in the `/scripts` direc
 
 ## How to Build and Push
 
-`VERSION=6.0.2 && docker build -t tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION . && docker push tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION`
+`VERSION=6.0.3 && docker build -t tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION . && docker push tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION`

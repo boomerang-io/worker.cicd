@@ -38,7 +38,83 @@ function exec(command) {
   });
 }
 
+function parseVersion(version, appendBuildNumber) {
+  const parsedVersion = version;
+  // Trim build number
+  if (appendBuildNumber === false) {
+    log.sys("Stripping build number from version...");
+    parsedVersion = version.substr(0, version.lastIndexOf("-"));
+  }
+  log.debug("  Version:", parsedVersion);
+  return parsedVersion;
+}
+
 module.exports = {
+  async java() {
+    log.debug("Starting Boomerang CICD Java build activity...");
+
+    //Destructure and get properties ready.
+    const taskParms = utils.resolveInputParameters();
+    // const { path, script } = taskParms;
+    const shellDir = "/cli/scripts";
+    config = {
+      verbose: true
+    };
+
+    const version = parseVersion(taskParms["version"], taskParms["build-number-append"]);
+
+    try {
+      await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
+      log.ci("Initializing Dependencies");
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParms["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]}`);
+
+      shell.cd("/data/workspace");
+      log.ci("Compile & Package Artifact(s)");
+      await exec(`${shellDir}/build/compile-java.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]} ${version} ${JSON.stringify(taskParms["repoUrl"])} ${taskParms["repoId"]} ${taskParms["repoUser"]} "${taskParms["repoPassword"]}"`);
+    } catch (e) {
+      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
+      process.exit(1);
+    } finally {
+      await exec(shellDir + "/common/footer.sh");
+      log.debug("Finished Boomerang CICD Java build activity");
+    }
+  },
+  async java() {
+    log.debug("Starting Boomerang CICD Java build activity...");
+
+    //Destructure and get properties ready.
+    const taskParms = utils.resolveInputParameters();
+    // const { path, script } = taskParms;
+    const shellDir = "/cli/scripts";
+    config = {
+      verbose: true
+    };
+
+    // Trim build number
+    if (taskParms["build-number-append"] === false) {
+      log.sys("Stripping build number from version...");
+      taskParms["version"] = taskParms["version"].substr(0, taskParms["version"].lastIndexOf("-"));
+    }
+    log.debug("  Version:", taskParms["version"]);
+
+    try {
+      await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
+      log.ci("Initializing Dependencies");
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParms["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]}`);
+
+      shell.cd("/data/workspace");
+      log.ci("Compile & Package Artifact(s)");
+      await exec(`${shellDir}/build/compile-java.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]} ${taskParms["version"]} ${JSON.stringify(taskParms["repoUrl"])} ${taskParms["repoId"]} ${taskParms["repoUser"]} "${taskParms["repoPassword"]}"`);
+    } catch (e) {
+      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
+      process.exit(1);
+    } finally {
+      await exec(shellDir + "/common/footer.sh");
+      log.debug("Finished Boomerang CICD Java build activity");
+    }
+  },
   async execute() {
     log.debug("Started CICD Build Activity");
 
@@ -57,34 +133,34 @@ module.exports = {
         log.debug("  Version:", taskProps["version.name"]);
       }
 
-      await exec(`${shellDir}/common/initialize.sh "${taskProps["language.version"]}"`);
+      await exec(`${shellDir} / common / initialize.sh "${taskProps["language.version"]}"`);
       log.ci("Initializing Dependencies");
       if (taskProps["system.mode"] === SystemMode.Jar || taskProps["system.mode"] === SystemMode.Java) {
-        await exec(`${shellDir}/common/initialize-dependencies-java.sh "${taskProps["language.version"]}"`);
-        await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh "${taskProps["build.tool"]}" "${taskProps["build.tool.version"]}"`);
+        await exec(`${shellDir} / common / initialize - dependencies - java.sh "${taskProps["language.version"]}"`);
+        await exec(`${shellDir} / common / initialize - dependencies - java - tool.sh "${taskProps["build.tool"]}" "${taskProps["build.tool.version"]}"`);
       } else if (taskProps["system.mode"] === SystemMode.Nodejs) {
-        await exec(`${shellDir}/common/initialize-dependencies-node.sh "${taskProps["build.tool"]}" "${JSON.stringify(taskProps["global/artifactory.url"])}" "${taskProps["global/artifactory.user"]}" "${taskProps["global/artifactory.password"]}"`);
+        await exec(`${shellDir} / common / initialize - dependencies - node.sh "${taskProps["build.tool"]}" "${JSON.stringify(taskProps["global / artifactory.url"])}" "${taskProps["global / artifactory.user"]}" "${taskProps["global / artifactory.password"]}"`);
       } else if (taskProps["system.mode"] === SystemMode.Python || taskProps["system.mode"] === SystemMode.Wheel) {
-        await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskProps["language.version"]}"`);
+        await exec(`${shellDir} / common / initialize - dependencies - python.sh "${taskProps["language.version"]}"`);
       } else if (taskProps["system.mode"] === SystemMode.Helm) {
-        await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskProps["build.tool"]}"`);
+        await exec(`${shellDir} / common / initialize - dependencies - helm.sh "${taskProps["build.tool"]}"`);
       }
 
       if (taskProps["build.before_clone.enable"] === "true") {
         log.ci("Retrieving Before_Clone Source Code");
-        await exec(`${shellDir}/common/git-clone.sh "${taskProps["git.private.key"]}" "undefined" "${JSON.stringify(taskProps["stage/build.before_clone.git.repo.url"])}" "${taskProps["stage/build.before_clone.git.commit.id"]}" "${taskProps["stage/build.before_clone.git.lfs"]}"`);
+        await exec(`${shellDir} / common / git - clone.sh "${taskProps["git.private.key"]}" "undefined" "${JSON.stringify(taskProps["stage / build.before_clone.git.repo.url"])}" "${taskProps["stage / build.before_clone.git.commit.id"]}" "${taskProps["stage / build.before_clone.git.lfs"]}"`);
       }
 
       log.ci("Retrieving Source Code");
-      await exec(`${shellDir}/common/git-clone.sh "${taskProps["git.private.key"]}" "${JSON.stringify(taskProps["component/repoSshUrl"])}" "${JSON.stringify(taskProps["component/repoUrl"])}" "${taskProps["git.commit.id"]}" "${taskProps["git.lfs"]}"`);
+      await exec(`${shellDir} / common / git - clone.sh "${taskProps["git.private.key"]}" "${JSON.stringify(taskProps["component / repoSshUrl"])}" "${JSON.stringify(taskProps["component / repoUrl"])}" "${taskProps["git.commit.id"]}" "${taskProps["git.lfs"]}"`);
 
       shell.cd("/data/workspace");
       log.ci("Compile & Package Artifact(s)");
       if (taskProps["system.mode"] === SystemMode.Jar) {
         await exec(
-          `${shellDir}/build/compile-package-jar.sh "${taskProps["build.tool"]}" "${taskProps["build.tool.version"]}" "${taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-"))}" "${JSON.stringify(taskProps["global/maven.repo.url"])}" "${
-            taskProps["global/maven.repo.id"]
-          }" "${taskProps["global/artifactory.user"]}" "${taskProps["global/artifactory.password"]}" "${taskProps["global/artifactory.url"]}"`
+          `${shellDir} / build / compile - package - jar.sh "${taskProps["build.tool"]}" "${taskProps["build.tool.version"]}" "${taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf(" - "))}" "${JSON.stringify(taskProps["global / maven.repo.url"])}" "${
+            taskProps["global / maven.repo.id"]
+          }" "${taskProps["global/artifactory.user"]} " "${taskProps["global/artifactory.password"]} " "${taskProps["global/artifactory.url"]} "`
         );
       } else if (taskProps["system.mode"] === SystemMode.NPM) {
         await exec(`${shellDir}/build/compile-package-npm.sh "${taskProps["build.tool"]}"`);

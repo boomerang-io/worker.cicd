@@ -34,21 +34,23 @@ module.exports = {
       //     log.debug("  Version:", taskProps["version-name"]);
       //   }
 
-      log.ci("Retrieving Source Code...");
-      await exec(
-        shellDir +
-          '/common/git-clone.sh "' +
-          utils.resolveInputParameters("privateKey") +
-          '" "' +
-          JSON.stringify(utils.resolveInputParameters("repoSshUrl")) +
-          '" "' +
-          JSON.stringify(utils.resolveInputParameters("repoUrl")) +
-          '" "' +
-          utils.resolveInputParameters("commitId") +
-          '" "' +
-          utils.resolveInputParameters("lfsEnabled") +
-          '"'
-      );
+      log.ci("Retrieving Source Code");
+      await exec(`${shellDir}/common/git-clone.sh "${taskProps["privateKey"]}" ${JSON.stringify(taskProps["repoSshUrl"])} ${JSON.stringify(taskProps["repoUrl"])} ${taskProps["commitId"]} ${taskProps["lfsEnabled"]}`);
+
+      // await exec(
+      //   shellDir +
+      //   '/common/git-clone.sh "' +
+      //   utils.resolveInputParameters("privateKey") +
+      //   '" "' +
+      //   JSON.stringify(utils.resolveInputParameters("repoSshUrl")) +
+      //   '" "' +
+      //   JSON.stringify(utils.resolveInputParameters("repoSshUrl")) +
+      //   '" "' +
+      //   utils.resolveInputParameters("commitId") +
+      //   '" "' +
+      //   utils.resolveInputParameters("lfsEnabled") +
+      //   '"'
+      // );
 
       log.sys("Finished Git Clone task...");
     } catch (e) {
