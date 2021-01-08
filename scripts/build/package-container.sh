@@ -7,18 +7,16 @@ VERSION_NAME=$2
 TEAM_NAME=$3
 IMAGE_ORG=`echo $TEAM_NAME | sed 's/[^a-zA-Z0-9]//g' | tr '[:upper:]' '[:lower:]'`
 # Registry Host will potentially required a NO_PROXY entry in the controller service
-GLOBAL_REGISTRY_HOST=$4
-GLOBAL_REGISTRY_PORT=$5
-GLOBAL_REGISTRY_USER=$6
-GLOBAL_REGISTRY_PASSWORD=$7
-ART_URL=$8
-ART_USER=$9
-ART_PASSWORD=${10}
-CUSTOM_REGISTRY_HOST=${11}
-CUSTOM_REGISTRY_PORT=${12}
-CUSTOM_REGISTRY_USER=${13}
-CUSTOM_REGISTRY_PASSWORD=${14}
-DOCKER_FILE=${15}
+BUILD_ARGS=$4
+DOCKER_FILE=$5
+GLOBAL_REGISTRY_HOST=$6
+GLOBAL_REGISTRY_PORT=$7
+GLOBAL_REGISTRY_USER=$8
+GLOBAL_REGISTRY_PASSWORD=$9
+CUSTOM_REGISTRY_HOST=${10}
+CUSTOM_REGISTRY_PORT=${11}
+CUSTOM_REGISTRY_USER=${12}
+CUSTOM_REGISTRY_PASSWORD=${13}
 
 IMG_OPTS=
 SKOPEO_OPTS=
@@ -68,10 +66,20 @@ else
 fi
 # echo "Dockerfile: $DOCKER_FILE"
 
+
+echo "Setting up build args..."
+IFS='\n' # newline is set as delimiter
+read -ra BUILD_ARGS_ARRAY <<< "$BUILD_ARGS"
+BUILD_ARGS_STRING="--build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY "
+for ARG in "${BUILD_ARGS_ARRAY[@]}"; do
+    BUILD_ARGS_STRING+="--build-arg $ARG "
+done
+echo "  Build args set as: $BUILD_ARGS_STRING"
+
 IMG_STATE=/data/img
 mkdir -p $IMG_STATE
 if  [ -f "$DOCKER_FILE" ]; then
-    /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME -o "type=docker,dest=$IMAGE_NAME_$VERSION_NAME.tar" $IMG_OPTS --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY --build-arg ART_USER=$ART_USER --build-arg ART_PASSWORD=$ART_PASSWORD --build-arg ART_URL=$ART_URL $DOCKERFILE_OPTS .
+    /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME -o "type=docker,dest=$IMAGE_NAME_$VERSION_NAME.tar" $IMG_OPTS $BUILD_ARGS_STRING $DOCKERFILE_OPTS .
     # /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME $IMG_OPTS --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY --build-arg ART_USER=$ART_USER --build-arg ART_PASSWORD=$ART_PASSWORD --build-arg ART_URL=$ART_URL $DOCKERFILE_OPTS .
     RESULT=$?
     if [ $RESULT -ne 0 ] ; then

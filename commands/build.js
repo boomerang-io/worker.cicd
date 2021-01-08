@@ -61,7 +61,7 @@ module.exports = {
       verbose: true
     };
 
-    const version = parseVersion(taskParms["version"], taskParms["build-number-append"]);
+    const version = parseVersion(taskParms["version"], taskParms["appendBuildNumber"]);
 
     try {
       await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
@@ -69,8 +69,8 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParms["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]}`);
 
-      shell.cd("/data/workspace");
       log.ci("Compile & Package Artifact(s)");
+      shell.cd("/workflow/repository");
       await exec(`${shellDir}/build/compile-java.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]} ${version} ${JSON.stringify(taskParms["repoUrl"])} ${taskParms["repoId"]} ${taskParms["repoUser"]} "${taskParms["repoPassword"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
@@ -80,8 +80,8 @@ module.exports = {
       log.debug("Finished Boomerang CICD Java build activity");
     }
   },
-  async java() {
-    log.debug("Starting Boomerang CICD Java build activity...");
+  async jar() {
+    log.debug("Starting Boomerang CICD Jar build activity...");
 
     //Destructure and get properties ready.
     const taskParms = utils.resolveInputParameters();
@@ -91,12 +91,7 @@ module.exports = {
       verbose: true
     };
 
-    // Trim build number
-    if (taskParms["build-number-append"] === false) {
-      log.sys("Stripping build number from version...");
-      taskParms["version"] = taskParms["version"].substr(0, taskParms["version"].lastIndexOf("-"));
-    }
-    log.debug("  Version:", taskParms["version"]);
+    const version = parseVersion(taskParms["version"], false);
 
     try {
       await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
@@ -104,15 +99,64 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParms["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]}`);
 
-      shell.cd("/data/workspace");
       log.ci("Compile & Package Artifact(s)");
-      await exec(`${shellDir}/build/compile-java.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]} ${taskParms["version"]} ${JSON.stringify(taskParms["repoUrl"])} ${taskParms["repoId"]} ${taskParms["repoUser"]} "${taskParms["repoPassword"]}"`);
+      shell.cd("/workflow/repository");
+      await exec(`${shellDir}/build/compile-package-jar.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]} ${version} ${JSON.stringify(taskParms["repoUrl"])} ${taskParms["repoId"]} ${taskParms["repoUser"]} "${taskParms["repoPassword"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Java build activity");
+    }
+  },
+  async container() {
+    log.debug("Starting Boomerang CICD Container build activity...");
+
+    //Destructure and get properties ready.
+    const taskParms = utils.resolveInputParameters();
+    // const { path, script } = taskParms;
+    const shellDir = "/cli/scripts";
+    config = {
+      verbose: true
+    };
+
+    const version = parseVersion(taskParms["version"], taskParms["appendBuildNumber"]);
+
+    try {
+      await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
+
+      log.ci("Compile & Package Artifact(s)");
+      shell.cd("/workflow/repository");
+      var dockerFile = taskParms["dockerFile"] !== undefined && taskParms["dockerFile"] !== null ? taskParms["dockerFile"] : "";
+      var dockerImageName =
+        taskParms["imageName"] !== undefined
+          ? taskParms["imageName"]
+          : taskParms["componentName"]
+              .toString()
+              .replace(/[^a-zA-Z0-9\-]/g, "")
+              .toLowerCase();
+      var dockerImagePath =
+        taskParms["imagePath"] !== undefined
+          ? taskParms["imagePath"]
+              .toString()
+              .replace(/[^a-zA-Z0-9\-]/g, "")
+              .toLowerCase()
+          : taskParms["teamName"]
+              .toString()
+              .replace(/[^a-zA-Z0-9\-]/g, "")
+              .toLowerCase();
+      await exec(
+        `${shellDir}/build/package-container.sh "${dockerImageName}" "${version}" "${dockerImagePath}" "${taskParms["buildArgs"]}" "${dockerFile}" "${JSON.stringify(taskParms["globalContainerRegistryHost"])}" "${taskParms["globalContainerRegistryPort"]}" "${
+          taskParms["globalContainerRegistryUser"]
+        }" "${taskParms["globalContainerRegistryPassword"]}" "${JSON.stringify(taskParms["containerRegistryHost"])}" "${taskParms["containerRegistryPort"]}" "${taskParms["containerRegistryUser"]}" "${taskParms["containerRegistryPassword"]}"`
+      );
+    } catch (e) {
+      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
+      process.exit(1);
+    } finally {
+      await exec(`${shellDir}/common/footer.sh`);
+      log.debug("Finished Boomerang CICD Container build activity");
     }
   },
   async execute() {
@@ -160,7 +204,7 @@ module.exports = {
         await exec(
           `${shellDir} / build / compile - package - jar.sh "${taskProps["build.tool"]}" "${taskProps["build.tool.version"]}" "${taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf(" - "))}" "${JSON.stringify(taskProps["global / maven.repo.url"])}" "${
             taskProps["global / maven.repo.id"]
-          }" "${taskProps["global/artifactory.user"]} " "${taskProps["global/artifactory.password"]} " "${taskProps["global/artifactory.url"]} "`
+          } " "${taskProps["global/artifactory.user"]} " "${taskProps["global/artifactory.password"]} " "${taskProps["global/artifactory.url"]} "`
         );
       } else if (taskProps["system.mode"] === SystemMode.NPM) {
         await exec(`${shellDir}/build/compile-package-npm.sh "${taskProps["build.tool"]}"`);

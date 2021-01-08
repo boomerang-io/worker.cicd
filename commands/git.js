@@ -28,12 +28,6 @@ module.exports = {
     // log.debug("  repoURL:", taskProps["repoUrl"]);
 
     try {
-      //   if (taskProps["build-number-append"] === false) {
-      //     log.sys("Stripping build number from version...");
-      //     taskProps["version-name"] = taskProps["version-name"].substr(0, taskProps["version-name"].lastIndexOf("-"));
-      //     log.debug("  Version:", taskProps["version-name"]);
-      //   }
-
       log.ci("Retrieving Source Code");
       await exec(`${shellDir}/common/git-clone.sh "${taskProps["privateKey"]}" ${JSON.stringify(taskProps["repoSshUrl"])} ${JSON.stringify(taskProps["repoUrl"])} ${taskProps["commitId"]} ${taskProps["lfsEnabled"]}`);
 

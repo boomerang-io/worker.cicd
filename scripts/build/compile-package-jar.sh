@@ -11,7 +11,8 @@ ART_URL=$4
 ART_REPO_ID=$5
 ART_REPO_USER=$6
 ART_REPO_PASSWORD=$7
-ART_URL_BASE=$8
+# ART_URL_BASE=$8
+ART_URL_BASE=""
 ART_REPO_HOME=~/.m2/repository
 if [ -d "/cache" ]; then
     echo "Setting cache..."

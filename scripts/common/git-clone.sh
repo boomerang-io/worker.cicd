@@ -2,7 +2,7 @@
 
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Retrieving Source Code '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-WORKSPACE_FOLDER=/data/workspace
+REPO_FOLDER=/workflow/repository
 GIT_SSH_KEY=$1
 GIT_SSH_URL=$2
 GIT_REPO_URL=$3
@@ -71,17 +71,17 @@ if [ "$GIT_CLONE_URL" == "undefined" ]; then
     echo "Repository URL is undefined."
     exit 1
 fi
-# git clone --depth 1 --progress $GIT_OPTS -n $GIT_CLONE_URL $WORKSPACE_FOLDER
-git clone --progress $GIT_OPTS -n $GIT_CLONE_URL $WORKSPACE_FOLDER
+# git clone --depth 1 --progress $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
+git clone --progress $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
 
-if  [ -d "$WORKSPACE_FOLDER" ]; then
-    cd $WORKSPACE_FOLDER
+if  [ -d "$REPO_FOLDER" ]; then
+    cd $REPO_FOLDER
     if [ "$DEBUG" == "true" ]; then
         ls -ltr
     fi
     git checkout --progress --recurse-submodules $GIT_COMMIT_ID
 else
-    echo "Git workspace does not exist"
+    echo "Git repository folder does not exist"
     exit 1
 fi
 
