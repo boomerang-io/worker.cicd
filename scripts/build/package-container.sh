@@ -35,20 +35,20 @@ if [ "$DEBUG" == "true" ]; then
     SKOPEO_OPTS+="--debug "
 fi
 
-if [ "$CUSTOM_REGISTRY_PORT" != "undefined" ]; then
+if [ ! -z "$CUSTOM_REGISTRY_PORT" ]; then
     CUSTOM_DOCKER_SERVER="$CUSTOM_REGISTRY_HOST:$CUSTOM_REGISTRY_PORT"
 else 
     CUSTOM_DOCKER_SERVER="$CUSTOM_REGISTRY_HOST"
 fi
 # Log into custom repository if needed
-if [ "$CUSTOM_REGISTRY_USER" != "undefined" ] || [ ! -z "$CUSTOM_REGISTRY_PASSWORD" ]; then
+if [ ! -z "$CUSTOM_REGISTRY_USER" ] || [ ! -z "$CUSTOM_REGISTRY_PASSWORD" ]; then
     echo "Logging into Custom Container Registry ($CUSTOM_DOCKER_SERVER)..."
     /opt/bin/img login $IMG_OPTS -u=$CUSTOM_REGISTRY_USER -p=$CUSTOM_REGISTRY_PASSWORD "$CUSTOM_DOCKER_SERVER"
 else
     echo "Skipping custom registry login as no username and / or password provided. "
 fi
 # Log into the platforms global container registry
-if [ "$GLOBAL_REGISTRY_PORT" != "undefined" ]; then
+if [ ! -z "$GLOBAL_REGISTRY_PORT" ]; then
     GLOBAL_DOCKER_SERVER="$GLOBAL_REGISTRY_HOST:$GLOBAL_REGISTRY_PORT"
 else 
     GLOBAL_DOCKER_SERVER="$GLOBAL_REGISTRY_HOST"
@@ -66,20 +66,26 @@ else
 fi
 # echo "Dockerfile: $DOCKER_FILE"
 
-
-echo "Setting up build args..."
-IFS='\n' # newline is set as delimiter
-read -ra BUILD_ARGS_ARRAY <<< "$BUILD_ARGS"
-BUILD_ARGS_STRING="--build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY "
-for ARG in "${BUILD_ARGS_ARRAY[@]}"; do
-    BUILD_ARGS_STRING+="--build-arg $ARG "
-done
-echo "  Build args set as: $BUILD_ARGS_STRING"
+BUILD_ARGS_STRING=
+if [ ! -z "$BUILD_ARGS" ]; then
+    echo "Setting up container build arguments..."
+    # newline is set as delimiter
+    OLDIFS="$IFS"
+    IFS=$'\n' # bash specific
+    BUILD_ARGS_ARRAY=($BUILD_ARGS)
+    for ARG in "${BUILD_ARGS_ARRAY[@]}"; do
+        echo "  Build Argument: $ARG"
+        BUILD_ARGS_STRING+=" --build-arg "
+        BUILD_ARGS_STRING+="$ARG"
+    done
+    IFS="$OLDIFS"
+    echo "  Build arguments set as: $BUILD_ARGS_STRING"
+fi
 
 IMG_STATE=/data/img
 mkdir -p $IMG_STATE
 if  [ -f "$DOCKER_FILE" ]; then
-    /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME -o "type=docker,dest=$IMAGE_NAME_$VERSION_NAME.tar" $IMG_OPTS $BUILD_ARGS_STRING $DOCKERFILE_OPTS .
+    /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME -o "type=docker,dest=$IMAGE_NAME_$VERSION_NAME.tar" $IMG_OPTS --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY ${BUILD_ARGS_STRING} $DOCKERFILE_OPTS .
     # /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME $IMG_OPTS --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY --build-arg ART_USER=$ART_USER --build-arg ART_PASSWORD=$ART_PASSWORD --build-arg ART_URL=$ART_URL $DOCKERFILE_OPTS .
     RESULT=$?
     if [ $RESULT -ne 0 ] ; then

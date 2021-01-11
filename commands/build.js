@@ -94,8 +94,8 @@ module.exports = {
     const version = parseVersion(taskParms["version"], false);
 
     try {
-      await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
       log.ci("Initializing Dependencies");
+      await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParms["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]}`);
 
@@ -124,20 +124,22 @@ module.exports = {
     const version = parseVersion(taskParms["version"], taskParms["appendBuildNumber"]);
 
     try {
+      log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd("/workflow/repository");
+      await exec("ls -ltr");
       var dockerFile = taskParms["dockerFile"] !== undefined && taskParms["dockerFile"] !== null ? taskParms["dockerFile"] : "";
       var dockerImageName =
-        taskParms["imageName"] !== undefined
+        taskParms["imageName"] !== undefined && taskParms["imagePath"] !== '""'
           ? taskParms["imageName"]
           : taskParms["componentName"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase();
       var dockerImagePath =
-        taskParms["imagePath"] !== undefined
+        taskParms["imagePath"] !== undefined && taskParms["imagePath"] !== '""'
           ? taskParms["imagePath"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
@@ -147,9 +149,9 @@ module.exports = {
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase();
       await exec(
-        `${shellDir}/build/package-container.sh "${dockerImageName}" "${version}" "${dockerImagePath}" "${taskParms["buildArgs"]}" "${dockerFile}" "${JSON.stringify(taskParms["globalContainerRegistryHost"])}" "${taskParms["globalContainerRegistryPort"]}" "${
+        `${shellDir}/build/package-container.sh "${dockerImageName}" "${version}" "${dockerImagePath}" "${taskParms["buildArgs"]}" "${dockerFile}" ${JSON.stringify(taskParms["globalContainerRegistryHost"])} "${taskParms["globalContainerRegistryPort"]}" "${
           taskParms["globalContainerRegistryUser"]
-        }" "${taskParms["globalContainerRegistryPassword"]}" "${JSON.stringify(taskParms["containerRegistryHost"])}" "${taskParms["containerRegistryPort"]}" "${taskParms["containerRegistryUser"]}" "${taskParms["containerRegistryPassword"]}"`
+        }" "${taskParms["globalContainerRegistryPassword"]}" ${JSON.stringify(taskParms["containerRegistryHost"])} "${taskParms["containerRegistryPort"]}" "${taskParms["containerRegistryUser"]}" "${taskParms["containerRegistryPassword"]}"`
       );
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
