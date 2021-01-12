@@ -19,32 +19,17 @@ module.exports = {
     log.sys("Starting Git Clone task...");
 
     //Destructure and get properties ready.
-    const taskProps = utils.resolveInputParameters();
+    const taskParams = utils.resolveInputParameters();
     // Do we need to destructure or use the alternate object retrieve
     // const { "version.name": versionName = '0.0.0', script } = taskProps;
     const shellDir = "/cli/scripts";
-    // const shellDir = "./commands";
-    // log.debug("  Version:", taskProps["version-name"]);
-    // log.debug("  repoURL:", taskProps["repoUrl"]);
+
+    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Working Directory: ", dir);
 
     try {
       log.ci("Retrieving Source Code");
-      await exec(`${shellDir}/common/git-clone.sh "${taskProps["privateKey"]}" ${JSON.stringify(taskProps["repoSshUrl"])} ${JSON.stringify(taskProps["repoUrl"])} ${taskProps["commitId"]} ${taskProps["lfsEnabled"]}`);
-
-      // await exec(
-      //   shellDir +
-      //   '/common/git-clone.sh "' +
-      //   utils.resolveInputParameters("privateKey") +
-      //   '" "' +
-      //   JSON.stringify(utils.resolveInputParameters("repoSshUrl")) +
-      //   '" "' +
-      //   JSON.stringify(utils.resolveInputParameters("repoSshUrl")) +
-      //   '" "' +
-      //   utils.resolveInputParameters("commitId") +
-      //   '" "' +
-      //   utils.resolveInputParameters("lfsEnabled") +
-      //   '"'
-      // );
+      await exec(`${shellDir}/common/git-clone.sh "${dir}/repository" "${taskParams["privateKey"]}" ${JSON.stringify(taskParams["repoSshUrl"])} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["commitId"]} ${taskParams["lfsEnabled"]}`);
 
       log.sys("Finished Git Clone task...");
     } catch (e) {

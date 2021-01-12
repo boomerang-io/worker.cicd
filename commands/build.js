@@ -54,24 +54,27 @@ module.exports = {
     log.debug("Starting Boomerang CICD Java build activity...");
 
     //Destructure and get properties ready.
-    const taskParms = utils.resolveInputParameters();
-    // const { path, script } = taskParms;
+    const taskParams = utils.resolveInputParameters();
+    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
 
-    const version = parseVersion(taskParms["version"], taskParms["appendBuildNumber"]);
+    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Working Directory: ", dir);
+
+    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
-      await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize.sh ${taskParams["languageVersion"]}`);
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParms["languageVersion"]}`);
-      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd("/workflow/repository");
-      await exec(`${shellDir}/build/compile-java.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]} ${version} ${JSON.stringify(taskParms["repoUrl"])} ${taskParms["repoId"]} ${taskParms["repoUser"]} "${taskParms["repoPassword"]}"`);
+      shell.cd(dir + "/repository");
+      await exec(`${shellDir}/build/compile-java.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]} ${version} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoId"]} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -84,24 +87,27 @@ module.exports = {
     log.debug("Starting Boomerang CICD Jar build activity...");
 
     //Destructure and get properties ready.
-    const taskParms = utils.resolveInputParameters();
-    // const { path, script } = taskParms;
+    const taskParams = utils.resolveInputParameters();
+    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
 
-    const version = parseVersion(taskParms["version"], false);
+    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Working Directory: ", dir);
+
+    const version = parseVersion(taskParams["version"], false);
 
     try {
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
-      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParms["languageVersion"]}`);
-      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]}`);
+      await exec(`${shellDir}/common/initialize.sh ${taskParams["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd("/workflow/repository");
-      await exec(`${shellDir}/build/compile-package-jar.sh ${taskParms["buildTool"]} ${taskParms["buildToolVersion"]} ${version} ${JSON.stringify(taskParms["repoUrl"])} ${taskParms["repoId"]} ${taskParms["repoUser"]} "${taskParms["repoPassword"]}"`);
+      shell.cd(dir + "/repository");
+      await exec(`${shellDir}/build/compile-package-jar.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]} ${version} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoId"]} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -114,44 +120,62 @@ module.exports = {
     log.debug("Starting Boomerang CICD Container build activity...");
 
     //Destructure and get properties ready.
-    const taskParms = utils.resolveInputParameters();
-    // const { path, script } = taskParms;
+    const taskParams = utils.resolveInputParameters();
+    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
 
-    const version = parseVersion(taskParms["version"], taskParms["appendBuildNumber"]);
+    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Working Directory: ", dir);
+    // let dir;
+    // if (!workingDir || workingDir === '""') {
+    //   dir = "/data";
+    //   log.debug("No directory specified. Defaulting...");
+    // } else {
+    //   dir = workingDir;
+    // }
+    // shell.config.silent = true; //set to silent otherwise CD will print out no such file or directory if the directory doesn't exist
+    // shell.cd(dir);
+    // //shell.cd -> does not have an error handling call back and will default to current directory of /cli
+    // if (shell.pwd().toString() !== dir.toString()) {
+    //   log.err("No such file or directory:", dir);
+    //   return process.exit(1);
+    // }
+    // shell.config.silent = false;
+
+    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/common/initialize.sh ${taskParms["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize.sh ${taskParams["languageVersion"]}`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd("/workflow/repository");
+      shell.cd(dir + "/repository");
       await exec("ls -ltr");
-      var dockerFile = taskParms["dockerFile"] !== undefined && taskParms["dockerFile"] !== null ? taskParms["dockerFile"] : "";
+      var dockerFile = taskParams["dockerFile"] !== undefined && taskParams["dockerFile"] !== null ? taskParams["dockerFile"] : "";
       var dockerImageName =
-        taskParms["imageName"] !== undefined && taskParms["imagePath"] !== '""'
-          ? taskParms["imageName"]
-          : taskParms["componentName"]
+        taskParams["imageName"] !== undefined && taskParams["imagePath"] !== '""'
+          ? taskParams["imageName"]
+          : taskParams["componentName"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase();
       var dockerImagePath =
-        taskParms["imagePath"] !== undefined && taskParms["imagePath"] !== '""'
-          ? taskParms["imagePath"]
+        taskParams["imagePath"] !== undefined && taskParams["imagePath"] !== '""'
+          ? taskParams["imagePath"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase()
-          : taskParms["teamName"]
+          : taskParams["teamName"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase();
       await exec(
-        `${shellDir}/build/package-container.sh "${dockerImageName}" "${version}" "${dockerImagePath}" "${taskParms["buildArgs"]}" "${dockerFile}" ${JSON.stringify(taskParms["globalContainerRegistryHost"])} "${taskParms["globalContainerRegistryPort"]}" "${
-          taskParms["globalContainerRegistryUser"]
-        }" "${taskParms["globalContainerRegistryPassword"]}" ${JSON.stringify(taskParms["containerRegistryHost"])} "${taskParms["containerRegistryPort"]}" "${taskParms["containerRegistryUser"]}" "${taskParms["containerRegistryPassword"]}"`
+        `${shellDir}/build/package-container.sh "${dockerImageName}" "${version}" "${dockerImagePath}" "${taskParams["buildArgs"]}" "${dockerFile}" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${
+          taskParams["globalContainerRegistryUser"]
+        }" "${taskParams["globalContainerRegistryPassword"]}" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${taskParams["containerRegistryPassword"]}"`
       );
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
