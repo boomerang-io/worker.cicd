@@ -1,30 +1,6 @@
 const { log, utils, CICDError } = require("@boomerang-io/worker-core");
 const shell = require("shelljs");
 
-// TODO: Move enums to a shared constants file to be used for other commands
-const ComponentMode = {
-  Nodejs: "nodejs",
-  Python: "python",
-  Java: "java",
-  Jar: "lib.jar",
-  Helm: "helm.chart"
-};
-
-const SystemMode = {
-  Java: "java",
-  Wheel: "lib.wheel",
-  Jar: "lib.jar",
-  NPM: "lib.npm",
-  Nodejs: "nodejs",
-  Python: "python",
-  Helm: "helm.chart",
-  Docker: "docker"
-};
-
-// Freeze so they can't be modified at runtime
-Object.freeze(ComponentMode);
-Object.freeze(SystemMode);
-
 function exec(command) {
   return new Promise(function(resolve, reject) {
     log.debug("Command directory:", shell.pwd().toString());
