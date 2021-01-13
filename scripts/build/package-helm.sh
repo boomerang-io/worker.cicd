@@ -1,30 +1,19 @@
 #!/bin/bash
 
-BUILD_TOOL=$1
-VERSION_NAME=$2
-HELM_REPO_URL=$3
-HELM_CHART_DIR=$4
-HELM_CHART_IGNORE=$5
-HELM_CHART_VERSION_INCREMENT=$6
-HELM_CHART_VERSION_TAG=$7
-GIT_REF=$8
+HELM_REPO_URL=$1
+HELM_CHART_DIR=$2
+HELM_CHART_IGNORE=$3
+HELM_CHART_VERSION_INCREMENT=$4
+HELM_CHART_VERSION_TAG=$5
+GIT_REF=$6
 
 if [ "$DEBUG" == "true" ]; then
-    echo "BUILD_TOOL=$BUILD_TOOL"
-    echo "VERSION_NAME=$VERSION_NAME"
     echo "HELM_REPO_URL=$HELM_REPO_URL"
     echo "HELM_CHART_DIR=$HELM_CHART_DIR"
     echo "HELM_CHART_IGNORE=$HELM_CHART_IGNORE"
     echo "HELM_CHART_VERSION_INCREMENT=$HELM_CHART_VERSION_INCREMENT"
     echo "HELM_CHART_VERSION_TAG=$HELM_CHART_VERSION_TAG"
     echo "GIT_REF=$GIT_REF"
-fi
-
-# Bug fix for custom certs and re initializing helm home
-if [ "$BUILD_TOOL" != "helm3" ]; then
-    export HELM_HOME=/tmp/.helm
-    # export HELM_HOME=$(helm home)
-    echo "   ↣ Helm home set as: $HELM_HOME"
 fi
 
 helm repo add boomerang-charts $HELM_REPO_URL
@@ -55,11 +44,7 @@ do
     ( printf '\n'; printf '%.0s-' {1..30}; printf " Packaging Chart: $chartName "; printf '%.0s-' {1..30}; printf '\n' )
     printf "  Chart Path: $chart\n"
     if [[ ! " ${chartIgnoreList[@]} " =~ " $chartName " ]] && [[ "$chart" =~ ^\.(\/)?$chartFolder(\/)?$chartName\/.*$ ]]; then
-        if [ "$BUILD_TOOL" == "helm3" ]; then
-            chartVersion=`helm show chart ./$chartFolder/$chartName | sed -nr 's@(^version: )(.+)@\2@p'`
-        else
-            chartVersion=`helm inspect chart ./$chartFolder/$chartName | grep version | sed 's@version: @@g'`
-        fi
+        chartVersion=`helm show chart ./$chartFolder/$chartName | sed -nr 's@(^version: )(.+)@\2@p'`
         printf "  Existing Chart Version: $chartVersion\n"
         if [[ "$HELM_CHART_VERSION_INCREMENT" == "true" ]]; then
             printf "  Auto Incrementing Chart Version...\n"
@@ -73,11 +58,7 @@ do
             chartVersion=`echo $GIT_REF | cut -d / -f3`
         fi
         printf "  Chart Version: $chartVersion\n"
-        if [ "$BUILD_TOOL" == "helm3" ]; then
-            DEPENDENCY_YAML_FILE='Chart.yaml'
-        else
-            DEPENDENCY_YAML_FILE='requirements.yaml'
-        fi
+        DEPENDENCY_YAML_FILE='Chart.yaml'
         if [ -z "$chartFolder" ]; then
             DEPENDENCY_YAML_PATH="$chartName/$DEPENDENCY_YAML_FILE"
         else
