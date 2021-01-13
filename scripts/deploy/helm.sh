@@ -1,24 +1,17 @@
 #!/bin/bash
 
-DEPLOY_TYPE=$1
-HELM_REPO_URL=$2
-CHART_NAME=$3
-CHART_RELEASE=$4
-HELM_IMAGE_KEY=$5
-VERSION_NAME=$6
-DEPLOY_KUBE_VERSION=$7
-DEPLOY_KUBE_NAMESPACE=$8
-DEPLOY_KUBE_HOST=$9
-DEPLOY_HELM_TLS=${10}
-DEPLOY_HELM_REPO_URL=${11}
-if [ "$DEPLOY_HELM_TLS" == "undefined" ]; then
-    DEPLOY_HELM_TLS=true
-fi
+HELM_REPO_URL=$1
+CHART_NAME=$2
+CHART_RELEASE=$3
+HELM_IMAGE_KEY=$4
+VERSION_NAME=$5
+DEPLOY_KUBE_VERSION=$6
+DEPLOY_KUBE_NAMESPACE=$7
+DEPLOY_KUBE_HOST=$8
+DEPLOY_HELM_REPO_URL=$9
 
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
-    echo "DEPLOY_TYPE=$DEPLOY_TYPE"
-    echo "DEPLOY_HELM_TLS=$DEPLOY_HELM_TLS"
     echo "HELM_REPO_URL=$HELM_REPO_URL"
     echo "CHART_NAME=$CHART_NAME"
     echo "CHART_RELEASE=$CHART_RELEASE"
@@ -32,20 +25,6 @@ fi
 export KUBE_HOME=~/.kube
 BIN_HOME=/usr/local/bin
 KUBE_CLI=$BIN_HOME/kubectl
-
-HELM_TLS_STRING=''
-if [ "$DEPLOY_TYPE" == "helm" ]; then
-    # Bug fix for custom certs and re initializing helm home
-    export HELM_HOME=/tmp/.helm
-    echo "   ↣ Helm home set as: $HELM_HOME"
-    # export HELM_HOME=$(helm home)
-    if [[ $DEPLOY_HELM_TLS == "true" ]]; then
-        HELM_TLS_STRING='--tls'
-        echo "   ↣ Helm TLS parameters configured as: $HELM_TLS_STRING"
-    else
-        echo "   ↣ Helm TLS disabled, skipping configuration..."
-    fi
-fi
 
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
@@ -66,15 +45,8 @@ helm repo add boomerang-charts $HELM_REPO_URL && helm repo update
 # Chart Name is blank. Chart Release is now required to fetch chart name.
 if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
     echo "Auto detecting chart name..."
-    # This is needed as helm3 uses --filter
-    if [ "$DEPLOY_TYPE" == "helm3" ]; then
-        # CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
-        CHART_NAME=`helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq read - .chart | rev | cut -d '-' -f 2- | rev`
-        if [ $? -ne 0 ]; then exit 92; fi
-    else
-        CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
-        if [ $? -ne 0 ]; then exit 92; fi
-    fi
+    CHART_NAME=`helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq read - .chart | rev | cut -d '-' -f 2- | rev`
+    if [ $? -ne 0 ]; then exit 92; fi
 elif [ -z "$CHART_NAME" ] && [ -z "$CHART_RELEASE" ]; then
     exit 92
 fi
@@ -99,29 +71,15 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
     if [[ -z "$CHART_RELEASE" ]] && [ ! -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         echo "Auto detecting chart release..."
         echo "Note: This only works if there is only one release of the chart in the provided namespace."
-        if [ "$DEPLOY_TYPE" == "helm3" ]; then
-            # CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
-            # CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq read - [chart==$CHART*].name`
-            CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq read - [chart==$CHART*].name`
-            if [ $? -ne 0 ]; then echo "No Helm 3 chart release found in namespace: $DEPLOY_KUBE_NAMESPACE" && exit 94; fi
-        else
-            CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
-            if [ $? -ne 0 ]; then HELM_CHARTS_EXITCODE=94; fi
-        fi
+        CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml | yq read - [chart==$CHART*].name`
+        if [ $? -ne 0 ]; then echo "No Helm 3 chart release found in namespace: $DEPLOY_KUBE_NAMESPACE" && exit 94; fi
     elif [ -z "$CHART_RELEASE" ] && [ -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         HELM_CHARTS_EXITCODE=93
     fi
     if [ ! -z "$CHART_RELEASE" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Release: $CHART_RELEASE"
-        # This is needed as helm3 uses --filter
-        if [ "$DEPLOY_TYPE" == "helm3" ]; then
-            # CHART_VERSION=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $2}' | cut -d '-' -f 1 | rev`
-            CHART_VERSION=`helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq read - .chart | rev | cut -d '-' -f 1 | rev`
-            if [ $? -ne 0 ]; then exit 94; fi
-        else
-            CHART_VERSION=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 1 | rev`
-            if [ $? -ne 0 ]; then HELM_CHARTS_EXITCODE=94; fi
-        fi
+        CHART_VERSION=`helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq read - .chart | rev | cut -d '-' -f 1 | rev`
+        if [ $? -ne 0 ]; then exit 94; fi
     fi
     if [ ! -z "$CHART_RELEASE" ] && [ ! -z "$CHART_VERSION" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Version: $CHART_VERSION"
@@ -139,7 +97,7 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
                 break
             else
                 echo "Commencing deployment (attempt #$INDEX)..."
-                OUTPUT=$(helm upgrade $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --reuse-values --set $HELM_IMAGE_KEY=$VERSION_NAME --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART)
+                OUTPUT=$(helm upgrade --kube-context $DEPLOY_KUBE_HOST-context --reuse-values --set $HELM_IMAGE_KEY=$VERSION_NAME --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART)
                 RESULT=$?
                 if [ $RESULT -ne 0 ]; then 
                     if [[ $OUTPUT =~ "timed out" ]]; then
