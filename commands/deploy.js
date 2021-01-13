@@ -1,37 +1,6 @@
 const { log, utils, CICDError, common } = require("@boomerang-io/worker-core");
 const shell = require("shelljs");
 
-// const DeployTypes = {
-//   Kubernetes: "kubernetes",
-//   Helm: "helm",
-//   Helm3: "helm3",
-//   ContainerRegistry: "containerRegistry"
-// };
-
-// const ComponentMode = {
-//   Nodejs: "nodejs",
-//   Python: "python",
-//   Java: "java",
-//   Jar: "lib.jar",
-//   Helm: "helm.chart"
-// };
-
-// const SystemMode = {
-//   Java: "java",
-//   Wheel: "lib.wheel",
-//   Jar: "lib.jar",
-//   NPM: "lib.npm",
-//   Nodejs: "nodejs",
-//   Python: "python",
-//   Helm: "helm.chart",
-//   Docker: "docker"
-// };
-
-// // Freeze so they can't be modified at runtime
-// Object.freeze(DeployTypes);
-// Object.freeze(ComponentMode);
-// Object.freeze(SystemMode);
-
 function exec(command) {
   return new Promise(function(resolve, reject) {
     log.debug("Command directory:", shell.pwd().toString());
@@ -57,9 +26,9 @@ function parseVersion(version, appendBuildNumber) {
 }
 
 // TODO: Add to workflow as a pre-condition switch
-// if (taskProps["deploy.git.clone"]) {
+// if (taskParams["deploy.git.clone"]) {
 //   log.ci("Retrieving Source Code");
-//   await exec(`${shellDir}/common/git-clone.sh "${taskProps["git.private.key"]}" "${JSON.stringify(taskProps["component/repoSshUrl"])}" "${JSON.stringify(taskProps["component/repoUrl"])}" "${taskProps["git.commit.id"]}" "${taskProps["git.lfs"]}"`);
+//   await exec(`${shellDir}/common/git-clone.sh "${taskParams["git.private.key"]}" "${JSON.stringify(taskParams["component/repoSshUrl"])}" "${JSON.stringify(taskParams["component/repoUrl"])}" "${taskParams["git.commit.id"]}" "${taskParams["git.lfs"]}"`);
 // }
 
 module.exports = {
@@ -78,52 +47,52 @@ module.exports = {
     log.debug("Working Directory: ", dir);
 
     log.ci("Initializing Dependencies");
-    // await exec(`${shellDir}/deploy/initialize-dependencies.sh "${taskProps["deploy.type"]}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["deploy.kube.ip"]}" "${taskProps["deploy.kube.token"]}" "${taskProps["deploy.helm.tls"]}"`);
-    await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskProps["kubeVersion"]}" "${taskProps["kubeNamespace"]}" "${taskProps["kubeHost"]}" "${taskProps["kubeIP"]}" "${taskProps["kubeToken"]}"`);
+    // await exec(`${shellDir}/deploy/initialize-dependencies.sh "${taskParams["deploy.type"]}" "${taskParams["deploy.kube.version"]}" "${taskParams["deploy.kube.namespace"]}" "${taskParams["deploy.kube.host"]}" "${taskParams["deploy.kube.ip"]}" "${taskParams["deploy.kube.token"]}" "${taskParams["deploy.helm.tls"]}"`);
+    await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
 
     log.ci("Deploy Artifacts");
-    taskProps["process/org"] = taskProps["team.name"]
+    taskParams["process/org"] = taskParams["team.name"]
       .toString()
       .replace(/[^a-zA-Z0-9]/g, "")
       .toLowerCase();
-    taskProps["process/component.name"] = taskProps["system.component.name"]
+    taskParams["process/component.name"] = taskParams["system.component.name"]
       .toString()
       .replace(/[^a-zA-Z0-9]/g, "")
       .toLowerCase();
     // Needs to follow Kubernetes allowed characters and patterns.
-    taskProps["process/env"] = taskProps["system/stage.name"]
+    taskParams["process/env"] = taskParams["system/stage.name"]
       .toString()
       .replace(/[^a-zA-Z0-9\-]/g, "")
       .toLowerCase();
-    taskProps["process/container.port"] = taskProps["deploy.kubernetes.container.port"] !== undefined ? taskProps["deploy.kubernetes.container.port"] : "8080";
-    taskProps["process/service.port"] = taskProps["deploy.kubernetes.service.port"] !== undefined ? taskProps["deploy.kubernetes.service.port"] : "80";
-    taskProps["process/registry.key"] = taskProps["deploy.kubernetes.registry.key"] !== undefined ? taskProps["deploy.kubernetes.registry.key"] : "boomerang.registrykey";
+    taskParams["process/container.port"] = taskParams["deploy.kubernetes.container.port"] !== undefined ? taskParams["deploy.kubernetes.container.port"] : "8080";
+    taskParams["process/service.port"] = taskParams["deploy.kubernetes.service.port"] !== undefined ? taskParams["deploy.kubernetes.service.port"] : "80";
+    taskParams["process/registry.key"] = taskParams["deploy.kubernetes.registry.key"] !== undefined ? taskParams["deploy.kubernetes.registry.key"] : "boomerang.registrykey";
     // The additional checks are required for deploy.container.registry.host/port/path as these properties are also used as STAGE properties which currently
     // are set to "" if they have no value. This will be solved if we move away from default STAGE properties.
-    taskProps["process/container.registry.host"] =
-      taskProps["deploy.container.registry.host"] !== undefined && taskProps["deploy.container.registry.host"] !== '""' ? taskProps["deploy.container.registry.host"] : taskProps["global/container.registry.host"] + ":" + taskProps["global/container.registry.port"];
-    log.sys("Container Registry Host:", taskProps["process/container.registry.host"]);
-    if (taskProps["deploy.container.registry.port"] !== undefined && taskProps["deploy.container.registry.port"] !== '""') {
-      taskProps["process/container.registry.port"] = ":" + taskProps["deploy.container.registry.port"];
+    taskParams["process/container.registry.host"] =
+      taskParams["deploy.container.registry.host"] !== undefined && taskParams["deploy.container.registry.host"] !== '""' ? taskParams["deploy.container.registry.host"] : taskParams["global/container.registry.host"] + ":" + taskParams["global/container.registry.port"];
+    log.sys("Container Registry Host:", taskParams["process/container.registry.host"]);
+    if (taskParams["deploy.container.registry.port"] !== undefined && taskParams["deploy.container.registry.port"] !== '""') {
+      taskParams["process/container.registry.port"] = ":" + taskParams["deploy.container.registry.port"];
     } else {
-      taskProps["process/container.registry.port"] = "";
+      taskParams["process/container.registry.port"] = "";
     }
-    log.sys("Container Registry Port:", taskProps["process/container.registry.port"]);
-    taskProps["process/container.registry.path"] = taskProps["deploy.container.registry.path"] !== undefined && taskProps["deploy.container.registry.path"] !== '""' ? taskProps["deploy.container.registry.path"] : "/" + taskProps["process/org"];
-    log.sys("Container Registry Path:", taskProps["process/container.registry.path"]);
-    var dockerImageName = taskProps["docker.image.name"] !== undefined ? taskProps["docker.image.name"] : taskProps["system.component.name"];
+    log.sys("Container Registry Port:", taskParams["process/container.registry.port"]);
+    taskParams["process/container.registry.path"] = taskParams["deploy.container.registry.path"] !== undefined && taskParams["deploy.container.registry.path"] !== '""' ? taskParams["deploy.container.registry.path"] : "/" + taskParams["process/org"];
+    log.sys("Container Registry Path:", taskParams["process/container.registry.path"]);
+    var dockerImageName = taskParams["docker.image.name"] !== undefined ? taskParams["docker.image.name"] : taskParams["system.component.name"];
     // Name specification reference: https://docs.docker.com/engine/reference/commandline/tag/
-    taskProps["process/docker.image.name"] = dockerImageName
+    taskParams["process/docker.image.name"] = dockerImageName
       .toString()
       .replace(/[^a-zA-Z0-9\-\_\.]/g, "")
       .toLowerCase();
     var kubePath = shellDir + "/deploy";
-    var kubeFile = taskProps["deploy.kubernetes.ingress"] == undefined || taskProps["deploy.kubernetes.ingress"] == false ? "^kube.yaml$" : ".*.yaml$";
-    if (taskProps["deploy.kubernetes.file"] !== undefined) {
-      kubePath = taskProps["deploy.kubernetes.path"] !== undefined ? "/data/workspace" + taskProps["deploy.kubernetes.path"] : "/data/workspace";
-      kubeFile = taskProps["deploy.kubernetes.file"];
+    var kubeFile = taskParams["deploy.kubernetes.ingress"] == undefined || taskParams["deploy.kubernetes.ingress"] == false ? "^kube.yaml$" : ".*.yaml$";
+    if (taskParams["deploy.kubernetes.file"] !== undefined) {
+      kubePath = taskParams["deploy.kubernetes.path"] !== undefined ? "/data/workspace" + taskParams["deploy.kubernetes.path"] : "/data/workspace";
+      kubeFile = taskParams["deploy.kubernetes.file"];
     }
-    var kubeFiles = await common.replaceTokensInFileWithProps(kubePath, kubeFile, "@", "@", taskProps, "g", "g", true);
+    var kubeFiles = await common.replaceTokensInFileWithProps(kubePath, kubeFile, "@", "@", taskParams, "g", "g", true);
     log.sys("Kubernetes files: ", kubeFiles);
     await exec(`${shellDir}/deploy/kubernetes.sh "${kubeFiles}"`);
 
@@ -146,17 +115,17 @@ module.exports = {
     const version = parseVersion(taskParams["version"], false);
 
     log.ci("Initializing Dependencies");
-    // await exec(`${shellDir}/deploy/initialize-dependencies.sh "${taskProps["deploy.type"]}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["deploy.kube.ip"]}" "${taskProps["deploy.kube.token"]}" "${taskProps["deploy.helm.tls"]}"`);
-    await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskProps["kubeVersion"]}" "${taskProps["kubeNamespace"]}" "${taskProps["kubeHost"]}" "${taskProps["kubeIP"]}" "${taskProps["kubeToken"]}"`);
-    await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskProps["helmVersion"]}"`);
+    // await exec(`${shellDir}/deploy/initialize-dependencies.sh "${taskParams["deploy.type"]}" "${taskParams["deploy.kube.version"]}" "${taskParams["deploy.kube.namespace"]}" "${taskParams["deploy.kube.host"]}" "${taskParams["deploy.kube.ip"]}" "${taskParams["deploy.kube.token"]}" "${taskParams["deploy.helm.tls"]}"`);
+    await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
+    await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["helmVersion"]}"`);
 
     log.ci("Deploy Artifacts");
-    var helmRepoURL = taskProps["deploy.helm.repo.url"] !== undefined ? taskProps["deploy.helm.repo.url"] : taskProps["global/helm.repo.url"];
-    // await exec(`${shellDir}/deploy/helm.sh "${taskProps["deploy.type"]}" "${helmRepoURL}" "${taskProps["deploy.helm.chart"]}" "${taskProps["deploy.helm.release"]}" "${taskProps["helm.image.tag"]}" "${taskProps["version.name"]}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["deploy.helm.tls"]}" "${taskProps["global/helm.repo.url"]}"`);
-    await exec(`${shellDir}/deploy/helm.sh "${helmRepoURL}" "${taskProps["helmChart"]}" "${taskProps["helmRelease"]}" "${taskProps["helmImage.tag"]}" "${version}" "${taskProps["kubeVersion"]}" "${taskProps["kubeNamespace"]}" "${taskProps["kubeHost"]}" "${taskProps["helmRepoUrl"]}"`);
+    var helmRepoURL = taskParams["deploy.helm.repo.url"] !== undefined ? taskParams["deploy.helm.repo.url"] : taskParams["global/helm.repo.url"];
+    // await exec(`${shellDir}/deploy/helm.sh "${taskParams["deploy.type"]}" "${helmRepoURL}" "${taskParams["deploy.helm.chart"]}" "${taskParams["deploy.helm.release"]}" "${taskParams["helm.image.tag"]}" "${taskParams["version.name"]}" "${taskParams["deploy.kube.version"]}" "${taskParams["deploy.kube.namespace"]}" "${taskParams["deploy.kube.host"]}" "${taskParams["deploy.helm.tls"]}" "${taskParams["global/helm.repo.url"]}"`);
+    await exec(`${shellDir}/deploy/helm.sh "${helmRepoURL}" "${taskParams["helmChart"]}" "${taskParams["helmRelease"]}" "${taskParams["helmImage.tag"]}" "${version}" "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["helmRepoUrl"]}"`);
 
     // TODO: determine how to accommodate deploying the helm chart to an environment
-    // await exec(`${shellDir}/deploy/helm-chart.sh "${JSON.stringify(taskProps["global/helm.repo.url"])} "${taskProps["deploy.helm.chart"]}" "${taskProps["deploy.helm.release"]}" "${version}" "${taskProps["deploy.kube.version"]}" "${taskProps["deploy.kube.namespace"]}" "${taskProps["deploy.kube.host"]}" "${taskProps["git.ref"]}"`);
+    // await exec(`${shellDir}/deploy/helm-chart.sh "${JSON.stringify(taskParams["global/helm.repo.url"])} "${taskParams["deploy.helm.chart"]}" "${taskParams["deploy.helm.release"]}" "${version}" "${taskParams["deploy.kube.version"]}" "${taskParams["deploy.kube.namespace"]}" "${taskParams["deploy.kube.host"]}" "${taskParams["git.ref"]}"`);
 
     log.debug("Finished Boomerang CICD Helm deploy activity...");
   },
@@ -177,26 +146,26 @@ module.exports = {
     log.ci("Deploy Artifacts");
     try {
       var dockerImageName =
-        taskProps["docker.image.name"] !== undefined
-          ? taskProps["docker.image.name"]
-          : taskProps["system.component.name"]
+        taskParams["docker.image.name"] !== undefined
+          ? taskParams["docker.image.name"]
+          : taskParams["system.component.name"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase();
       var dockerImagePath =
-        taskProps["docker.image.path"] !== undefined
-          ? taskProps["docker.image.path"]
+        taskParams["docker.image.path"] !== undefined
+          ? taskParams["docker.image.path"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase()
-          : taskProps["team.name"]
+          : taskParams["team.name"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase();
       await exec(
-        `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${taskProps["version.name"]}" "${dockerImagePath}" "${JSON.stringify(taskProps["deploy.container.registry.host"])}" "${taskProps["deploy.container.registry.port"]}" "${taskProps["deploy.container.registry.user"]}" "${
-          taskProps["deploy.container.registry.password"]
-        }" "${taskProps["deploy.container.registry.path"]}" "${JSON.stringify(taskProps["global/container.registry.host"])}" "${taskProps["global/container.registry.port"]}" "${taskProps["global/container.registry.user"]}" "${taskProps["global/container.registry.password"]}"`
+        `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${taskParams["version.name"]}" "${dockerImagePath}" "${JSON.stringify(taskParams["deploy.container.registry.host"])}" "${taskParams["deploy.container.registry.port"]}" "${taskParams["deploy.container.registry.user"]}" "${
+          taskParams["deploy.container.registry.password"]
+        }" "${taskParams["deploy.container.registry.path"]}" "${JSON.stringify(taskParams["global/container.registry.host"])}" "${taskParams["global/container.registry.port"]}" "${taskParams["global/container.registry.user"]}" "${taskParams["global/container.registry.password"]}"`
       );
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);

@@ -214,7 +214,6 @@ module.exports = {
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      // await exec(`${shellDir}/build/compile-package-npm.sh "${taskProps["build.tool"]}"`);
       await exec(`${shellDir}/build/compile-package-npm.sh "${taskProps["buildTool"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
@@ -242,11 +241,9 @@ module.exports = {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskProps["languageVersion"]}"`);
-      // await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskProps["language.version"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      // await exec(`${shellDir}/build/compile-python.sh "${taskProps["language.version"]}" "${JSON.stringify(taskProps["global/pypi.registry.host"])}" "${taskProps["global/pypi.repo.id"]}" "${taskProps["global/pypi.repo.user"]}" "${taskProps["global/pypi.repo.password"]}"`);
       await exec(`${shellDir}/build/compile-python.sh "${taskProps["languageVersion"]}" "${JSON.stringify(taskProps["repoUrl"])}" "${taskProps["repoId"]}" "${taskProps["repoUser"]}" "${taskProps["repoPassword"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
@@ -276,11 +273,9 @@ module.exports = {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskProps["languageVersion"]}"`);
-      // await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskProps["language.version"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      // await exec(`${shellDir}/build/compile-package-python-wheel.sh "${taskProps["language.version"]}" "${taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-"))}" "${JSON.stringify(taskProps["global/pypi.repo.url"])}" "${taskProps["global/pypi.repo.id"]}" "${taskProps["global/pypi.repo.user"]}" "${taskProps["global/pypi.repo.password"]}"`);
       await exec(`${shellDir}/build/compile-package-python-wheel.sh "${taskProps["languageVersion"]}" "${version}" "${JSON.stringify(taskProps["repoUrl"])}" "${taskProps["repoId"]}" "${taskProps["repoUser"]}" "${taskProps["repoPassword"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
@@ -307,7 +302,6 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      // await exec(`${shellDir} / common / initialize - dependencies - helm.sh "${taskProps["build.tool"]}"`);
       await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskProps["buildToolVersion"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
