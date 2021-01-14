@@ -214,7 +214,7 @@ module.exports = {
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      await exec(`${shellDir}/build/compile-package-npm.sh "${taskProps["buildTool"]}"`);
+      await exec(`${shellDir}/build/compile-package-npm.sh "${taskParams["buildTool"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -240,11 +240,11 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskProps["languageVersion"]}"`);
+      await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskParams["languageVersion"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      await exec(`${shellDir}/build/compile-python.sh "${taskProps["languageVersion"]}" "${JSON.stringify(taskProps["repoUrl"])}" "${taskProps["repoId"]}" "${taskProps["repoUser"]}" "${taskProps["repoPassword"]}"`);
+      await exec(`${shellDir}/build/compile-python.sh "${taskParams["languageVersion"]}" "${JSON.stringify(taskParams["repoUrl"])}" "${taskParams["repoId"]}" "${taskParams["repoUser"]}" "${taskParams["repoPassword"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -272,11 +272,11 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskProps["languageVersion"]}"`);
+      await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskParams["languageVersion"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      await exec(`${shellDir}/build/compile-package-python-wheel.sh "${taskProps["languageVersion"]}" "${version}" "${JSON.stringify(taskProps["repoUrl"])}" "${taskProps["repoId"]}" "${taskProps["repoUser"]}" "${taskProps["repoPassword"]}"`);
+      await exec(`${shellDir}/build/compile-package-python-wheel.sh "${taskParams["languageVersion"]}" "${version}" "${JSON.stringify(taskParams["repoUrl"])}" "${taskParams["repoId"]}" "${taskParams["repoUser"]}" "${taskParams["repoPassword"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -302,14 +302,16 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskProps["buildToolVersion"]}"`);
+      await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["buildToolVersion"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      // await exec(`${shellDir}/build/package-helm.sh "${taskProps["build.tool"]}" "${taskProps["version.name"]}" "${taskProps["helm.repo.url"]}" "${taskProps["helm.chart.directory"]}" "${taskProps["helm.chart.ignore"]}" "${taskProps["helm.chart.version.increment"]}" "${taskProps["helm.chart.version.tag"]}" "${taskProps["git.ref"]}"`);
-      // await exec(`${shellDir}/build/validate-sync-helm.sh "${taskProps["build.tool"]}" "${taskProps["helm.repo.type"]}" "${taskProps["helm.repo.url"]}" "${taskProps["helm.repo.user"]}" "${taskProps["helm.repo.password"]}" "${taskProps["component/repoOwner"]}" "${taskProps["component/repoName"]}" "${taskProps["git.commit.id"]}" "${taskProps["helm.repo.index.branch"]}"`);
-      await exec(`${shellDir}/build/package-helm.sh "${taskProps["repoUrl"]}" "${taskProps["chartDirectory"]}" "${taskProps["chartIgnore"]}" "${taskProps["chartVersionIncrement"]}" "${taskProps["chartVersionTag"]}" "${taskProps["gitRef"]}"`);
-      await exec(`${shellDir}/build/validate-sync-helm.sh "${taskProps["repoType"]}" "${taskProps["repoUrl"]}" "${taskProps["repoUser"]}" "${taskProps["repoPassword"]}" "${taskProps["gitRepoOwner"]}" "${taskProps["gitRepoName"]}" "${taskProps["gitCommitId"]}" "${taskProps["repoIndexBranch"]}"`);
+      // await exec(`${shellDir}/build/package-helm.sh "${taskParams["build.tool"]}" "${taskParams["version.name"]}" "${taskParams["helm.repo.url"]}" "${taskParams["helm.chart.directory"]}" "${taskParams["helm.chart.ignore"]}" "${taskParams["helm.chart.version.increment"]}" "${taskParams["helm.chart.version.tag"]}" "${taskParams["git.ref"]}"`);
+      // await exec(`${shellDir}/build/validate-sync-helm.sh "${taskParams["build.tool"]}" "${taskParams["helm.repo.type"]}" "${taskParams["helm.repo.url"]}" "${taskParams["helm.repo.user"]}" "${taskParams["helm.repo.password"]}" "${taskParams["component/repoOwner"]}" "${taskParams["component/repoName"]}" "${taskParams["git.commit.id"]}" "${taskParams["helm.repo.index.branch"]}"`);
+      await exec(`${shellDir}/build/package-helm.sh "${taskParams["repoUrl"]}" "${taskParams["chartDirectory"]}" "${taskParams["chartIgnore"]}" "${taskParams["chartVersionIncrement"]}" "${taskParams["chartVersionTag"]}" "${taskParams["gitRef"]}"`);
+      await exec(
+        `${shellDir}/build/validate-sync-helm.sh "${taskParams["repoType"]}" "${taskParams["repoUrl"]}" "${taskParams["repoUser"]}" "${taskParams["repoPassword"]}" "${taskParams["gitRepoOwner"]}" "${taskParams["gitRepoName"]}" "${taskParams["gitCommitId"]}" "${taskParams["repoIndexBranch"]}"`
+      );
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);

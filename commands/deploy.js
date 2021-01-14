@@ -98,7 +98,7 @@ module.exports = {
 
     log.debug("Finished Boomerang CICD Kubernetes deploy activity...");
   },
-  async helm3() {
+  async helm() {
     log.debug("Starting Boomerang CICD Helm deploy activity...");
 
     //Destructure and get properties ready.
@@ -120,9 +120,9 @@ module.exports = {
     await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["helmVersion"]}"`);
 
     log.ci("Deploy Artifacts");
-    var helmRepoURL = taskParams["deploy.helm.repo.url"] !== undefined ? taskParams["deploy.helm.repo.url"] : taskParams["global/helm.repo.url"];
+    // TODO: teams using ${p:deploy.helm.repo.url} will need to switch to helm-repo-url as a custom property to override the global one.
     // await exec(`${shellDir}/deploy/helm.sh "${taskParams["deploy.type"]}" "${helmRepoURL}" "${taskParams["deploy.helm.chart"]}" "${taskParams["deploy.helm.release"]}" "${taskParams["helm.image.tag"]}" "${taskParams["version.name"]}" "${taskParams["deploy.kube.version"]}" "${taskParams["deploy.kube.namespace"]}" "${taskParams["deploy.kube.host"]}" "${taskParams["deploy.helm.tls"]}" "${taskParams["global/helm.repo.url"]}"`);
-    await exec(`${shellDir}/deploy/helm.sh "${helmRepoURL}" "${taskParams["helmChart"]}" "${taskParams["helmRelease"]}" "${taskParams["helmImage.tag"]}" "${version}" "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["helmRepoUrl"]}"`);
+    await exec(`${shellDir}/deploy/helm.sh "${taskParams["repoUrl"]}" "${taskParams["helmChart"]}" "${taskParams["helmRelease"]}" "${taskParams["helmImageTag"]}" "${version}" "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}"`);
 
     // TODO: determine how to accommodate deploying the helm chart to an environment
     // await exec(`${shellDir}/deploy/helm-chart.sh "${JSON.stringify(taskParams["global/helm.repo.url"])} "${taskParams["deploy.helm.chart"]}" "${taskParams["deploy.helm.release"]}" "${version}" "${taskParams["deploy.kube.version"]}" "${taskParams["deploy.kube.namespace"]}" "${taskParams["deploy.kube.host"]}" "${taskParams["git.ref"]}"`);
@@ -143,29 +143,31 @@ module.exports = {
     let dir = "/workspace/" + taskParams["workflow-activity-id"];
     log.debug("Working Directory: ", dir);
 
+    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+
     log.ci("Deploy Artifacts");
     try {
       var dockerImageName =
-        taskParams["docker.image.name"] !== undefined
-          ? taskParams["docker.image.name"]
-          : taskParams["system.component.name"]
+        taskParams["imageName"] !== undefined && taskParams["imagePath"] !== '""'
+          ? taskParams["imageName"]
+          : taskParams["componentName"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase();
       var dockerImagePath =
-        taskParams["docker.image.path"] !== undefined
-          ? taskParams["docker.image.path"]
+        taskParams["imagePath"] !== undefined && taskParams["imagePath"] !== '""'
+          ? taskParams["imagePath"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase()
-          : taskParams["team.name"]
+          : taskParams["teamName"]
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase();
       await exec(
-        `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${taskParams["version.name"]}" "${dockerImagePath}" "${JSON.stringify(taskParams["deploy.container.registry.host"])}" "${taskParams["deploy.container.registry.port"]}" "${taskParams["deploy.container.registry.user"]}" "${
-          taskParams["deploy.container.registry.password"]
-        }" "${taskParams["deploy.container.registry.path"]}" "${JSON.stringify(taskParams["global/container.registry.host"])}" "${taskParams["global/container.registry.port"]}" "${taskParams["global/container.registry.user"]}" "${taskParams["global/container.registry.password"]}"`
+        `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${version}" "${dockerImagePath}" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${taskParams["containerRegistryPassword"]}" "${
+          taskParams["containerRegistryPath"]
+        }" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${taskParams["globalContainerRegistryUser"]}" "${taskParams["globalContainerRegistryPassword"]}"`
       );
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
