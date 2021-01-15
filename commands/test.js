@@ -3,22 +3,24 @@ const shell = require("shelljs");
 const fs = require("fs");
 
 // TODO: Move enums to a shared constants file to be used for other commands
-const ComponentMode = {
-  Nodejs: "nodejs",
-  Python: "python",
-  Java: "java",
-  Jar: "lib.jar",
-  Helm: "helm.chart"
-};
+// const ComponentMode = {
+//   Nodejs: "nodejs",
+//   Python: "python",
+//   Java: "java",
+//   Jar: "lib.jar",
+//   Helm: "helm.chart"
+// };
 
 const TestType = {
   Unit: "unit",
   Static: "static",
-  Security: "security"
+  Security: "security",
+  SeleniumNative: "seleniumNative",
+  SeleniumCustom: "seleniumCustom"
 };
 
 // Freeze so they can't be modified at runtime
-Object.freeze(ComponentMode);
+// Object.freeze(ComponentMode);
 Object.freeze(TestType);
 
 function exec(command) {
@@ -34,9 +36,20 @@ function exec(command) {
   });
 }
 
+function parseVersion(version, appendBuildNumber) {
+  var parsedVersion = version;
+  // Trim build number
+  if (appendBuildNumber === false) {
+    log.sys("Stripping build number from version...");
+    parsedVersion = version.substr(0, version.lastIndexOf("-"));
+  }
+  log.debug("  Version:", parsedVersion);
+  return parsedVersion;
+}
+
 module.exports = {
   async java() {
-    log.debug("Starting Boomerang CICD Java build activity...");
+    log.debug("Started Boomerang CICD Java Test Activity");
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
@@ -48,27 +61,9 @@ module.exports = {
 
     let dir = "/workspace/" + taskParams["workflow-activity-id"];
     log.debug("Working Directory: ", dir);
-    // To implement when we have custom working directories as part of advanced task configuration
-    // ----------------
-    // let dir;
-    // if (!workingDir || workingDir === '""') {
-    //   dir = "/data";
-    //   log.debug("No directory specified. Defaulting...");
-    // } else {
-    //   dir = workingDir;
-    // }
-    // shell.config.silent = true; //set to silent otherwise CD will print out no such file or directory if the directory doesn't exist
-    // shell.cd(dir);
-    // //shell.cd -> does not have an error handling call back and will default to current directory of /cli
-    // if (shell.pwd().toString() !== dir.toString()) {
-    //   log.err("No such file or directory:", dir);
-    //   return process.exit(1);
-    // }
-    // shell.config.silent = false;
-    // ----------------
 
+    const testTypes = typeof taskParams["test.type"] === "string" ? taskParams["test.type"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
-    const testTypes = typeof taskProps["test.type"] === "string" ? taskProps["test.type"].split(",") : [];
 
     try {
       log.ci("Initializing Dependencies");
@@ -76,9 +71,6 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
-      log.ci("Compile & Package Artifact(s)");
-      shell.cd(dir + "/repository");
-      // await exec(`${shellDir}/build/compile-java.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]} ${version} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoId"]} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
       if (!common.checkFileContainsStringWithProps("/data/workspace/pom.xml", "<plugins>", undefined, false)) {
         log.debug("No Maven plugins found, adding...");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
@@ -99,26 +91,41 @@ module.exports = {
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
         common.replaceStringInFileWithProps("/data/workspace/pom.xml", "<plugins>", replacementString, undefined, false);
       }
+
+      log.ci("Testing artifacts");
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        await exec(`${shellDir}/test/static-java.sh ${taskProps["build.tool"]} ${taskProps["version.name"]} ${taskProps["global/sonar.url"]} ${taskProps["global/sonar.api.key"]} ${taskProps["system.component.id"]} ${taskProps["system.component.name"]} ${taskProps["sonar.exclusions"]}`);
+        await exec(`${shellDir}/test/static-java.sh ${taskParams["build.tool"]} ${version} ${taskParams["global/sonar.url"]} ${taskParams["global/sonar.api.key"]} ${taskParams["system.component.id"]} ${taskParams["system.component.name"]} ${taskParams["sonar.exclusions"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
         await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
-        await exec(`${shellDir}/test/unit-java.sh ${taskProps["build.tool"]} ${taskProps["version.name"]} ${taskProps["global/sonar.url"]} ${taskProps["global/sonar.api.key"]} ${taskProps["system.component.id"]} ${taskProps["system.component.name"]}`);
+        await exec(`${shellDir}/test/unit-java.sh ${taskParams["build.tool"]} ${version} ${taskParams["global/sonar.url"]} ${taskParams["global/sonar.api.key"]} ${taskParams["system.component.id"]} ${taskParams["system.component.name"]}`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
+        shell.cd(dir + "/repository");
+        // await exec(`${shellDir}/build/compile-java.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]} ${version} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoId"]} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
         await exec(
-          `${shellDir}/build/compile-java.sh ${taskProps["build.tool"]} ${taskProps["build.tool.version"]} ${taskProps["version.name"]} ${JSON.stringify(taskProps["global/maven.repo.url"])} ${taskProps["global/maven.repo.id"]} ${taskProps["global/artifactory.user"]} ${
-            taskProps["global/artifactory.password"]
-          }`
+          `${shellDir}/test/security-java.sh ${taskParams["system.component.name"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["global/asoc.repo.user"]} ${taskParams["global/asoc.repo.password"]} ${taskParams["global/asoc.app.id"]} ${
+            taskParams["global/asoc.login.key.id"]
+          } ${taskParams["global/asoc.login.secret"]} ${taskParams["global/asoc.client.cli"]} ${taskParams["global/asoc.java.runtime"]} ${shellDir}`
         );
+      }
+      if (testTypes.includes(TestType.SeleniumNative)) {
+        log.debug("Commencing automated Selenium native tests");
         await exec(
-          `${shellDir}/test/security-java.sh ${taskProps["system.component.name"]} ${taskProps["version.name"]} ${JSON.stringify(taskProps["global/asoc.repo.url"])} ${taskProps["global/asoc.repo.user"]} ${taskProps["global/asoc.repo.password"]} ${taskProps["global/asoc.app.id"]} ${
-            taskProps["global/asoc.login.key.id"]
-          } ${taskProps["global/asoc.login.secret"]} ${taskProps["global/asoc.client.cli"]} ${taskProps["global/asoc.java.runtime"]} ${shellDir}`
+          `${shellDir}/test/selenium-native.sh ${taskParams["system.component.name"]} ${version} ${taskParams["global/saucelabs.api.key"]} ${taskParams["global/saucelabs.api.user"]} ${JSON.stringify(taskParams["global/saucelabs.api.url"])} ${taskParams["browser.name"]} ${
+            taskParams["browser.version"]
+          } ${taskParams["platform.type"]} ${taskParams["platform.version"]} ${taskParams["web.tests.folder"]} ${taskParams["git.user"]} ${taskParams["git.password"]} ${shellDir}`
+        );
+      }
+      if (testTypes.includes(TestType.SeleniumCustom)) {
+        log.debug("Commencing automated Selenium custom tests");
+        await exec(
+          `${shellDir}/test/selenium-custom.sh ${taskParams["team.name"]} ${taskParams["system.component.name"]} ${version} ${taskParams["selenium.application.properties.file"]} ${taskParams["selenium.application.properties.key"]} ${taskParams["global/saucelabs.api.url.with.credentials"]} ${
+            taskParams["selenium.report.folder"]
+          } ${JSON.stringify(taskParams["global/artifactory.url"])} ${taskParams["global/artifactory.user"]} ${taskParams["global/artifactory.password"]} ${shellDir}`
         );
       }
     } catch (e) {
@@ -126,90 +133,163 @@ module.exports = {
       process.exit(1);
     } finally {
       await exec(shellDir + "/common/footer.sh");
-      log.debug("Finished Boomerang CICD Java build activity");
+      log.debug("Finished Boomerang CICD Java test activity");
     }
   },
-  async execute() {
-    log.debug("Started CICD Test Activity");
+  async nodejs() {
+    log.debug("Started Boomerang CICD NodeJS Test Activity");
 
-    const taskProps = utils.resolveCICDInputProperties();
+    //Destructure and get properties ready.
+    const taskParams = utils.resolveInputParameters();
+    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
 
-    const testTypes = typeof taskProps["test.type"] === "string" ? taskProps["test.type"].split(",") : [];
-    const componentMode = taskProps["system.mode"];
+    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Working Directory: ", dir);
+
+    const testTypes = typeof taskParams["test.type"] === "string" ? taskParams["test.type"].split(",") : [];
+    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
-      if (taskProps["build.number.append"] === false) {
-        log.sys("Stripping build number from version...");
-        taskProps["version.name"] = taskProps["version.name"].substr(0, taskProps["version.name"].lastIndexOf("-"));
-        log.debug("  Version:", taskProps["version.name"]);
+      log.ci("Initializing Dependencies");
+      await exec(`${shellDir}/common/initialize.sh`);
+      await exec(`${shellDir}/common/initialize-dependencies-node.sh ${taskParams["build.tool"]} ${JSON.stringify(taskParams["global/artifactory.url"])} ${taskParams["global/artifactory.user"]} ${taskParams["global/artifactory.password"]}`);
+
+      await exec(`${shellDir}/test/initialize-dependencies-node.sh ${taskParams["build.tool"]} ${taskParams["node.cypress.install.binary"]}`);
+      if (testTypes.includes(TestType.Static)) {
+        log.debug("Commencing static tests");
+        await exec(`${shellDir}/test/static-node.sh ${taskParams["build.tool"]} ${version} ${taskParams["global/sonar.url"]} ${taskParams["global/sonar.api.key"]} ${taskParams["system.component.id"]} ${taskParams["system.component.name"]}`);
       }
-
-      if (!testTypes.length) {
-        log.good("No test types specified.");
-      } else {
-        shell.cd("/data");
-        log.ci("Initializing Dependencies");
-        if (componentMode === ComponentMode.Jar || componentMode === ComponentMode.Java) {
-        } else if (componentMode === ComponentMode.Nodejs) {
-          await exec(`${shellDir}/common/initialize-dependencies-node.sh ${taskProps["build.tool"]} ${JSON.stringify(taskProps["global/artifactory.url"])} ${taskProps["global/artifactory.user"]} ${taskProps["global/artifactory.password"]}`);
-        } else if (componentMode === ComponentMode.Python) {
-          await exec(`${shellDir}/common/initialize-dependencies-python.sh ${taskProps["language.version"]}`);
-        } else if (componentMode === ComponentMode.Helm) {
-          await exec(`${shellDir}/common/initialize-dependencies-helm.sh ${taskProps["kube.version"]}`);
-        }
-
-        log.ci("Retrieving Source Code");
-        await exec(`${shellDir}/common/git-clone.sh "${taskProps["git.private.key"]}" "${taskProps["component/repoSshUrl"]}" "${taskProps["component/repoUrl"]}" "${taskProps["git.commit.id"]}"`);
-        shell.cd("/data/workspace");
-        if (componentMode === ComponentMode.Jar || componentMode === ComponentMode.Java) {
-        } else if (componentMode === ComponentMode.Nodejs) {
-          log.debug("Install node.js dependencies");
-          await exec(`${shellDir}/test/initialize-dependencies-node.sh ${taskProps["build.tool"]} ${taskProps["node.cypress.install.binary"]}`);
-          if (testTypes.includes(TestType.Static)) {
-            log.debug("Commencing static tests");
-            await exec(`${shellDir}/test/static-node.sh ${taskProps["build.tool"]} ${taskProps["version.name"]} ${taskProps["global/sonar.url"]} ${taskProps["global/sonar.api.key"]} ${taskProps["system.component.id"]} ${taskProps["system.component.name"]}`);
-          }
-          if (testTypes.includes(TestType.Unit)) {
-            log.debug("Commencing unit tests");
-            await exec(`${shellDir}/test/unit-node.sh ${taskProps["build.tool"]} ${taskProps["version.name"]} ${taskProps["global/sonar.url"]} ${taskProps["global/sonar.api.key"]} ${taskProps["system.component.id"]} ${taskProps["system.component.name"]}`);
-          }
-          if (testTypes.includes(TestType.Security)) {
-            log.debug("Commencing security tests");
-            await exec(
-              `${shellDir}/test/security-node.sh ${taskProps["system.component.name"]} ${taskProps["version.name"]} ${JSON.stringify(taskProps["global/asoc.repo.url"])} ${taskProps["global/asoc.repo.user"]} ${taskProps["global/asoc.repo.password"]} ${taskProps["global/asoc.app.id"]} ${
-                taskProps["global/asoc.login.key.id"]
-              } ${taskProps["global/asoc.login.secret"]} ${taskProps["global/asoc.client.cli"]} ${taskProps["global/asoc.java.runtime"]} ${shellDir}`
-            );
-          }
-        } else if (componentMode === ComponentMode.Python) {
-          if (testTypes.includes(TestType.Static)) {
-            log.debug("Commencing static tests");
-            await exec(`${shellDir}/test/initialize-dependencies-static-python.sh ${taskProps["language.version"]} ${JSON.stringify(taskProps["global/pypi.registry.host"])} ${taskProps["global/pypi.repo.id"]} ${taskProps["global/pypi.repo.user"]} ${taskProps["global/pypi.repo.password"]}`);
-            await exec(`${shellDir}/test/static-python.sh ${taskProps["build.tool"]} ${taskProps["version.name"]} ${taskProps["global/sonar.url"]} ${taskProps["global/sonar.api.key"]} ${taskProps["system.component.id"]} ${taskProps["system.component.name"]}`);
-          }
-          if (testTypes.includes(TestType.Unit)) {
-            log.debug("Unit tests not implemented");
-          }
-          if (testTypes.includes(TestType.Security)) {
-            log.debug("Security tests not implemented");
-          }
-        } else if (componentMode === ComponentMode.Helm) {
-          if (testTypes.includes(TestType.Static)) {
-            log.debug("Linting Helm Chart(s)");
-            await exec(`${shellDir}/test/lint-helm.sh ${taskProps["global/helm.repo.url"]} ${taskProps["helm.chart.directory"]} ${taskProps["helm.chart.ignore"]}`);
-          }
-        }
+      if (testTypes.includes(TestType.Unit)) {
+        log.debug("Commencing unit tests");
+        await exec(`${shellDir}/test/unit-node.sh ${taskParams["build.tool"]} ${version} ${taskParams["global/sonar.url"]} ${taskParams["global/sonar.api.key"]} ${taskParams["system.component.id"]} ${taskParams["system.component.name"]}`);
+      }
+      if (testTypes.includes(TestType.Security)) {
+        log.debug("Commencing security tests");
+        await exec(
+          `${shellDir}/test/security-node.sh ${taskParams["system.component.name"]} ${version} ${JSON.stringify(taskParams["global/asoc.repo.url"])} ${taskParams["global/asoc.repo.user"]} ${taskParams["global/asoc.repo.password"]} ${taskParams["global/asoc.app.id"]} ${
+            taskParams["global/asoc.login.key.id"]
+          } ${taskParams["global/asoc.login.secret"]} ${taskParams["global/asoc.client.cli"]} ${taskParams["global/asoc.java.runtime"]} ${shellDir}`
+        );
+      }
+      if (testTypes.includes(TestType.SeleniumNative)) {
+        log.debug("Commencing automated Selenium native tests");
+        await exec(
+          `${shellDir}/test/selenium-native.sh ${taskParams["system.component.name"]} ${version} ${taskParams["global/saucelabs.api.key"]} ${taskParams["global/saucelabs.api.user"]} ${JSON.stringify(taskParams["global/saucelabs.api.url"])} ${taskParams["browser.name"]} ${
+            taskParams["browser.version"]
+          } ${taskParams["platform.type"]} ${taskParams["platform.version"]} ${taskParams["web.tests.folder"]} ${taskParams["git.user"]} ${taskParams["git.password"]} ${shellDir}`
+        );
+      }
+      if (testTypes.includes(TestType.SeleniumCustom)) {
+        log.debug("Custom Selenium testing type not supported for NodeJS");
       }
     } catch (e) {
-      log.err(`  Error encountered. Code: ${e.code}, Message: ${e.message}`);
+      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      await exec(`${shellDir}/common/footer.sh`);
-      log.debug("Finished CICD Test Activity");
+      await exec(shellDir + "/common/footer.sh");
+      log.debug("Finished Boomerang CICD NodeJS test activity");
+    }
+  },
+  async python() {
+    log.debug("Started Boomerang CICD Python Test Activity");
+
+    //Destructure and get properties ready.
+    const taskParams = utils.resolveInputParameters();
+    // const { path, script } = taskParams;
+    const shellDir = "/cli/scripts";
+    config = {
+      verbose: true
+    };
+
+    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Working Directory: ", dir);
+
+    const testTypes = typeof taskParams["test.type"] === "string" ? taskParams["test.type"].split(",") : [];
+    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+
+    try {
+      log.ci("Initializing Dependencies");
+      await exec(`${shellDir}/common/initialize.sh`);
+      await exec(`${shellDir}/common/initialize-dependencies-python.sh ${taskParams["language.version"]}`);
+
+      if (testTypes.includes(TestType.Static)) {
+        log.debug("Commencing static tests");
+        await exec(`${shellDir}/test/initialize-dependencies-static-python.sh ${taskParams["language.version"]} ${JSON.stringify(taskParams["global/pypi.registry.host"])} ${taskParams["global/pypi.repo.id"]} ${taskParams["global/pypi.repo.user"]} ${taskParams["global/pypi.repo.password"]}`);
+        await exec(`${shellDir}/test/static-python.sh ${taskParams["build.tool"]} ${version} ${taskParams["global/sonar.url"]} ${taskParams["global/sonar.api.key"]} ${taskParams["system.component.id"]} ${taskParams["system.component.name"]}`);
+      }
+      if (testTypes.includes(TestType.Unit)) {
+        log.debug("Unit tests not implemented for Python");
+      }
+      if (testTypes.includes(TestType.Security)) {
+        log.debug("Security tests not implemented for Python");
+      }
+      if (testTypes.includes(TestType.SeleniumNative)) {
+        log.debug("Commencing automated Selenium native tests");
+        await exec(
+          `${shellDir}/test/selenium-native.sh ${taskParams["system.component.name"]} ${version} ${taskParams["global/saucelabs.api.key"]} ${taskParams["global/saucelabs.api.user"]} ${JSON.stringify(taskParams["global/saucelabs.api.url"])} ${taskParams["browser.name"]} ${
+            taskParams["browser.version"]
+          } ${taskParams["platform.type"]} ${taskParams["platform.version"]} ${taskParams["web.tests.folder"]} ${taskParams["git.user"]} ${taskParams["git.password"]} ${shellDir}`
+        );
+      }
+      if (testTypes.includes(TestType.SeleniumCustom)) {
+        log.debug("Custom Selenium testing type not supported for Python");
+      }
+    } catch (e) {
+      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
+      process.exit(1);
+    } finally {
+      await exec(shellDir + "/common/footer.sh");
+      log.debug("Finished Boomerang CICD Python test activity");
+    }
+  },
+  async helm() {
+    log.debug("Started Boomerang CICD Helm Test Activity");
+
+    //Destructure and get properties ready.
+    const taskParams = utils.resolveInputParameters();
+    // const { path, script } = taskParams;
+    const shellDir = "/cli/scripts";
+    config = {
+      verbose: true
+    };
+
+    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Working Directory: ", dir);
+
+    const testTypes = typeof taskParams["test.type"] === "string" ? taskParams["test.type"].split(",") : [];
+    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+
+    try {
+      log.ci("Initializing Dependencies");
+      await exec(`${shellDir}/common/initialize.sh`);
+      await exec(`${shellDir}/common/initialize-dependencies-helm.sh ${taskParams["kube.version"]}`);
+
+      if (testTypes.includes(TestType.Static)) {
+        log.debug("Linting Helm Chart(s)");
+        await exec(`${shellDir}/test/lint-helm.sh ${taskParams["global/helm.repo.url"]} ${taskParams["helm.chart.directory"]} ${taskParams["helm.chart.ignore"]}`);
+      }
+      if (testTypes.includes(TestType.Unit)) {
+        log.debug("Unit tests not implemented for Helm");
+      }
+      if (testTypes.includes(TestType.Security)) {
+        log.debug("Security tests not implemented for Helm");
+      }
+      if (testTypes.includes(TestType.SeleniumNative)) {
+        log.debug("Native Selenium testing type not supported for Helm");
+      }
+      if (testTypes.includes(TestType.SeleniumCustom)) {
+        log.debug("Custom Selenium testing type not supported for Helm");
+      }
+    } catch (e) {
+      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
+      process.exit(1);
+    } finally {
+      await exec(shellDir + "/common/footer.sh");
+      log.debug("Finished Boomerang CICD Helm test activity");
     }
   }
 };
