@@ -171,7 +171,7 @@ module.exports = {
       process.exit(1);
     } finally {
       await exec(shellDir + "/common/footer.sh");
-      log.debug("Finished Boomerang CICD Java test activity");
+      log.debug("Finished Boomerang CICD NodeJS test activity");
     }
   },
   async python() {
@@ -219,7 +219,7 @@ module.exports = {
       process.exit(1);
     } finally {
       await exec(shellDir + "/common/footer.sh");
-      log.debug("Finished Boomerang CICD Java test activity");
+      log.debug("Finished Boomerang CICD Python test activity");
     }
   },
   async helm() {
@@ -265,7 +265,7 @@ module.exports = {
       process.exit(1);
     } finally {
       await exec(shellDir + "/common/footer.sh");
-      log.debug("Finished Boomerang CICD Java test activity");
+      log.debug("Finished Boomerang CICD Helm test activity");
     }
   }
 };
