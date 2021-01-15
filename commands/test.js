@@ -3,13 +3,13 @@ const shell = require("shelljs");
 const fs = require("fs");
 
 // TODO: Move enums to a shared constants file to be used for other commands
-const ComponentMode = {
-  Nodejs: "nodejs",
-  Python: "python",
-  Java: "java",
-  Jar: "lib.jar",
-  Helm: "helm.chart"
-};
+// const ComponentMode = {
+//   Nodejs: "nodejs",
+//   Python: "python",
+//   Java: "java",
+//   Jar: "lib.jar",
+//   Helm: "helm.chart"
+// };
 
 const TestType = {
   Unit: "unit",
@@ -20,7 +20,7 @@ const TestType = {
 };
 
 // Freeze so they can't be modified at runtime
-Object.freeze(ComponentMode);
+// Object.freeze(ComponentMode);
 Object.freeze(TestType);
 
 function exec(command) {
@@ -246,7 +246,7 @@ module.exports = {
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Linting Helm Chart(s)");
-        await exec(`${shellDir}/test/lint-helm.sh ${taskProps["global/helm.repo.url"]} ${taskProps["helm.chart.directory"]} ${taskProps["helm.chart.ignore"]}`);
+        await exec(`${shellDir}/test/lint-helm.sh ${taskParams["global/helm.repo.url"]} ${taskParams["helm.chart.directory"]} ${taskParams["helm.chart.ignore"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Helm");
