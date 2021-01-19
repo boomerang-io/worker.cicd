@@ -1,5 +1,6 @@
 const { log, utils, CICDError, common } = require("@boomerang-io/worker-core");
 const shell = require("shelljs");
+const properties = require("properties");
 
 function exec(command) {
   return new Promise(function(resolve, reject) {
@@ -32,6 +33,68 @@ function parseVersion(version, appendBuildNumber) {
 // }
 
 module.exports = {
+  async testAllParams() {
+    PARAMS_PATTERN = /\"([\w\ \_\-]*)\=([\w\ \,.]+)\,\"/g;
+
+    const taskParams = utils.resolveInputParameters();
+    const allParams = taskParams["allParameters4"];
+
+    log.debug("All Parameters String: " + allParams);
+    const obj = JSON.parse(allParams);
+
+    // var allParamsArray = allParams.split('","');
+
+    // var allParamsArray = allParams.substring(1, allParams.length - 1).split('","');
+
+    // log.debug(allParamsArray[0]);
+
+    // allParamsArray.forEach(param => {
+    //   log.debug(param);
+    // });
+
+    // ------------
+
+    // var splits = allParams.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+    // splits.forEach(param => {
+    //   log.debug(param);
+    // });
+
+    // ------------
+
+    // const matchedParams = allParams.match(PARAMS_PATTERN);
+
+    // log.debug(matchedParams);
+
+    // var allParamsObj = {};
+
+    // allParamsArray.array.forEach(element => {
+    //   allParamsObj[element[0]] = element[1]
+    // });
+
+    // ------------
+
+    // var options = {
+    //   comments: "#",
+    //   separators: "=",
+    //   strict: true,
+    //   reviver: function (key, value) {
+    //     if (key != null && value == null) {
+    //       return '""';
+    //     } else {
+    //       //Returns all the lines
+    //       return this.assert();
+    //     }
+    //   },
+    // };
+    // const parsedParams = properties.parse(allParams, options);
+    // parsedParams.forEach(param => {
+    //   log.debug(param);
+    // });
+
+    // ------------
+
+    log.debug(obj["bigString"]);
+  },
   async kubernetes() {
     log.debug("Starting Boomerang CICD Kubernetes deploy activity...");
 
@@ -51,48 +114,48 @@ module.exports = {
     await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
 
     log.ci("Deploy Artifacts");
-    taskParams["process/org"] = taskParams["team.name"]
-      .toString()
-      .replace(/[^a-zA-Z0-9]/g, "")
-      .toLowerCase();
-    taskParams["process/component.name"] = taskParams["system.component.name"]
-      .toString()
-      .replace(/[^a-zA-Z0-9]/g, "")
-      .toLowerCase();
-    // Needs to follow Kubernetes allowed characters and patterns.
-    taskParams["process/env"] = taskParams["system/stage.name"]
-      .toString()
-      .replace(/[^a-zA-Z0-9\-]/g, "")
-      .toLowerCase();
-    taskParams["process/container.port"] = taskParams["deploy.kubernetes.container.port"] !== undefined ? taskParams["deploy.kubernetes.container.port"] : "8080";
-    taskParams["process/service.port"] = taskParams["deploy.kubernetes.service.port"] !== undefined ? taskParams["deploy.kubernetes.service.port"] : "80";
-    taskParams["process/registry.key"] = taskParams["deploy.kubernetes.registry.key"] !== undefined ? taskParams["deploy.kubernetes.registry.key"] : "boomerang.registrykey";
-    // The additional checks are required for deploy.container.registry.host/port/path as these properties are also used as STAGE properties which currently
-    // are set to "" if they have no value. This will be solved if we move away from default STAGE properties.
-    taskParams["process/container.registry.host"] =
-      taskParams["deploy.container.registry.host"] !== undefined && taskParams["deploy.container.registry.host"] !== '""' ? taskParams["deploy.container.registry.host"] : taskParams["global/container.registry.host"] + ":" + taskParams["global/container.registry.port"];
-    log.sys("Container Registry Host:", taskParams["process/container.registry.host"]);
-    if (taskParams["deploy.container.registry.port"] !== undefined && taskParams["deploy.container.registry.port"] !== '""') {
-      taskParams["process/container.registry.port"] = ":" + taskParams["deploy.container.registry.port"];
-    } else {
-      taskParams["process/container.registry.port"] = "";
-    }
-    log.sys("Container Registry Port:", taskParams["process/container.registry.port"]);
-    taskParams["process/container.registry.path"] = taskParams["deploy.container.registry.path"] !== undefined && taskParams["deploy.container.registry.path"] !== '""' ? taskParams["deploy.container.registry.path"] : "/" + taskParams["process/org"];
-    log.sys("Container Registry Path:", taskParams["process/container.registry.path"]);
-    var dockerImageName = taskParams["docker.image.name"] !== undefined ? taskParams["docker.image.name"] : taskParams["system.component.name"];
-    // Name specification reference: https://docs.docker.com/engine/reference/commandline/tag/
-    taskParams["process/docker.image.name"] = dockerImageName
-      .toString()
-      .replace(/[^a-zA-Z0-9\-\_\.]/g, "")
-      .toLowerCase();
-    var kubePath = shellDir + "/deploy";
-    var kubeFile = taskParams["deploy.kubernetes.ingress"] == undefined || taskParams["deploy.kubernetes.ingress"] == false ? "^kube.yaml$" : ".*.yaml$";
-    if (taskParams["deploy.kubernetes.file"] !== undefined) {
-      kubePath = taskParams["deploy.kubernetes.path"] !== undefined ? "/data/workspace" + taskParams["deploy.kubernetes.path"] : "/data/workspace";
-      kubeFile = taskParams["deploy.kubernetes.file"];
-    }
-    var kubeFiles = await common.replaceTokensInFileWithProps(kubePath, kubeFile, "@", "@", taskParams, "g", "g", true);
+    // taskParams["process/org"] = taskParams["team.name"]
+    //   .toString()
+    //   .replace(/[^a-zA-Z0-9]/g, "")
+    //   .toLowerCase();
+    // taskParams["process/component.name"] = taskParams["system.component.name"]
+    //   .toString()
+    //   .replace(/[^a-zA-Z0-9]/g, "")
+    //   .toLowerCase();
+    // // Needs to follow Kubernetes allowed characters and patterns.
+    // taskParams["process/env"] = taskParams["system/stage.name"]
+    //   .toString()
+    //   .replace(/[^a-zA-Z0-9\-]/g, "")
+    //   .toLowerCase();
+    // taskParams["process/container.port"] = taskParams["deploy.kubernetes.container.port"] !== undefined ? taskParams["deploy.kubernetes.container.port"] : "8080";
+    // taskParams["process/service.port"] = taskParams["deploy.kubernetes.service.port"] !== undefined ? taskParams["deploy.kubernetes.service.port"] : "80";
+    // taskParams["process/registry.key"] = taskParams["deploy.kubernetes.registry.key"] !== undefined ? taskParams["deploy.kubernetes.registry.key"] : "boomerang.registrykey";
+    // // The additional checks are required for deploy.container.registry.host/port/path as these properties are also used as STAGE properties which currently
+    // // are set to "" if they have no value. This will be solved if we move away from default STAGE properties.
+    // taskParams["process/container.registry.host"] =
+    //   taskParams["deploy.container.registry.host"] !== undefined && taskParams["deploy.container.registry.host"] !== '""' ? taskParams["deploy.container.registry.host"] : taskParams["global/container.registry.host"] + ":" + taskParams["global/container.registry.port"];
+    // log.sys("Container Registry Host:", taskParams["process/container.registry.host"]);
+    // if (taskParams["deploy.container.registry.port"] !== undefined && taskParams["deploy.container.registry.port"] !== '""') {
+    //   taskParams["process/container.registry.port"] = ":" + taskParams["deploy.container.registry.port"];
+    // } else {
+    //   taskParams["process/container.registry.port"] = "";
+    // }
+    // log.sys("Container Registry Port:", taskParams["process/container.registry.port"]);
+    // taskParams["process/container.registry.path"] = taskParams["deploy.container.registry.path"] !== undefined && taskParams["deploy.container.registry.path"] !== '""' ? taskParams["deploy.container.registry.path"] : "/" + taskParams["process/org"];
+    // log.sys("Container Registry Path:", taskParams["process/container.registry.path"]);
+    // var dockerImageName = taskParams["docker.image.name"] !== undefined ? taskParams["docker.image.name"] : taskParams["system.component.name"];
+    // // Name specification reference: https://docs.docker.com/engine/reference/commandline/tag/
+    // taskParams["process/docker.image.name"] = dockerImageName
+    //   .toString()
+    //   .replace(/[^a-zA-Z0-9\-\_\.]/g, "")
+    //   .toLowerCase();
+    // var kubePath = shellDir + "/deploy";
+    // var kubeFile = taskParams["deploy.kubernetes.ingress"] == undefined || taskParams["deploy.kubernetes.ingress"] == false ? "^kube.yaml$" : ".*.yaml$";
+    // if (taskParams["deploy.kubernetes.file"] !== undefined) {
+    //   kubePath = taskParams["deploy.kubernetes.path"] !== undefined ? "/data/workspace" + taskParams["deploy.kubernetes.path"] : "/data/workspace";
+    //   kubeFile = taskParams["deploy.kubernetes.file"];
+    // }
+    // var kubeFiles = await common.replaceTokensInFileWithProps(kubePath, kubeFile, "@", "@", taskParams, "g", "g", true);
     log.sys("Kubernetes files: ", kubeFiles);
     await exec(`${shellDir}/deploy/kubernetes.sh "${kubeFiles}"`);
 
