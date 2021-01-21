@@ -66,7 +66,9 @@ module.exports = {
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
+      log.ci("Switch to Repository directory");
       shell.cd(dir + "/repository");
+      await exec(`pwd`);
 
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
@@ -319,7 +321,7 @@ module.exports = {
 
     try {
       shell.cd(dir + "/repository");
-      
+
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-helm.sh ${taskParams["kubeVersion"]}`);
