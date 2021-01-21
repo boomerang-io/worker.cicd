@@ -71,25 +71,25 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
-      if (!common.checkFileContainsStringWithProps(dir + "/pom.xml", "<plugins>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<plugins>", undefined, false)) {
         log.debug("No Maven plugins found, adding...");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding jacoco-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding sonar-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
         log.debug("...adding maven-surefire-report-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
       }
 
       log.ci("Testing artifacts");
@@ -147,25 +147,25 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
-      if (!common.checkFileContainsStringWithProps(dir + "/pom.xml", "<plugins>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<plugins>", undefined, false)) {
         log.debug("No Maven plugins found, adding...");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding jacoco-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding sonar-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
         log.debug("...adding maven-surefire-report-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
       }
 
       log.ci("Testing artifacts");
