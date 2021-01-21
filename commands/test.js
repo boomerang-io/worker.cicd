@@ -32,7 +32,7 @@ function parseVersion(version, appendBuildNumber) {
     log.sys("Stripping build number from version...");
     parsedVersion = version.substr(0, version.lastIndexOf("-"));
   }
-  log.debug("  Version:", parsedVersion);
+  log.debug("Version:", parsedVersion);
   return parsedVersion;
 }
 
