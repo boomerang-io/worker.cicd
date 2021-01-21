@@ -124,6 +124,80 @@ module.exports = {
       log.debug("Finished Boomerang CICD Java test activity");
     }
   },
+  async jar() {
+    log.debug("Started Boomerang CICD Jar Test Activity");
+
+    //Destructure and get properties ready.
+    const taskParams = utils.resolveInputParameters();
+    // const { path, script } = taskParams;
+    const shellDir = "/cli/scripts";
+    config = {
+      verbose: true
+    };
+
+    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Working Directory: ", dir);
+
+    const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
+    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+
+    try {
+      log.ci("Initializing Dependencies");
+      await exec(`${shellDir}/common/initialize.sh`);
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
+
+      if (!common.checkFileContainsStringWithProps("/data/workspace/pom.xml", "<plugins>", undefined, false)) {
+        log.debug("No Maven plugins found, adding...");
+        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
+        common.replaceStringInFileWithProps("/data/workspace/pom.xml", "<plugins>", replacementString, undefined, false);
+      }
+      if (!common.checkFileContainsStringWithProps("/data/workspace/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
+        log.debug("...adding jacoco-maven-plugin.");
+        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
+        common.replaceStringInFileWithProps("/data/workspace/pom.xml", "<plugins>", replacementString, undefined, false);
+      }
+      if (!common.checkFileContainsStringWithProps("/data/workspace/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
+        log.debug("...adding sonar-maven-plugin.");
+        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
+        common.replaceStringInFileWithProps("/data/workspace/pom.xml", "<plugins>", replacementString, undefined, false);
+      }
+      if (!common.checkFileContainsStringWithProps("/data/workspace/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
+        log.debug("...adding maven-surefire-report-plugin.");
+        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
+        common.replaceStringInFileWithProps("/data/workspace/pom.xml", "<plugins>", replacementString, undefined, false);
+      }
+
+      log.ci("Testing artifacts");
+      if (testTypes.includes(TestType.Static)) {
+        log.debug("Commencing static tests");
+        await exec(`${shellDir}/test/static-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]} ${taskParams["sonarExclusions"]}`);
+      }
+      if (testTypes.includes(TestType.Unit)) {
+        log.debug("Commencing unit tests");
+        await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
+        await exec(`${shellDir}/test/unit-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
+      }
+      if (testTypes.includes(TestType.Security)) {
+        log.debug("Commencing security tests");
+        shell.cd(dir + "/repository");
+        // await exec(`${shellDir}/build/compile-java.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]} ${version} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoId"]} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
+        await exec(`${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir}`);
+      }
+      if (testTypes.includes(TestType.SeleniumNative)) {
+        log.debug("Native Selenium testing type not supported for Jar");
+      }
+      if (testTypes.includes(TestType.SeleniumCustom)) {
+        log.debug("Custom Selenium testing type not supported for Jar");
+      }
+    } catch (e) {
+      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
+      process.exit(1);
+    } finally {
+      await exec(shellDir + "/common/footer.sh");
+      log.debug("Finished Boomerang CICD Jar test activity");
+    }
+  },
   async nodejs() {
     log.debug("Started Boomerang CICD NodeJS Test Activity");
 
