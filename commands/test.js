@@ -66,11 +66,12 @@ module.exports = {
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
-      log.ci("Switch to Repository directory");
+      log.debug("Switch to Repository directory");
       shell.cd(dir + "/repository");
-      await exec(`pwd`);
+      shell.exec('pwd');
+      shell.exec('ls -al');
 
-      log.ci("Initializing Dependencies");
+      log.debug("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
@@ -96,7 +97,7 @@ module.exports = {
         common.replaceStringInFileWithProps("pom.xml", "<plugins>", replacementString, undefined, false);
       }
 
-      log.ci("Testing artifacts");
+      log.debug("Testing artifacts");
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
         await exec(`${shellDir}/test/static-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]} ${taskParams["sonarExclusions"]}`);
