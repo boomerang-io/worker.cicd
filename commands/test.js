@@ -60,6 +60,7 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
+      log.debug("Checking Maven Configuration");
       if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<plugins>", undefined, false)) {
         log.debug("No Maven plugins found, adding...");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
