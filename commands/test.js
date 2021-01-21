@@ -66,30 +66,32 @@ module.exports = {
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
+      shell.cd(dir + "/repository");
+
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
-      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<plugins>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps("pom.xml", "<plugins>", undefined, false)) {
         log.debug("No Maven plugins found, adding...");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps("pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps("pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding jacoco-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps("pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps("pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding sonar-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps("pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps("pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
         log.debug("...adding maven-surefire-report-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps("pom.xml", "<plugins>", replacementString, undefined, false);
       }
 
       log.ci("Testing artifacts");
@@ -104,8 +106,6 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
-        shell.cd(dir + "/repository");
-        // await exec(`${shellDir}/build/compile-java.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]} ${version} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoId"]} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
         await exec(`${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
@@ -142,30 +142,32 @@ module.exports = {
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
+      shell.cd(dir + "/repository");
+
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
-      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<plugins>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps("pom.xml", "<plugins>", undefined, false)) {
         log.debug("No Maven plugins found, adding...");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps("pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps("pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding jacoco-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps("pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps("pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding sonar-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps("pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(dir + "/repository/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps("pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
         log.debug("...adding maven-surefire-report-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
-        common.replaceStringInFileWithProps(dir + "/repository/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps("pom.xml", "<plugins>", replacementString, undefined, false);
       }
 
       log.ci("Testing artifacts");
@@ -180,8 +182,6 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
-        shell.cd(dir + "/repository");
-        // await exec(`${shellDir}/build/compile-java.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]} ${version} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoId"]} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
         await exec(`${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
@@ -216,6 +216,8 @@ module.exports = {
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
+      shell.cd(dir + "/repository");
+
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-node.sh ${taskParams["buildTool"]} ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]}`);
@@ -266,6 +268,8 @@ module.exports = {
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
+      shell.cd(dir + "/repository");
+
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-python.sh ${taskParams["languageVersion"]}`);
@@ -314,6 +318,8 @@ module.exports = {
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
+      shell.cd(dir + "/repository");
+      
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-helm.sh ${taskParams["kubeVersion"]}`);
