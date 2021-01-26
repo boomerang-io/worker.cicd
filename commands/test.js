@@ -338,18 +338,24 @@ module.exports = {
     let dir = "/workspace/" + taskParams["workflow-activity-id"];
     log.debug("Working Directory: ", dir);
 
+    let testdir = "/test";
+    log.debug("New Source Code Directory: ", testdir);
+
+    log.debug("Copy source code from shared drive to container");
+    shell.mkdir("-p", testdir);
+    shell.cp("-R", dir + "/repository/*", testdir);
+
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
-      shell.cd(testdir);
-
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-helm.sh ${taskParams["kubeVersion"]}`);
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Linting Helm Chart(s)");
+        shell.cd(testdir);
         await exec(`${shellDir}/test/lint-helm.sh ${taskParams["helmRepoUrl"]} ${taskParams["helmChartDirectory"]} ${taskParams["helmChartIgnore"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
