@@ -55,7 +55,7 @@ module.exports = {
     log.debug("New Source Code Directory: ", testdir);
 
     shell.mkdir("-p", testdir);
-    shell.cp("-R", dir + "/repository/", testdir);
+    shell.cp("-R", dir + "/repository/", testdir + "/");
     shell.ls("-alR", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
