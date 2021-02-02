@@ -49,14 +49,17 @@ module.exports = {
     };
 
     let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Workspace Directory: ", dir);
+
+    let workdir = dir + "/repository";
     log.debug("Working Directory: ", dir);
 
-    let testdir = "/test";
-    log.debug("New Source Code Directory: ", testdir);
-
-    log.debug("Copy source code from shared drive to container");
-    shell.mkdir("-p", testdir);
-    shell.cp("-R", dir + "/repository/*", testdir);
+    // let workdir = "/test";
+    // log.debug("New Source Code Directory: ", workdir);
+    //
+    // log.debug("Copy source code from shared drive to container");
+    // shell.mkdir("-p", workdir);
+    // shell.cp("-R", dir + "/repository/*", workdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -68,52 +71,52 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       log.debug("Checking Maven Configuration");
-      if (!common.checkFileContainsStringWithProps(testdir + "/pom.xml", "<plugins>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<plugins>", undefined, false)) {
         log.debug("No Maven plugins found, adding...");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
-        common.replaceStringInFileWithProps(testdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(testdir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding jacoco-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
-        common.replaceStringInFileWithProps(testdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(testdir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding sonar-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
-        common.replaceStringInFileWithProps(testdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(testdir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
         log.debug("...adding maven-surefire-report-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
-        common.replaceStringInFileWithProps(testdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
       }
 
       log.debug("Testing artifacts");
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/static-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]} ${taskParams["sonarExclusions"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
         await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/unit-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir}`);
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Commencing automated Selenium custom tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/selenium-custom.sh ${taskParams["teamName"]} ${taskParams["systemComponentName"]} ${version} ${taskParams["seleniumApplicationPropertiesFile"]} ${taskParams["seleniumApplicationPropertiesKey"]} ${taskParams["saucelabsApiUrlWithCredentials"]} ${taskParams["seleniumReportFolder"]} ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]} ${shellDir}`);
       }
     } catch (e) {
@@ -136,14 +139,17 @@ module.exports = {
     };
 
     let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Workspace Directory: ", dir);
+
+    let workdir = dir + "/repository";
     log.debug("Working Directory: ", dir);
 
-    let testdir = "/test";
-    log.debug("New Source Code Directory: ", testdir);
-
-    log.debug("Copy source code from shared drive to container");
-    shell.mkdir("-p", testdir);
-    shell.cp("-R", dir + "/repository/*", testdir);
+    // let workdir = "/test";
+    // log.debug("New Source Code Directory: ", workdir);
+    //
+    // log.debug("Copy source code from shared drive to container");
+    // shell.mkdir("-p", workdir);
+    // shell.cp("-R", dir + "/repository/*", workdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -154,42 +160,42 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
-      if (!common.checkFileContainsStringWithProps(testdir + "/pom.xml", "<plugins>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<plugins>", undefined, false)) {
         log.debug("No Maven plugins found, adding...");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
-        common.replaceStringInFileWithProps(testdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(testdir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding jacoco-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
-        common.replaceStringInFileWithProps(testdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(testdir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
         log.debug("...adding sonar-maven-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
-        common.replaceStringInFileWithProps(testdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
       }
-      if (!common.checkFileContainsStringWithProps(testdir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
+      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
         log.debug("...adding maven-surefire-report-plugin.");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
-        common.replaceStringInFileWithProps(testdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
       }
 
       log.ci("Testing artifacts");
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/static-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]} ${taskParams["sonarExclusions"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
         await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/unit-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
@@ -218,14 +224,17 @@ module.exports = {
     };
 
     let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Workspace Directory: ", dir);
+
+    let workdir = dir + "/repository";
     log.debug("Working Directory: ", dir);
 
-    let testdir = "/test";
-    log.debug("New Source Code Directory: ", testdir);
-
-    log.debug("Copy source code from shared drive to container");
-    shell.mkdir("-p", testdir);
-    shell.cp("-R", dir + "/repository/*", testdir);
+    // let workdir = "/test";
+    // log.debug("New Source Code Directory: ", workdir);
+    //
+    // log.debug("Copy source code from shared drive to container");
+    // shell.mkdir("-p", workdir);
+    // shell.cp("-R", dir + "/repository/*", workdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -238,22 +247,22 @@ module.exports = {
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/static-node.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/unit-node.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/security-node.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir}`);
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
@@ -279,14 +288,17 @@ module.exports = {
     };
 
     let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Workspace Directory: ", dir);
+
+    let workdir = dir + "/repository";
     log.debug("Working Directory: ", dir);
 
-    let testdir = "/test";
-    log.debug("New Source Code Directory: ", testdir);
-
-    log.debug("Copy source code from shared drive to container");
-    shell.mkdir("-p", testdir);
-    shell.cp("-R", dir + "/repository/*", testdir);
+    // let workdir = "/test";
+    // log.debug("New Source Code Directory: ", workdir);
+    //
+    // log.debug("Copy source code from shared drive to container");
+    // shell.mkdir("-p", workdir);
+    // shell.cp("-R", dir + "/repository/*", workdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -299,7 +311,7 @@ module.exports = {
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
         await exec(`${shellDir}/test/initialize-dependencies-static-python.sh ${taskParams["languageVersion"]} ${JSON.stringify(taskParams["pypiRegistryHost"])} ${taskParams["pypiRepoId"]} ${taskParams["pypiRepoUser"]} ${taskParams["pypiRepoPassword"]}`);
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/static-python.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
@@ -310,7 +322,7 @@ module.exports = {
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir}`);
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
@@ -336,14 +348,17 @@ module.exports = {
     };
 
     let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    log.debug("Workspace Directory: ", dir);
+
+    let workdir = dir + "/repository";
     log.debug("Working Directory: ", dir);
 
-    let testdir = "/test";
-    log.debug("New Source Code Directory: ", testdir);
-
-    log.debug("Copy source code from shared drive to container");
-    shell.mkdir("-p", testdir);
-    shell.cp("-R", dir + "/repository/*", testdir);
+    // let workdir = "/test";
+    // log.debug("New Source Code Directory: ", workdir);
+    //
+    // log.debug("Copy source code from shared drive to container");
+    // shell.mkdir("-p", workdir);
+    // shell.cp("-R", dir + "/repository/*", workdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -355,7 +370,7 @@ module.exports = {
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Linting Helm Chart(s)");
-        shell.cd(testdir);
+        shell.cd(workdir);
         await exec(`${shellDir}/test/lint-helm.sh ${taskParams["helmRepoUrl"]} ${taskParams["helmChartDirectory"]} ${taskParams["helmChartIgnore"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
