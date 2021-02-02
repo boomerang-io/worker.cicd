@@ -52,7 +52,7 @@ module.exports = {
     log.debug("Workspace Directory: ", dir);
 
     let workdir = dir + "/repository";
-    log.debug("Working Directory: ", dir);
+    log.debug("Working Directory: ", workdir);
 
     // let workdir = "/test";
     // log.debug("New Source Code Directory: ", workdir);
@@ -142,7 +142,7 @@ module.exports = {
     log.debug("Workspace Directory: ", dir);
 
     let workdir = dir + "/repository";
-    log.debug("Working Directory: ", dir);
+    log.debug("Working Directory: ", workdir);
 
     // let workdir = "/test";
     // log.debug("New Source Code Directory: ", workdir);
@@ -227,7 +227,7 @@ module.exports = {
     log.debug("Workspace Directory: ", dir);
 
     let workdir = dir + "/repository";
-    log.debug("Working Directory: ", dir);
+    log.debug("Working Directory: ", workdir);
 
     // let workdir = "/test";
     // log.debug("New Source Code Directory: ", workdir);
@@ -291,7 +291,7 @@ module.exports = {
     log.debug("Workspace Directory: ", dir);
 
     let workdir = dir + "/repository";
-    log.debug("Working Directory: ", dir);
+    log.debug("Working Directory: ", workdir);
 
     // let workdir = "/test";
     // log.debug("New Source Code Directory: ", workdir);
@@ -351,7 +351,7 @@ module.exports = {
     log.debug("Workspace Directory: ", dir);
 
     let workdir = dir + "/repository";
-    log.debug("Working Directory: ", dir);
+    log.debug("Working Directory: ", workdir);
 
     // let workdir = "/test";
     // log.debug("New Source Code Directory: ", workdir);
