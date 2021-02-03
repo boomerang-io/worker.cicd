@@ -22,8 +22,10 @@ if [ "$DEBUG" == "true" ]; then
     less ~/.npmrc
 fi
 
-yarn --version
-npm --version
+echo "Printing versions..."
+echo "  Yarn: " && yarn --version
+echo "  NPM: " && npm --version
+echo "  Node: " && node --version
 
 if [ "$HTTP_PROXY" != "" ]; then
     if [ "$BUILD_TOOL" == "yarn" ]; then
