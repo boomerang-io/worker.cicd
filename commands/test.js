@@ -54,9 +54,10 @@ module.exports = {
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
 
-    // let workdir = "/test";
-    // log.debug("New Source Code Directory: ", workdir);
-    //
+    let testdir = "/test";
+    shell.mkdir("-p", testdir);
+    log.debug("Test Directory: ", testdir);
+
     // log.debug("Copy source code from shared drive to container");
     // shell.mkdir("-p", workdir);
     // shell.cp("-R", dir + "/repository/*", workdir);

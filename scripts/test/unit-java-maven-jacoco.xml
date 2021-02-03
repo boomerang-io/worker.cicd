@@ -24,14 +24,14 @@
         				<goal>report</goal>
         			</goals>
         			<configuration>
-        				<dataFile>target/jacoco.exec</dataFile>
-        				<outputDirectory>target/jacoco-ut</outputDirectory>
+        				<dataFile>/test/target/jacoco.exec</dataFile>
+        				<outputDirectory>/test/target/jacoco-ut</outputDirectory>
         			</configuration>
         		</execution>
         	</executions>
         	<configuration>
         		<systemPropertyVariables>
-        			<jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
+        			<jacoco-agent.destfile>/test/target/jacoco.exec</jacoco-agent.destfile>
         		</systemPropertyVariables>
         	</configuration>
         </plugin>
