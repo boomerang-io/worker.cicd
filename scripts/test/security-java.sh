@@ -13,6 +13,10 @@ ASOC_LOGIN_SECRET=${8}
 ASOC_CLIENT_CLI=${9}
 ASOC_JAVA_RUNTIME=${10}
 SHELL_DIR=${11}
+TEST_DIR=${12}
+
+# Change to test dir
+cd $TEST_DIR
 
 # Download ASOC CLI
 echo "SAClientUtil File: $ART_URL/$ASOC_CLIENT_CLI"
@@ -28,7 +32,7 @@ mv $SAC_DIR SAClientUtil
 mv SAClientUtil ..
 
 # Set ASOC CLI path
-export ASOC_PATH=/data/SAClientUtil
+export ASOC_PATH=$TEST_DIR/data/SAClientUtil
 export PATH="${ASOC_PATH}:${ASOC_PATH}/bin:${PATH}"
 
 # Set ASOC memory configuration

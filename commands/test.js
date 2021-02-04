@@ -108,7 +108,7 @@ module.exports = {
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir}`);
+        await exec(`${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir} ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
@@ -198,7 +198,7 @@ module.exports = {
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir}`);
+        await exec(`${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir} ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Native Selenium testing type not supported for Jar");
