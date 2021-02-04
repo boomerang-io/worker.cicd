@@ -156,6 +156,7 @@ module.exports = {
     //   kubeFile = taskParams["deploy.kubernetes.file"];
     // }
     // var kubeFiles = await common.replaceTokensInFileWithProps(kubePath, kubeFile, "@", "@", taskParams, "g", "g", true);
+    var kubeFiles = taskParams["kubeFiles"];
     log.sys("Kubernetes files: ", kubeFiles);
     await exec(`${shellDir}/deploy/kubernetes.sh "${kubeFiles}"`);
 
