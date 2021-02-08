@@ -16,6 +16,7 @@ SHELL_DIR=${11}
 TEST_DIR=${12}
 
 # Change to test dir
+echo "Test Directory: $TEST_DIR"
 cd $TEST_DIR
 
 # Download ASOC CLI
