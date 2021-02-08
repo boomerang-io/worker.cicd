@@ -21,7 +21,7 @@ echo "Creds: $ART_REPO_USER:$ART_REPO_PASSWORD"
 curl --noproxy "$NO_PROXY" --insecure -u $ART_REPO_USER:$ART_REPO_PASSWORD "$ART_URL/$ASOC_CLIENT_CLI" -o $TEST_DIR/SAClientUtil.zip
 
 # Unzip ASOC CLI
-unzip $TEST_DIR/SAClientUtil.zip
+unzip $TEST_DIR/SAClientUtil.zip -d $TEST_DIR
 rm -f $TEST_DIR/SAClientUtil.zip
 SAC_DIR=`ls -d $TEST_DIR/SAClientUtil*`
 echo "SAC_DIR=$SAC_DIR"
