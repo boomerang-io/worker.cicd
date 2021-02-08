@@ -15,26 +15,23 @@ ASOC_JAVA_RUNTIME=${10}
 SHELL_DIR=${11}
 TEST_DIR=${12}
 
-# Change to test dir
-echo "Test Directory: $TEST_DIR"
-cd $TEST_DIR
-
 # Download ASOC CLI
 echo "SAClientUtil File: $ART_URL/$ASOC_CLIENT_CLI"
 echo "Creds: $ART_REPO_USER:$ART_REPO_PASSWORD"
-curl --noproxy "$NO_PROXY" --insecure -u $ART_REPO_USER:$ART_REPO_PASSWORD "$ART_URL/$ASOC_CLIENT_CLI" -o SAClientUtil.zip
+curl --noproxy "$NO_PROXY" --insecure -u $ART_REPO_USER:$ART_REPO_PASSWORD "$ART_URL/$ASOC_CLIENT_CLI" -o $TEST_DIR/SAClientUtil.zip
 
 # Unzip ASOC CLI
-unzip SAClientUtil.zip
-rm -f SAClientUtil.zip
-SAC_DIR=`ls -d SAClientUtil*`
+unzip $TEST_DIR/SAClientUtil.zip
+rm -f $TEST_DIR/SAClientUtil.zip
+SAC_DIR=`ls -d $TEST_DIR/SAClientUtil*`
 echo "SAC_DIR=$SAC_DIR"
-mv $SAC_DIR SAClientUtil
-mv SAClientUtil ..
+mv $SAC_DIR $TEST_DIR/SAClientUtil
+# mv SAClientUtil ..
 
 # Set ASOC CLI path
 export ASOC_PATH=$TEST_DIR/data/SAClientUtil
 export PATH="${ASOC_PATH}:${ASOC_PATH}/bin:${PATH}"
+echo "PATH=$PATH"
 
 # Set ASOC memory configuration
 # echo "-Xmx4g" | tee -a $ASOC_PATH/config/cli.config
