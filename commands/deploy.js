@@ -2,10 +2,10 @@ const { log, utils, CICDError } = require("@boomerang-io/worker-core");
 const shell = require("shelljs");
 
 function exec(command) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     log.debug("Command directory:", shell.pwd().toString());
     log.debug("Command to execute:", command);
-    shell.exec(command, config, function(code, stdout, stderr) {
+    shell.exec(command, config, function (code, stdout, stderr) {
       if (code) {
         reject(new CICDError(code, stderr));
       }
@@ -25,6 +25,18 @@ function parseVersion(version, appendBuildNumber) {
   return parsedVersion;
 }
 
+function workingDir(workingDir) {
+  let dir;
+  if (!workingDir || workingDir === '""') {
+    dir = "/data";
+    log.debug("No working directory specified. Defaulting...");
+  } else {
+    dir = workingDir;
+  }
+  log.debug("Working Directory: ", dir);
+  return dir;
+}
+
 module.exports = {
   async kubernetes() {
     log.debug("Starting Boomerang CICD Kubernetes deploy activity...");
@@ -37,8 +49,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Working Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     log.ci("Initializing Dependencies");
     await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
@@ -61,8 +73,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Working Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     const version = parseVersion(taskParams["version"], false);
 
@@ -86,8 +98,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Working Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
@@ -97,22 +109,21 @@ module.exports = {
         taskParams["imageName"] !== undefined && taskParams["imagePath"] !== '""'
           ? taskParams["imageName"]
           : taskParams["componentName"]
-              .toString()
-              .replace(/[^a-zA-Z0-9\-]/g, "")
-              .toLowerCase();
+            .toString()
+            .replace(/[^a-zA-Z0-9\-]/g, "")
+            .toLowerCase();
       var dockerImagePath =
         taskParams["imagePath"] !== undefined && taskParams["imagePath"] !== '""'
           ? taskParams["imagePath"]
-              .toString()
-              .replace(/[^a-zA-Z0-9\-]/g, "")
-              .toLowerCase()
+            .toString()
+            .replace(/[^a-zA-Z0-9\-]/g, "")
+            .toLowerCase()
           : taskParams["teamName"]
-              .toString()
-              .replace(/[^a-zA-Z0-9\-]/g, "")
-              .toLowerCase();
+            .toString()
+            .replace(/[^a-zA-Z0-9\-]/g, "")
+            .toLowerCase();
       await exec(
-        `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${version}" "${dockerImagePath}" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${taskParams["containerRegistryPassword"]}" "${
-          taskParams["containerRegistryPath"]
+        `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${version}" "${dockerImagePath}" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${taskParams["containerRegistryPassword"]}" "${taskParams["containerRegistryPath"]
         }" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${taskParams["globalContainerRegistryUser"]}" "${taskParams["globalContainerRegistryPassword"]}"`
       );
     } catch (e) {

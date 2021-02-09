@@ -13,10 +13,10 @@ const TestType = {
 Object.freeze(TestType);
 
 function exec(command) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     log.debug("Command directory:", shell.pwd().toString());
     log.debug("Command to execute:", command);
-    shell.exec(command, config, function(code, stdout, stderr) {
+    shell.exec(command, config, function (code, stdout, stderr) {
       if (code) {
         reject(new CICDError(code, stderr));
       }
@@ -36,6 +36,18 @@ function parseVersion(version, appendBuildNumber) {
   return parsedVersion;
 }
 
+function workingDir(workingDir) {
+  let dir;
+  if (!workingDir || workingDir === '""') {
+    dir = "/data";
+    log.debug("No working directory specified. Defaulting...");
+  } else {
+    dir = workingDir;
+  }
+  log.debug("Working Directory: ", dir);
+  return dir;
+}
+
 module.exports = {
   async java() {
     log.debug("Started Boomerang CICD Java Test Activity");
@@ -48,8 +60,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Workspace Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
@@ -139,8 +151,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Workspace Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
@@ -225,8 +237,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Workspace Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
@@ -290,8 +302,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Workspace Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
@@ -351,8 +363,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Workspace Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
