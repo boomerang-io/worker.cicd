@@ -146,11 +146,11 @@ RUN_SCAN=true
 while [ "$($ASOC_PATH/bin/appscan.sh status -i $ASOC_SCAN_ID)" != "Ready" ] && [ "$RUN_SCAN" == "true" ]; do
   NOW=`date +%s`
   DIFF=`expr $NOW - $START_SCAN`
-  if [ $DIFF -gt 600 ]; then
-    echo "Timed out waiting for ASOC job to complete [$DIFF/600]"
+  if [ $DIFF -gt 3600 ]; then
+    echo "Timed out waiting for ASOC job to complete [$DIFF/3600]"
     RUN_SCAN=false
   else
-    echo "ASOC job execution not completed ... waiting 15 seconds they retrying [$DIFF/600]"
+    echo "ASOC job execution not completed ... waiting 15 seconds they retrying [$DIFF/3600]"
     sleep 15
   fi
 done

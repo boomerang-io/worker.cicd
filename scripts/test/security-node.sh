@@ -110,7 +110,7 @@ xmlstarlet ed --inplace -u "Configuration/Targets/Target/@path" -v "$PROJECT_PAT
 # Generate ASOC IRX file
 export APPSCAN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT"
 echo "APPSCAN_OPTS=$APPSCAN_OPTS"
-$ASOC_PATH/bin/appscan.sh prepare -v -X -c $ASOC_PATH/appscan-config.xml -n ${COMPONENT_NAME}_${VERSION_NAME}.irx
+$ASOC_PATH/bin/appscan.sh prepare -c $ASOC_PATH/appscan-config.xml -n ${COMPONENT_NAME}_${VERSION_NAME}.irx
 
 # If IRX file not created exit with error
 if [ ! -f "${COMPONENT_NAME}_${VERSION_NAME}.irx" ]; then
@@ -139,11 +139,11 @@ RUN_SCAN=true
 while [ "$($ASOC_PATH/bin/appscan.sh status -i $ASOC_SCAN_ID)" != "Ready" ] && [ "$RUN_SCAN" == "true" ]; do
   NOW=`date +%s`
   DIFF=`expr $NOW - $START_SCAN`
-  if [ $DIFF -gt 600 ]; then
-    echo "Timed out waiting for ASOC job to complete [$DIFF/600]"
+  if [ $DIFF -gt 3600 ]; then
+    echo "Timed out waiting for ASOC job to complete [$DIFF/3600]"
     RUN_SCAN=false
   else
-    echo "ASOC job execution not completed ... waiting 15 seconds they retrying [$DIFF/600]"
+    echo "ASOC job execution not completed ... waiting 15 seconds they retrying [$DIFF/3600]"
     sleep 15
   fi
 done
@@ -156,8 +156,8 @@ fi
 
 # Retrieve ASOC execution summary
 $ASOC_PATH/bin/appscan.sh info -i $ASOC_SCAN_ID -json >> ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json
-curl -T ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json" --insecure -u admin:WwwWulaWwHH!
+curl -T ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}_${ASOC_SCAN_ID}.json" --insecure -u admin:WwwWulaWwHH!
 
 # Retrieve ASOC report
 $ASOC_PATH/bin/appscan.sh get_result -d ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip -i $ASOC_SCAN_ID -t ZIP
-curl -T ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip" --insecure -u admin:WwwWulaWwHH!
+curl -T ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}_${ASOC_SCAN_ID}.zip" --insecure -u admin:WwwWulaWwHH!
