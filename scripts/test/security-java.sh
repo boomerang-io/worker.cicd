@@ -26,10 +26,12 @@ rm -f $TEST_DIR/SAClientUtil.zip
 SAC_DIR=`ls -d $TEST_DIR/SAClientUtil*`
 echo "SAC_DIR=$SAC_DIR"
 mv $SAC_DIR $TEST_DIR/SAClientUtil
+ls -alR $TEST_DIR/SAClientUtil
 # mv SAClientUtil ..
 
 # Set ASOC CLI path
-export ASOC_PATH=$TEST_DIR/data/SAClientUtil
+export ASOC_PATH=$TEST_DIR/SAClientUtil
+# export ASOC_PATH=$TEST_DIR/data/SAClientUtil
 export PATH="${ASOC_PATH}:${ASOC_PATH}/bin:${PATH}"
 echo "PATH=$PATH"
 
