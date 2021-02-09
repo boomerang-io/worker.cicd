@@ -124,8 +124,6 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      log.debug("Removing workspace folder contents");
-      shell.rm('-rf', dir);
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Java test activity");
     }
@@ -212,8 +210,6 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      log.debug("Removing workspace folder contents");
-      shell.rm('-rf', dir);
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Jar test activity");
     }
@@ -279,8 +275,6 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      log.debug("Removing workspace folder contents");
-      shell.rm('-rf', dir);
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD NodeJS test activity");
     }
@@ -342,8 +336,6 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      log.debug("Removing workspace folder contents");
-      shell.rm('-rf', dir);
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Python test activity");
     }
@@ -402,8 +394,6 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      log.debug("Removing workspace folder contents");
-      shell.rm('-rf', dir);
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Helm test activity");
     }
