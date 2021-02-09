@@ -128,6 +128,7 @@ echo "ASOC Scan ID: $ASOC_SCAN_ID"
 
 # If no ASOC Scan ID returned exit with error
 if [ -z "$ASOC_SCAN_ID" ]; then
+  echo "Scan not started"
   exit 129
 fi
 
@@ -148,6 +149,7 @@ done
 
 # If scan not completed exit with error
 if [ "$RUN_SCAN" == "false" ]; then
+  echo "Scan failed"
   exit 130
 fi
 

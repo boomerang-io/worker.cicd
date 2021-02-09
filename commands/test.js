@@ -151,9 +151,9 @@ module.exports = {
     shell.mkdir("-p", testdir);
     log.debug("Test Directory: ", testdir);
 
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", workdir);
+    log.debug("Copy source code from shared drive to container");
+    shell.mkdir("-p", workdir);
+    shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -239,9 +239,9 @@ module.exports = {
     shell.mkdir("-p", testdir);
     log.debug("Test Directory: ", testdir);
 
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", workdir);
+    log.debug("Copy source code from shared drive to container");
+    shell.mkdir("-p", workdir);
+    shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -265,7 +265,7 @@ module.exports = {
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/security-node.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir}`);
+        await exec(`${shellDir}/test/security-node.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir} ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
@@ -306,9 +306,9 @@ module.exports = {
     shell.mkdir("-p", testdir);
     log.debug("Test Directory: ", testdir);
 
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", workdir);
+    log.debug("Copy source code from shared drive to container");
+    shell.mkdir("-p", workdir);
+    shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -369,9 +369,9 @@ module.exports = {
     shell.mkdir("-p", testdir);
     log.debug("Test Directory: ", testdir);
 
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", workdir);
+    log.debug("Copy source code from shared drive to container");
+    shell.mkdir("-p", workdir);
+    shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
