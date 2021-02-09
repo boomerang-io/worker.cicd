@@ -2,12 +2,11 @@
 
 This is the Boomerang CICD Worker that runs the build, test, and deploy activities for the out of the bose Component Modes.
 
-This is based on the Gen 2 worker design for CICD, meaning that there are fixed commands that punch out to shell scripts. This will evolve over time to match the Gen 3 design.
+This is based on the Gen 3 worker design for Boomerang Flow, meaning that there are fixed commands that punch out to shell scripts.
 
 Depends on:
 
-- [Boomerang Worker CLI](https://github.ibm.com/Boomerang-Workers/boomerang.worker.base)
-- [Boomerang Worker Core](https://github.ibm.com/Boomerang-Workers/boomerang.worker.base)
+- [Boomerang Worker CLI & Core](https://github.com/boomerang-io/worker.interfaces)
 
 ## Design
 
@@ -21,4 +20,10 @@ In turn, these commands rely on the bash scripts located in the `/scripts` direc
 
 ## How to Build and Push
 
-`VERSION=5.1.4 && docker build -t tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION . && docker push tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION`
+### Automatically
+
+Via the Boomerang CICD system which will make the images available on Dockerhub
+
+### Manually
+
+`VERSION=<tag> && docker build -t tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION . && docker push tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION`

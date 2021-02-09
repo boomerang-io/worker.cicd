@@ -1,18 +1,13 @@
 #!/bin/bash
 
-DEPLOY_TYPE=$1
-HELM_REPO_URL=$2
-CHART_NAME=$3
-CHART_RELEASE=$4
-CHART_VERSION=$5
-DEPLOY_KUBE_VERSION=$6
-DEPLOY_KUBE_NAMESPACE=$7
-DEPLOY_KUBE_HOST=$8
-GIT_REF=$9
-DEPLOY_HELM_TLS=${10}
-if [ "$DEPLOY_HELM_TLS" == "undefined" ]; then
-    DEPLOY_HELM_TLS=true
-fi
+HELM_REPO_URL=$1
+CHART_NAME=$2
+CHART_RELEASE=$3
+CHART_VERSION=$4
+DEPLOY_KUBE_VERSION=$5
+DEPLOY_KUBE_NAMESPACE=$6
+DEPLOY_KUBE_HOST=$7
+GIT_REF=$8
 
 if [ "$DEBUG" == "true" ]; then
     echo "HELM_REPO_URL=$HELM_REPO_URL"
@@ -23,7 +18,6 @@ if [ "$DEBUG" == "true" ]; then
     echo "DEPLOY_KUBE_NAMESPACE=$DEPLOY_KUBE_NAMESPACE"
     echo "DEPLOY_KUBE_HOST=$DEPLOY_KUBE_HOST"
     echo "GIT_REF=$GIT_REF"
-    echo "DEPLOY_HELM_TLS=$DEPLOY_HELM_TLS"
 fi
 
 if [[ ! "$GIT_REF" =~ "refs/tags/" ]]; then
@@ -33,20 +27,6 @@ fi
 export KUBE_HOME=~/.kube
 BIN_HOME=/usr/local/bin
 KUBE_CLI=$BIN_HOME/kubectl
-
-HELM_TLS_STRING=''
-if [ "$DEPLOY_TYPE" == "helm" ]; then
-    # Bug fix for custom certs and re initializing helm home
-    export HELM_HOME=/tmp/.helm
-    echo "   ↣ Helm home set as: $HELM_HOME"
-    # export HELM_HOME=$(helm home)
-    if [[ $DEPLOY_HELM_TLS == "true" ]]; then
-        HELM_TLS_STRING='--tls'
-        echo "   ↣ Helm TLS parameters configured as: $HELM_TLS_STRING"
-    else
-        echo "   ↣ Helm TLS disabled, skipping configuration..."
-    fi
-fi
 
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
@@ -67,14 +47,8 @@ helm repo add boomerang-charts $HELM_REPO_URL && helm repo update
 # Chart Name is blank. Chart Release is now required to fetch chart name.
 if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
     echo "Auto detecting chart name..."
-    # This is needed as helm3 uses --filter
-    if [ "$DEPLOY_TYPE" == "helm3" ]; then
-        CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
-        if [ $? -ne 0 ]; then exit 92; fi
-    else
-        CHART_NAME=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
-        if [ $? -ne 0 ]; then exit 92; fi
-    fi
+    CHART_NAME=`helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ | grep $CHART_RELEASE | rev | awk '{print $3}' | cut -d '-' -f 2- | rev`
+    if [ $? -ne 0 ]; then exit 92; fi
 elif [ -z "$CHART_NAME" ] && [ -z "$CHART_RELEASE" ]; then
     exit 92
 fi
@@ -85,7 +59,7 @@ echo "Chart Version: $CHART_VERSION"
 if [[ -z "$CHART_RELEASE" ]] && [ ! -z "$DEPLOY_KUBE_NAMESPACE" ]; then
     echo "Auto detecting chart release..."
     echo "Note: This only works if there is only one release of the chart in the provided namespace."
-    CHART_RELEASE=`helm list $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART_NAME | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
+    CHART_RELEASE=`helm list --kube-context $DEPLOY_KUBE_HOST-context | grep $CHART_NAME | grep $DEPLOY_KUBE_NAMESPACE | awk '{print $1}'`
     if [ $? -ne 0 ]; then exit 94; fi
 elif [ -z "$CHART_RELEASE" ] && [ -z "$DEPLOY_KUBE_NAMESPACE" ]; then
     exit 93
@@ -93,7 +67,7 @@ fi
 echo "Chart Release: $CHART_RELEASE"
 
 echo "Retrieving current chart values..."
-helm get values -a $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context $CHART_RELEASE > values.yaml
+helm get values -a --kube-context $DEPLOY_KUBE_HOST-context $CHART_RELEASE > values.yaml
 if [ $? -ne 0 ]; then exit 91; fi
 
 echo "Upgrading helm chart..."
@@ -110,7 +84,7 @@ while true; do
         break
     else
         echo "Commencing deployment (attempt #$INDEX)..."
-        OUTPUT=$(helm upgrade $HELM_TLS_STRING --kube-context $DEPLOY_KUBE_HOST-context -f values.yaml --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART_NAME)
+        OUTPUT=$(helm upgrade --kube-context $DEPLOY_KUBE_HOST-context -f values.yaml --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART_NAME)
         RESULT=$?
         if [ $RESULT -ne 0 ]; then 
             if [[ $OUTPUT =~ "UPGRADE FAILED: timed out" ]]; then

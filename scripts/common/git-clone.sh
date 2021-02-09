@@ -2,19 +2,21 @@
 
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Retrieving Source Code '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-WORKSPACE_FOLDER=/data/workspace
-GIT_SSH_KEY=$1
-GIT_SSH_URL=$2
-GIT_REPO_URL=$3
+# REPO_FOLDER=/workflow/repository
+REPO_FOLDER=$1
+GIT_SSH_KEY=$2
+GIT_SSH_URL=$3
+GIT_REPO_URL=$4
 GIT_REPO_HOST=`echo "$GIT_REPO_URL" | cut -d '/' -f 3`
 GIT_CLONE_URL=`echo "$GIT_SSH_URL" | tr '[:upper:]' '[:lower:]'`
-GIT_COMMIT_ID=$4
+GIT_COMMIT_ID=$5
 GIT_LFS=false
-if [ "$5" != "" ]; then
-    GIT_LFS=$5
+if [ "$6" != "" ]; then
+    GIT_LFS=$6
 fi 
 
 if [ "$DEBUG" == "true" ]; then
+    echo "REPO_FOLDER=$REPO_FOLDER"
     echo "GIT_SSH_URL=$GIT_SSH_URL"
     echo "GIT_REPO_URL=$GIT_REPO_URL"
     echo "GIT_REPO_HOST=$GIT_REPO_HOST"
@@ -23,7 +25,9 @@ if [ "$DEBUG" == "true" ]; then
     echo "GIT_LFS=$GIT_LFS"
 fi
 
+#Make folders if not already created
 mkdir -p ~/.ssh
+mkdir -p $REPO_FOLDER
 
 # upper to lower ensures that the host is all lower case to be accepted in match to the ssh host but also the proxy
 if [[ "$GIT_SSH_URL" =~ ^http.* ]]; then
@@ -71,17 +75,17 @@ if [ "$GIT_CLONE_URL" == "undefined" ]; then
     echo "Repository URL is undefined."
     exit 1
 fi
-# git clone --depth 1 --progress $GIT_OPTS -n $GIT_CLONE_URL $WORKSPACE_FOLDER
-git clone --progress $GIT_OPTS -n $GIT_CLONE_URL $WORKSPACE_FOLDER
+# git clone --depth 1 --progress $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
+git clone --progress $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
 
-if  [ -d "$WORKSPACE_FOLDER" ]; then
-    cd $WORKSPACE_FOLDER
+if  [ -d "$REPO_FOLDER" ]; then
+    cd $REPO_FOLDER
     if [ "$DEBUG" == "true" ]; then
         ls -ltr
     fi
     git checkout --progress --recurse-submodules $GIT_COMMIT_ID
 else
-    echo "Git workspace does not exist"
+    echo "Git repository folder does not exist"
     exit 1
 fi
 

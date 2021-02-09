@@ -11,13 +11,12 @@ ART_URL=$4
 ART_REPO_ID=$5
 ART_REPO_USER=$6
 ART_REPO_PASSWORD=$7
-ART_URL_BASE=$8
 ART_REPO_HOME=~/.m2/repository
 if [ -d "/cache" ]; then
     echo "Setting cache..."
-    mkdir -p /cache/repository
-    ls -ltr /cache
-    ART_REPO_HOME=/cache/repository
+    mkdir -p /workspaces/cache/repository
+    ls -ltr /workspaces/cache
+    ART_REPO_HOME=/workspaces/cache/repository
 fi
 
 if [ "$BUILD_TOOL" == "maven" ]; then
@@ -52,7 +51,7 @@ elif [ "$BUILD_TOOL" == "gradle" ]; then
   cat >> ~/.gradle/gradle.properties <<EOL
 artifactoryUser=$ART_REPO_USER
 artifactoryPassword=$ART_REPO_PASSWORD
-artifactoryContextUrl=$ART_URL_BASE
+artifactoryContextUrl=$ART_URL
 artifactoryRepoKey=$ART_REPO_ID
 componentVersion=$VERSION_NAME
 EOL
