@@ -7,7 +7,6 @@ This is based on the Gen 3 worker design for Boomerang Flow, meaning that there 
 Depends on:
 
 - [Boomerang Worker CLI & Core](https://github.com/boomerang-io/worker.interfaces)
-- [Boomerang Worker Flow](https://github.com/boomerang-io/worker.flow)
 
 ## Design
 
@@ -21,4 +20,10 @@ In turn, these commands rely on the bash scripts located in the `/scripts` direc
 
 ## How to Build and Push
 
-`VERSION=6.0.46 && docker build -t tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION . && docker push tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION`
+### Automatically
+
+Via the Boomerang CICD system which will make the images available on Dockerhub
+
+### Manually
+
+`VERSION=<tag> && docker build -t tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION . && docker push tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION`
