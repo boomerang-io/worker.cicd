@@ -96,8 +96,9 @@ rm -rf /tmp/*.apk /tmp/gcc /tmp/gcc-libs.tar.xz /tmp/libz /tmp/libz.tar.xz /var/
 export PATH="${ASOC_PATH}/bin:${PATH}"
 
 # Set ASOC project path
-export PROJECT_PATH=$TEST_DIR
-# export PROJECT_PATH=`pwd`
+export PROJECT_PATH=`pwd`
+# export PROJECT_PATH=$TEST_DIR
+echo "PROJECT_PATH=$PROJECT_PATH"
 
 # Create ASOC configuration file
 cp ${SHELL_DIR}/test/security-java.xml $ASOC_PATH/appscan-config.xml
