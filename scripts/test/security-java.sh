@@ -21,7 +21,7 @@ echo "Creds: $ART_REPO_USER:$ART_REPO_PASSWORD"
 curl --noproxy "$NO_PROXY" --insecure -u $ART_REPO_USER:$ART_REPO_PASSWORD "$ART_URL/$ASOC_CLIENT_CLI" -o $TEST_DIR/SAClientUtil.zip
 
 # Unzip ASOC CLI
-unzip $TEST_DIR/SAClientUtil.zip -d $TEST_DIR
+unzip -qq $TEST_DIR/SAClientUtil.zip -d $TEST_DIR
 rm -f $TEST_DIR/SAClientUtil.zip
 SAC_DIR=`ls -d $TEST_DIR/SAClientUtil*`
 echo "SAC_DIR=$SAC_DIR"
@@ -47,13 +47,11 @@ if [ "$HTTP_PROXY" != "" ]; then
     export MAVEN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts='$MAVEN_PROXY_IGNORE' -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT -Dhttps.nonProxyHosts='$MAVEN_PROXY_IGNORE'"
 fi
 echo "MAVEN_OPTS=$MAVEN_OPTS"
-mvn clean install dependency:copy-dependencies -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+mvn -q clean install dependency:copy-dependencies -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
 
 # Remove Jars and Wars
-find target -name "*.jar" -type f -delete
+# find target -name "*.jar" -type f -delete
 find target -name "*.war" -type f -delete
-
-ls -alR target
 
 # Set Java version
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
@@ -165,8 +163,8 @@ fi
 
 # Retrieve ASOC execution summary
 $ASOC_PATH/bin/appscan.sh info -i $ASOC_SCAN_ID -json >> ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json
-curl -T ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json" --insecure -u admin:WwwWulaWwHH!
+curl -T ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}_${ASOC_SCAN_ID}.json" --insecure -u admin:WwwWulaWwHH!
 
 # Retrieve ASOC report
 $ASOC_PATH/bin/appscan.sh get_result -d ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip -i $ASOC_SCAN_ID -t ZIP
-curl -T ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip" --insecure -u admin:WwwWulaWwHH!
+curl -T ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}_${ASOC_SCAN_ID}.zip" --insecure -u admin:WwwWulaWwHH!
