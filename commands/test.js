@@ -58,9 +58,9 @@ module.exports = {
     shell.mkdir("-p", testdir);
     log.debug("Test Directory: ", testdir);
 
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", workdir);
+    log.debug("Copy source code from shared drive to container");
+    shell.mkdir("-p", workdir);
+    shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);

@@ -26,8 +26,6 @@ rm -f $TEST_DIR/SAClientUtil.zip
 SAC_DIR=`ls -d $TEST_DIR/SAClientUtil*`
 echo "SAC_DIR=$SAC_DIR"
 mv $SAC_DIR $TEST_DIR/SAClientUtil
-ls -alR $TEST_DIR/SAClientUtil
-# mv SAClientUtil ..
 
 # Set ASOC CLI path
 export ASOC_PATH=$TEST_DIR/SAClientUtil
@@ -98,7 +96,8 @@ rm -rf /tmp/*.apk /tmp/gcc /tmp/gcc-libs.tar.xz /tmp/libz /tmp/libz.tar.xz /var/
 export PATH="${ASOC_PATH}/bin:${PATH}"
 
 # Set ASOC project path
-export PROJECT_PATH=`pwd`
+export PROJECT_PATH=$TEST_DIR
+# export PROJECT_PATH=`pwd`
 
 # Create ASOC configuration file
 cp ${SHELL_DIR}/test/security-java.xml $ASOC_PATH/appscan-config.xml
@@ -114,6 +113,7 @@ $ASOC_PATH/bin/appscan.sh prepare -v -X -c $ASOC_PATH/appscan-config.xml -n ${CO
 
 # If IRX file not created exit with error
 if [ ! -f "${COMPONENT_NAME}_${VERSION_NAME}.irx" ]; then
+  echo "IRX file not created"
   exit 128
 fi
 
