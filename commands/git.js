@@ -46,9 +46,11 @@ module.exports = {
       log.ci("Retrieving Source Code");
       await exec(`${shellDir}/common/git-clone.sh "${dataRepoDir}" "${taskParams["privateKey"]}" ${JSON.stringify(taskParams["repoSshUrl"])} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["commitId"]} ${taskParams["lfsEnabled"]}`);
 
-      log.debug(`Copy source code from ${dataRepoDir} to ${dir}`);
-      shell.mkdir("-p", repoDir);
-      shell.cp("-R", dataRepoDir + "/*", repoDir);
+      if (dir !== dataDir) {
+        log.debug(`Copy source code from ${dataRepoDir} to ${repoDir}`);
+        shell.mkdir("-p", repoDir);
+        shell.cp("-r", dataRepoDir + "/*", repoDir);
+      }
 
       log.sys("Finished Git Clone task...");
     } catch (e) {
