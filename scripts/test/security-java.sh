@@ -37,6 +37,9 @@ echo "PATH=$PATH"
 # echo "-Xmx4g" | tee -a $ASOC_PATH/config/cli.config
 # cat $ASOC_PATH/config/cli.config
 
+# Switch to test path
+cd $TEST_DIR
+
 # Compile source
 if [ "$HTTP_PROXY" != "" ]; then
     # Swap , for |

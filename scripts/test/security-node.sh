@@ -37,6 +37,9 @@ echo "PATH=$PATH"
 # echo "-Xmx4g" | tee -a $ASOC_PATH/config/cli.config
 # cat $ASOC_PATH/config/cli.config
 
+# Switch to test path
+cd $TEST_DIR
+
 # Install dependencies for CLI
 apk add curl curl-dev wget
 apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
