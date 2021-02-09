@@ -15,6 +15,9 @@ WEB_TESTS_FOLDER=${10}
 GIT_USER=${11}
 GIT_PASSWORD=${12}
 SHELL_DIR=${13}
+TEST_DIR=${14}
+
+cd $TEST_DIR
 
 touch junits.java
 

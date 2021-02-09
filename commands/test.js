@@ -113,12 +113,12 @@ module.exports = {
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir}`);
+        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir} ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Commencing automated Selenium custom tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-custom.sh ${taskParams["teamName"]} ${taskParams["systemComponentName"]} ${version} ${taskParams["seleniumApplicationPropertiesFile"]} ${taskParams["seleniumApplicationPropertiesKey"]} ${taskParams["saucelabsApiUrlWithCredentials"]} ${taskParams["seleniumReportFolder"]} ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]} ${shellDir}`);
+        await exec(`${shellDir}/test/selenium-custom.sh ${taskParams["teamName"]} ${taskParams["systemComponentName"]} ${version} ${taskParams["seleniumApplicationPropertiesFile"]} ${taskParams["seleniumApplicationPropertiesKey"]} ${taskParams["saucelabsApiUrlWithCredentials"]} ${taskParams["seleniumReportFolder"]} ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]} ${shellDir} ${testdir}`);
       }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
@@ -266,7 +266,7 @@ module.exports = {
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir}`);
+        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir} ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Custom Selenium testing type not supported for NodeJS");
@@ -327,7 +327,7 @@ module.exports = {
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir}`);
+        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir} ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Custom Selenium testing type not supported for Python");
