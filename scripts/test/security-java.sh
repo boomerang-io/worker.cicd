@@ -47,7 +47,13 @@ if [ "$HTTP_PROXY" != "" ]; then
     export MAVEN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts='$MAVEN_PROXY_IGNORE' -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT -Dhttps.nonProxyHosts='$MAVEN_PROXY_IGNORE'"
 fi
 echo "MAVEN_OPTS=$MAVEN_OPTS"
-mvn clean package install -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+mvn clean install dependency:copy-dependencies -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+
+# Remove Jars and Wars
+find target -name "*.jar" -type f -delete
+find target -name "*.war" -type f -delete
+
+ls -alR target
 
 # Set Java version
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
@@ -113,7 +119,7 @@ xmlstarlet ed --inplace -u "Configuration/Targets/Target/CustomBuildInfo/@jdk_pa
 # Generate ASOC IRX file
 export APPSCAN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT"
 echo "APPSCAN_OPTS=$APPSCAN_OPTS"
-$ASOC_PATH/bin/appscan.sh prepare -v -X -c $ASOC_PATH/appscan-config.xml -n ${COMPONENT_NAME}_${VERSION_NAME}.irx
+$ASOC_PATH/bin/appscan.sh prepare -c $ASOC_PATH/appscan-config.xml -n ${COMPONENT_NAME}_${VERSION_NAME}.irx
 
 # If IRX file not created exit with error
 if [ ! -f "${COMPONENT_NAME}_${VERSION_NAME}.irx" ]; then
