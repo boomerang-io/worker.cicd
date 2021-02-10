@@ -17,7 +17,7 @@ GIT_PASSWORD=${12}
 SHELL_DIR=${13}
 TEST_DIR=${14}
 
-cd $TEST_DIR
+# cd $TEST_DIR
 
 touch junits.java
 
