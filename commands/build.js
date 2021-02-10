@@ -51,9 +51,6 @@ module.exports = {
 
     // let dir = "/workspace/" + taskParams["workflow-activity-id"];
     let dir = workingDir(taskParams["workingDir"]);
-    let dataDir = "/data";
-    let dataRepoDir = dataDir + "/repository";
-    let repoDir = dir + "/repository";
 
     // ----------------
     // shell.config.silent = true; //set to silent otherwise CD will print out no such file or directory if the directory doesn't exist
@@ -74,24 +71,9 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
-      if (dir !== dataDir) {
-        log.debug(`Copy source code from ${repoDir} to ${dataRepoDir}`);
-        shell.mkdir("-p", dataRepoDir);
-        shell.cp("-r", repoDir + "/*", dataRepoDir);
-        shell.ls("-lR", dataRepoDir);
-      }
-
       log.ci("Compile & Package Artifact(s)");
-      shell.cd(dataRepoDir);
+      shell.cd(dir + "/repository");
       await exec(`${shellDir}/build/compile-java.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]} ${version} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoId"]} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
-
-      log.ci("Finalizing and removing mess");
-      if (dir !== dataDir) {
-        log.debug(`Copy source code from ${dataRepoDir} to ${repoDir}`);
-        shell.mkdir("-p", repoDir);
-        shell.cp("-rf", dataRepoDir + "/*", repoDir);
-        shell.ls("-lR", repoDir);
-      }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);

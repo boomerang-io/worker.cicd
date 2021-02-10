@@ -38,19 +38,11 @@ module.exports = {
 
     // let dir = "/workspace/" + taskParams["workflow-activity-id"];
     let dir = workingDir(taskParams["workingDir"]);
-    let dataDir = "/data";
-    let dataRepoDir = dataDir + "/repository";
     let repoDir = dir + "/repository";
 
     try {
       log.ci("Retrieving Source Code");
-      await exec(`${shellDir}/common/git-clone.sh "${dataRepoDir}" "${taskParams["privateKey"]}" ${JSON.stringify(taskParams["repoSshUrl"])} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["commitId"]} ${taskParams["lfsEnabled"]}`);
-
-      if (dir !== dataDir) {
-        log.debug(`Copy source code from ${dataRepoDir} to ${repoDir}`);
-        shell.mkdir("-p", repoDir);
-        shell.cp("-r", dataRepoDir + "/*", repoDir);
-      }
+      await exec(`${shellDir}/common/git-clone.sh "${repoDir}" "${taskParams["privateKey"]}" ${JSON.stringify(taskParams["repoSshUrl"])} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["commitId"]} ${taskParams["lfsEnabled"]}`);
 
       log.sys("Finished Git Clone task...");
     } catch (e) {
