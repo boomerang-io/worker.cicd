@@ -388,7 +388,7 @@ module.exports = {
       if (testTypes.includes(TestType.Static)) {
         log.debug("Linting Helm Chart(s)");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/lint-helm.sh ${taskParams["helmRepoUrl"]} ${taskParams["helmChartDirectory"]} ${taskParams["helmChartIgnore"]}`);
+        await exec(`${shellDir}/test/lint-helm.sh ${taskParams["buildTool"]} ${taskParams["helmRepoUrl"]} ${taskParams["helmChartDirectory"]} ${taskParams["helmChartIgnore"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Helm");
