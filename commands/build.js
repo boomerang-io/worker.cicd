@@ -51,6 +51,7 @@ module.exports = {
 
     // let dir = "/workspace/" + taskParams["workflow-activity-id"];
     let dir = workingDir(taskParams["workingDir"]);
+    log.debug("Working Directory: ", dir);
 
     // ----------------
     // shell.config.silent = true; //set to silent otherwise CD will print out no such file or directory if the directory doesn't exist
@@ -95,6 +96,7 @@ module.exports = {
 
     // let dir = "/workspace/" + taskParams["workflow-activity-id"];
     let dir = workingDir(taskParams["workingDir"]);
+    log.debug("Working Directory: ", dir);
 
     const version = parseVersion(taskParams["version"], false);
 
@@ -128,6 +130,7 @@ module.exports = {
 
     // let dir = "/workspace/" + taskParams["workflow-activity-id"];
     let dir = workingDir(taskParams["workingDir"]);
+    log.debug("Working Directory: ", dir);
 
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
@@ -179,7 +182,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     try {
@@ -209,7 +213,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     try {
@@ -238,7 +243,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     try {
@@ -268,7 +274,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     const version = parseVersion(taskParams["version"], false);
@@ -300,7 +307,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     try {
