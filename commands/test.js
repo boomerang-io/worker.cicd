@@ -383,7 +383,7 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-helm.sh ${taskParams["kubeVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["buildToolVersion"]}"`);
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Linting Helm Chart(s)");
