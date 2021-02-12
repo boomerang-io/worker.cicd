@@ -53,7 +53,7 @@ else
 fi
 
 SCRIPT=$(node -pe "require('./package.json').scripts.$BUILD_SCRIPT");
-if [ -z "$SCRIPT" ]; then
+if [ ! -z "$SCRIPT" ]; then
     if [ "$BUILD_TOOL" == "npm" ]; then
         npm run build $DEBUG_OPTS
         RESULT=$?
