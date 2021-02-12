@@ -143,7 +143,7 @@ module.exports = {
       await exec("ls -ltr");
       var dockerFile = taskParams["dockerFile"] !== undefined && taskParams["dockerFile"] !== null ? taskParams["dockerFile"] : "";
       var dockerImageName =
-        taskParams["imageName"] !== undefined && taskParams["imagePath"] !== '""'
+        taskParams["imageName"] !== undefined && taskParams["imageName"] !== '""'
           ? taskParams["imageName"]
           : taskParams["componentName"]
             .toString()
