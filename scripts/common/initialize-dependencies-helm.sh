@@ -46,23 +46,10 @@ fi
 HELM_HOME=/tmp/.helm
 
 echo "   ⋯ Verifying Helm client..."
-if [ "$BUILD_TOOL" == "helm3" ]; then
-    helm version --short
-    if [ $? -ne 0 ] ; then
-        echo
-        echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
-        echo
-        exit 1
-    fi
-else
-    helm version --client --short
-    if [ $? -ne 0 ] ; then
-        echo
-        echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
-        echo
-        exit 1
-    fi
-    echo "   ⋯ Initializing Helm"
-    helm init --client-only --skip-refresh --home $HELM_HOME
-    echo "   ↣ Helm home set as: $HELM_HOME"
+helm version --short
+if [ $? -ne 0 ] ; then
+    echo
+    echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
+    echo
+    exit 1
 fi
