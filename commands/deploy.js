@@ -73,10 +73,7 @@ module.exports = {
       verbose: true
     };
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-
-    const version = parseVersion(taskParams["version"], false);
+    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     log.ci("Initializing Dependencies");
     await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
