@@ -51,15 +51,20 @@ module.exports = {
 
     // let dir = "/workspace/" + taskParams["workflow-activity-id"];
     let dir = workingDir(taskParams["workingDir"]);
+    try {
+      log.ci("Initializing Dependencies");
+      await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
 
-    log.ci("Initializing Dependencies");
-    await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
-
-    log.ci("Deploying...");
-    var kubeFiles = taskParams["kubeFiles"];
-    log.sys("Kubernetes files: ", kubeFiles);
-    await exec(`${shellDir}/deploy/kubernetes.sh "${kubeFiles}"`);
-
+      log.ci("Deploying...");
+      var kubeFiles = taskParams["kubeFiles"];
+      log.sys("Kubernetes files: ", kubeFiles);
+      await exec(`${shellDir}/deploy/kubernetes.sh "${kubeFiles}"`);
+    } catch (e) {
+      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
+      process.exit(1);
+    } finally {
+      await exec(shellDir + "/common/footer.sh");
+    }
     log.debug("Finished Boomerang CICD Kubernetes deploy activity...");
   },
   async helm() {
@@ -74,14 +79,19 @@ module.exports = {
     };
 
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+    try {
+      log.ci("Initializing Dependencies");
+      await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
+      await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["helmVersion"]}"`);
 
-    log.ci("Initializing Dependencies");
-    await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
-    await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["helmVersion"]}"`);
-
-    log.ci("Deploying../");
-    await exec(`${shellDir}/deploy/helm.sh "${taskParams["repoUrl"]}" "${taskParams["helmChart"]}" "${taskParams["helmRelease"]}" "${taskParams["helmImageTag"]}" "${version}" "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}"`);
-
+      log.ci("Deploying../");
+      await exec(`${shellDir}/deploy/helm.sh "${taskParams["repoUrl"]}" "${taskParams["helmChart"]}" "${taskParams["helmRelease"]}" "${taskParams["helmImageTag"]}" "${version}" "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}"`);
+    } catch (e) {
+      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
+      process.exit(1);
+    } finally {
+      await exec(shellDir + "/common/footer.sh");
+    }
     log.debug("Finished Boomerang CICD Helm deploy activity...");
   },
   async containerRegistry() {
@@ -128,7 +138,6 @@ module.exports = {
       process.exit(1);
     } finally {
       await exec(shellDir + "/common/footer.sh");
-      log.debug("Finished Boomerang CICD Helm package activity");
     }
     log.debug("Finished Boomerang CICD Container Registry deploy activity...");
   }
