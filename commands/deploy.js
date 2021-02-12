@@ -106,7 +106,7 @@ module.exports = {
     log.ci("Deploying...");
     try {
       var dockerImageName =
-        taskParams["imageName"] !== undefined && taskParams["imagePath"] !== '""'
+        taskParams["imageName"] !== undefined && taskParams["imageName"] !== '""'
           ? taskParams["imageName"]
           : taskParams["componentName"]
             .toString()
