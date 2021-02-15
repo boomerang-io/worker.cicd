@@ -17,6 +17,9 @@ else
 fi
 
 curl -k -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/boomerang -o ~/.npmrc
+if [[ $? -ne 0 ]]; then
+    echo "Error retrieving .npmrc for scoped packages from the platform"
+fi
 
 if [ "$DEBUG" == "true" ]; then
     less ~/.npmrc
