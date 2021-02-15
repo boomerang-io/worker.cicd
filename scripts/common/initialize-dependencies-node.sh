@@ -17,15 +17,18 @@ else
 fi
 
 curl -k -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/boomerang -o ~/.npmrc
+if [[ $? -ne 0 ]]; then
+    echo "Error retrieving .npmrc for scoped packages from the platform"
+fi
 
 if [ "$DEBUG" == "true" ]; then
     less ~/.npmrc
 fi
 
-echo "Printing versions..."
-echo "  Yarn: " && yarn --version
-echo "  NPM: " && npm --version
-echo "  Node: " && node --version
+echo "Versions:"
+echo "  Yarn: $(yarn --version)"
+echo "  NPM: $(npm --version)" 
+echo "  Node: $(node --version)"
 
 if [ "$HTTP_PROXY" != "" ]; then
     if [ "$BUILD_TOOL" == "yarn" ]; then
