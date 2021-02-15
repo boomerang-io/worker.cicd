@@ -26,4 +26,4 @@ Via the Boomerang CICD system which will make the images available on Dockerhub
 
 ### Manually
 
-`VERSION=<tag> && docker build -t tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION . && docker push tools.boomerangplatform.net:8500/ise/bmrg-worker-cicd:$VERSION`
+`VERSION=<tag> && docker build -t boomerangio/worker-cicd:$VERSION . && docker push boomerangio/worker-cicd:$VERSION`

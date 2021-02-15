@@ -13,7 +13,7 @@ BUILD_HARNESS_ARCH=$(uname -m | sed 's/x86_64/amd64/g')
 HELM_PLATFORM=$BUILD_HARNESS_OS
 HELM_ARCH=$BUILD_HARNESS_ARCH
 
-HELM_VERSION=v3.2.4
+HELM_VERSION=v3.5.0
 if [ ! -z "$BUILD_TOOL_VERSION" ]; then
     HELM_VERSION=v$BUILD_TOOL_VERSION
 fi
@@ -46,23 +46,10 @@ fi
 HELM_HOME=/tmp/.helm
 
 echo "   ⋯ Verifying Helm client..."
-if [ "$BUILD_TOOL" == "helm3" ]; then
-    helm version --short
-    if [ $? -ne 0 ] ; then
-        echo
-        echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
-        echo
-        exit 1
-    fi
-else
-    helm version --client --short
-    if [ $? -ne 0 ] ; then
-        echo
-        echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
-        echo
-        exit 1
-    fi
-    echo "   ⋯ Initializing Helm"
-    helm init --client-only --skip-refresh --home $HELM_HOME
-    echo "   ↣ Helm home set as: $HELM_HOME"
+helm version --short
+if [ $? -ne 0 ] ; then
+    echo
+    echo  "   ✗ An error occurred installing Helm. Please see output for details or talk to a support representative." "error"
+    echo
+    exit 1
 fi

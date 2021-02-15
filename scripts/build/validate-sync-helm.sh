@@ -8,7 +8,7 @@
 #############
 
 HELM_REPO_TYPE=`echo $1 | tr '[:upper:]' '[:lower:]'`
-if [ "$HELM_REPO_TYPE" == "undefined" ]; then
+if [ -z "$HELM_REPO_TYPE" ]; then
     HELM_REPO_TYPE="artifactory"
 fi
 HELM_REPO_URL=$2
@@ -18,7 +18,7 @@ GIT_OWNER=$5
 GIT_REPO=$6
 GIT_COMMIT_ID=$7
 HELM_INDEX_BRANCH=$8
-if [ "$HELM_INDEX_BRANCH" == "undefined" ]; then
+if [ -z "$HELM_INDEX_BRANCH" ]; then
     HELM_INDEX_BRANCH="index"
 fi
 GIT_API_URL=https://api.github.com

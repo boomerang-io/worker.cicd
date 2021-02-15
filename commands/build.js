@@ -2,10 +2,10 @@ const { log, utils, CICDError } = require("@boomerang-io/worker-core");
 const shell = require("shelljs");
 
 function exec(command) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     log.debug("Command directory:", shell.pwd().toString());
     log.debug("Command to execute:", command);
-    shell.exec(command, config, function(code, stdout, stderr) {
+    shell.exec(command, config, function (code, stdout, stderr) {
       if (code) {
         reject(new CICDError(code, stderr));
       }
@@ -25,6 +25,18 @@ function parseVersion(version, appendBuildNumber) {
   return parsedVersion;
 }
 
+function workingDir(workingDir) {
+  let dir;
+  if (!workingDir || workingDir === '""') {
+    dir = "/data";
+    log.debug("No working directory specified. Defaulting...");
+  } else {
+    dir = workingDir;
+  }
+  log.debug("Working Directory: ", dir);
+  return dir;
+}
+
 module.exports = {
   async java() {
     log.debug("Starting Boomerang CICD Java build activity...");
@@ -37,17 +49,11 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
-    // To implement when we have custom working directories as part of advanced task configuration
+
     // ----------------
-    // let dir;
-    // if (!workingDir || workingDir === '""') {
-    //   dir = "/data";
-    //   log.debug("No directory specified. Defaulting...");
-    // } else {
-    //   dir = workingDir;
-    // }
     // shell.config.silent = true; //set to silent otherwise CD will print out no such file or directory if the directory doesn't exist
     // shell.cd(dir);
     // //shell.cd -> does not have an error handling call back and will default to current directory of /cli
@@ -88,7 +94,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     const version = parseVersion(taskParams["version"], false);
@@ -121,7 +128,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -135,25 +143,24 @@ module.exports = {
       await exec("ls -ltr");
       var dockerFile = taskParams["dockerFile"] !== undefined && taskParams["dockerFile"] !== null ? taskParams["dockerFile"] : "";
       var dockerImageName =
-        taskParams["imageName"] !== undefined && taskParams["imagePath"] !== '""'
+        taskParams["imageName"] !== undefined && taskParams["imageName"] !== '""'
           ? taskParams["imageName"]
           : taskParams["componentName"]
-              .toString()
-              .replace(/[^a-zA-Z0-9\-]/g, "")
-              .toLowerCase();
+            .toString()
+            .replace(/[^a-zA-Z0-9\-]/g, "")
+            .toLowerCase();
       var dockerImagePath =
         taskParams["imagePath"] !== undefined && taskParams["imagePath"] !== '""'
           ? taskParams["imagePath"]
-              .toString()
-              .replace(/[^a-zA-Z0-9\-]/g, "")
-              .toLowerCase()
+            .toString()
+            .replace(/[^a-zA-Z0-9\-]/g, "")
+            .toLowerCase()
           : taskParams["teamName"]
-              .toString()
-              .replace(/[^a-zA-Z0-9\-]/g, "")
-              .toLowerCase();
+            .toString()
+            .replace(/[^a-zA-Z0-9\-]/g, "")
+            .toLowerCase();
       await exec(
-        `${shellDir}/build/package-container.sh "${dockerImageName}" "${version}" "${dockerImagePath}" "${taskParams["buildArgs"]}" "${dockerFile}" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${
-          taskParams["globalContainerRegistryUser"]
+        `${shellDir}/build/package-container.sh "${dockerImageName}" "${version}" "${dockerImagePath}" "${taskParams["buildArgs"]}" "${dockerFile}" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${taskParams["globalContainerRegistryUser"]
         }" "${taskParams["globalContainerRegistryPassword"]}" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${taskParams["containerRegistryPassword"]}"`
       );
     } catch (e) {
@@ -175,7 +182,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     try {
@@ -205,7 +213,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     try {
@@ -234,7 +243,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     try {
@@ -264,7 +274,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     const version = parseVersion(taskParams["version"], false);
@@ -296,7 +307,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
     log.debug("Working Directory: ", dir);
 
     try {

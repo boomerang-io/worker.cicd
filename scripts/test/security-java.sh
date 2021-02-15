@@ -21,7 +21,7 @@ echo "Creds: $ART_REPO_USER:$ART_REPO_PASSWORD"
 curl --noproxy "$NO_PROXY" --insecure -u $ART_REPO_USER:$ART_REPO_PASSWORD "$ART_URL/$ASOC_CLIENT_CLI" -o $TEST_DIR/SAClientUtil.zip
 
 # Unzip ASOC CLI
-unzip $TEST_DIR/SAClientUtil.zip -d $TEST_DIR
+unzip -qq $TEST_DIR/SAClientUtil.zip -d $TEST_DIR
 rm -f $TEST_DIR/SAClientUtil.zip
 SAC_DIR=`ls -d $TEST_DIR/SAClientUtil*`
 echo "SAC_DIR=$SAC_DIR"
@@ -37,6 +37,9 @@ echo "PATH=$PATH"
 # echo "-Xmx4g" | tee -a $ASOC_PATH/config/cli.config
 # cat $ASOC_PATH/config/cli.config
 
+# # Switch to test path
+# cd $TEST_DIR
+
 # Compile source
 if [ "$HTTP_PROXY" != "" ]; then
     # Swap , for |
@@ -44,7 +47,11 @@ if [ "$HTTP_PROXY" != "" ]; then
     export MAVEN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts='$MAVEN_PROXY_IGNORE' -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT -Dhttps.nonProxyHosts='$MAVEN_PROXY_IGNORE'"
 fi
 echo "MAVEN_OPTS=$MAVEN_OPTS"
-mvn clean package install -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+mvn -q clean install dependency:copy-dependencies -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+
+# Remove Jars and Wars
+# find target -name "*.jar" -type f -delete
+find target -name "*.war" -type f -delete
 
 # Set Java version
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
@@ -96,8 +103,9 @@ rm -rf /tmp/*.apk /tmp/gcc /tmp/gcc-libs.tar.xz /tmp/libz /tmp/libz.tar.xz /var/
 export PATH="${ASOC_PATH}/bin:${PATH}"
 
 # Set ASOC project path
-export PROJECT_PATH=$TEST_DIR
-# export PROJECT_PATH=`pwd`
+export PROJECT_PATH=`pwd`
+# export PROJECT_PATH=$TEST_DIR
+echo "PROJECT_PATH=$PROJECT_PATH"
 
 # Create ASOC configuration file
 cp ${SHELL_DIR}/test/security-java.xml $ASOC_PATH/appscan-config.xml
@@ -109,7 +117,7 @@ xmlstarlet ed --inplace -u "Configuration/Targets/Target/CustomBuildInfo/@jdk_pa
 # Generate ASOC IRX file
 export APPSCAN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT"
 echo "APPSCAN_OPTS=$APPSCAN_OPTS"
-$ASOC_PATH/bin/appscan.sh prepare -v -X -c $ASOC_PATH/appscan-config.xml -n ${COMPONENT_NAME}_${VERSION_NAME}.irx
+$ASOC_PATH/bin/appscan.sh prepare -c $ASOC_PATH/appscan-config.xml -n ${COMPONENT_NAME}_${VERSION_NAME}.irx
 
 # If IRX file not created exit with error
 if [ ! -f "${COMPONENT_NAME}_${VERSION_NAME}.irx" ]; then
@@ -128,6 +136,7 @@ echo "ASOC Scan ID: $ASOC_SCAN_ID"
 
 # If no ASOC Scan ID returned exit with error
 if [ -z "$ASOC_SCAN_ID" ]; then
+  echo "Scan not started"
   exit 129
 fi
 
@@ -137,24 +146,25 @@ RUN_SCAN=true
 while [ "$($ASOC_PATH/bin/appscan.sh status -i $ASOC_SCAN_ID)" != "Ready" ] && [ "$RUN_SCAN" == "true" ]; do
   NOW=`date +%s`
   DIFF=`expr $NOW - $START_SCAN`
-  if [ $DIFF -gt 600 ]; then
-    echo "Timed out waiting for ASOC job to complete [$DIFF/600]"
+  if [ $DIFF -gt 3600 ]; then
+    echo "Timed out waiting for ASOC job to complete [$DIFF/3600]"
     RUN_SCAN=false
   else
-    echo "ASOC job execution not completed ... waiting 15 seconds they retrying [$DIFF/600]"
+    echo "ASOC job execution not completed ... waiting 15 seconds they retrying [$DIFF/3600]"
     sleep 15
   fi
 done
 
 # If scan not completed exit with error
 if [ "$RUN_SCAN" == "false" ]; then
+  echo "Scan failed"
   exit 130
 fi
 
 # Retrieve ASOC execution summary
 $ASOC_PATH/bin/appscan.sh info -i $ASOC_SCAN_ID -json >> ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json
-curl -T ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json" --insecure -u admin:WwwWulaWwHH!
+curl -T ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}.json "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SUMMARY_${COMPONENT_NAME}_${VERSION_NAME}_${ASOC_SCAN_ID}.json" --insecure -u admin:WwwWulaWwHH!
 
 # Retrieve ASOC report
 $ASOC_PATH/bin/appscan.sh get_result -d ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip -i $ASOC_SCAN_ID -t ZIP
-curl -T ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip" --insecure -u admin:WwwWulaWwHH!
+curl -T ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}.zip "https://tools.boomerangplatform.net/artifactory/boomerang/software/asoc/ASOC_SCAN_RESULTS_${COMPONENT_NAME}_${VERSION_NAME}_${ASOC_SCAN_ID}.zip" --insecure -u admin:WwwWulaWwHH!

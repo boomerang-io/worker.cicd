@@ -4,7 +4,7 @@
 
 BUILD_TOOL=$1
 BUILD_SCRIPT=$2
-if [ "$BUILD_SCRIPT" == "undefined" ]; then
+if [ -z "$BUILD_SCRIPT" ]; then
     echo "Defaulting npm script to 'build'..."
     BUILD_SCRIPT=build
 else
@@ -18,7 +18,7 @@ if [ "$DEBUG" == "true" ]; then
     DEBUG_OPTS+="--verbose"
 fi
 
-if [ "$CYPRESS_INSTALL_BINARY" == "undefined" ]; then
+if [ -z "$CYPRESS_INSTALL_BINARY" ]; then
     echo "Defaulting Cypress Install Binary to 0..."
     CYPRESS_INSTALL_BINARY=0
 else
@@ -53,7 +53,7 @@ else
 fi
 
 SCRIPT=$(node -pe "require('./package.json').scripts.$BUILD_SCRIPT");
-if [ "$SCRIPT" != "undefined" ]; then
+if [ ! -z "$SCRIPT" ]; then
     if [ "$BUILD_TOOL" == "npm" ]; then
         npm run build $DEBUG_OPTS
         RESULT=$?

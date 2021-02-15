@@ -13,10 +13,10 @@ const TestType = {
 Object.freeze(TestType);
 
 function exec(command) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     log.debug("Command directory:", shell.pwd().toString());
     log.debug("Command to execute:", command);
-    shell.exec(command, config, function(code, stdout, stderr) {
+    shell.exec(command, config, function (code, stdout, stderr) {
       if (code) {
         reject(new CICDError(code, stderr));
       }
@@ -36,6 +36,18 @@ function parseVersion(version, appendBuildNumber) {
   return parsedVersion;
 }
 
+function workingDir(workingDir) {
+  let dir;
+  if (!workingDir || workingDir === '""') {
+    dir = "/data";
+    log.debug("No working directory specified. Defaulting...");
+  } else {
+    dir = workingDir;
+  }
+  log.debug("Working Directory: ", dir);
+  return dir;
+}
+
 module.exports = {
   async java() {
     log.debug("Started Boomerang CICD Java Test Activity");
@@ -48,8 +60,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Workspace Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
@@ -58,9 +70,9 @@ module.exports = {
     shell.mkdir("-p", testdir);
     log.debug("Test Directory: ", testdir);
 
-    log.debug("Copy source code from shared drive to container");
-    shell.mkdir("-p", workdir);
-    shell.cp("-R", dir + "/repository/*", testdir);
+    // log.debug("Copy source code from shared drive to container");
+    // shell.mkdir("-p", workdir);
+    // shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -113,19 +125,17 @@ module.exports = {
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir}`);
+        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir} ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Commencing automated Selenium custom tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-custom.sh ${taskParams["teamName"]} ${taskParams["systemComponentName"]} ${version} ${taskParams["seleniumApplicationPropertiesFile"]} ${taskParams["seleniumApplicationPropertiesKey"]} ${taskParams["saucelabsApiUrlWithCredentials"]} ${taskParams["seleniumReportFolder"]} ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]} ${shellDir}`);
+        await exec(`${shellDir}/test/selenium-custom.sh ${taskParams["teamName"]} ${taskParams["systemComponentName"]} ${version} ${taskParams["seleniumApplicationPropertiesFile"]} ${taskParams["seleniumApplicationPropertiesKey"]} ${taskParams["saucelabsApiUrlWithCredentials"]} ${taskParams["seleniumReportFolder"]} ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]} ${shellDir} ${testdir}`);
       }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      log.debug("Removing workspace folder contents");
-      shell.rm('-rf', dir);
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Java test activity");
     }
@@ -141,8 +151,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Workspace Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
@@ -153,7 +163,7 @@ module.exports = {
 
     // log.debug("Copy source code from shared drive to container");
     // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", workdir);
+    // shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -212,8 +222,6 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      log.debug("Removing workspace folder contents");
-      shell.rm('-rf', dir);
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Jar test activity");
     }
@@ -229,8 +237,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Workspace Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
@@ -241,7 +249,7 @@ module.exports = {
 
     // log.debug("Copy source code from shared drive to container");
     // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", workdir);
+    // shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -265,12 +273,12 @@ module.exports = {
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/security-node.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir}`);
+        await exec(`${shellDir}/test/security-node.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${taskParams["asocClientCli"]} ${taskParams["asocJavaRuntime"]} ${shellDir} ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir}`);
+        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir} ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Custom Selenium testing type not supported for NodeJS");
@@ -279,8 +287,6 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      log.debug("Removing workspace folder contents");
-      shell.rm('-rf', dir);
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD NodeJS test activity");
     }
@@ -296,8 +302,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Workspace Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
@@ -308,7 +314,7 @@ module.exports = {
 
     // log.debug("Copy source code from shared drive to container");
     // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", workdir);
+    // shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -333,7 +339,7 @@ module.exports = {
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir}`);
+        await exec(`${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${taskParams["platformType"]} ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir} ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Custom Selenium testing type not supported for Python");
@@ -342,8 +348,6 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      log.debug("Removing workspace folder contents");
-      shell.rm('-rf', dir);
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Python test activity");
     }
@@ -359,8 +363,8 @@ module.exports = {
       verbose: true
     };
 
-    let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    log.debug("Workspace Directory: ", dir);
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
 
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
@@ -371,7 +375,7 @@ module.exports = {
 
     // log.debug("Copy source code from shared drive to container");
     // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", workdir);
+    // shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -379,12 +383,12 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-helm.sh ${taskParams["kubeVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["buildToolVersion"]}"`);
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Linting Helm Chart(s)");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/lint-helm.sh ${taskParams["helmRepoUrl"]} ${taskParams["helmChartDirectory"]} ${taskParams["helmChartIgnore"]}`);
+        await exec(`${shellDir}/test/lint-helm.sh ${taskParams["buildTool"]} ${taskParams["helmRepoUrl"]} ${taskParams["helmChartDirectory"]} ${taskParams["helmChartIgnore"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Helm");
@@ -402,8 +406,6 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      log.debug("Removing workspace folder contents");
-      shell.rm('-rf', dir);
       await exec(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Helm test activity");
     }
