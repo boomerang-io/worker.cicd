@@ -25,7 +25,7 @@ if [ "$DEBUG" == "true" ]; then
     less ~/.npmrc
 fi
 
-echo "Printing versions..."
+echo "Versions:"
 echo "  Yarn: $(yarn --version)"
 echo "  NPM: $(npm --version)" 
 echo "  Node: $(node --version)"

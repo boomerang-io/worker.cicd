@@ -52,9 +52,9 @@ else
     exit 99
 fi
 
+# This needs to be checking for undefined as thats whats returned by the node command
 SCRIPT=$(node -pe "require('./package.json').scripts.$BUILD_SCRIPT");
-echo "Script: $SCRIPT"
-if [ ! -z "$SCRIPT" ]; then
+if [ "$SCRIPT" != "undefined" ]; then
     if [ "$BUILD_TOOL" == "npm" ]; then
         npm run build $DEBUG_OPTS
         RESULT=$?
