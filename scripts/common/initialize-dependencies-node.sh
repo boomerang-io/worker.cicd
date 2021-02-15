@@ -26,9 +26,9 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 echo "Printing versions..."
-echo "  Yarn: " && yarn --version
-echo "  NPM: " && npm --version
-echo "  Node: " && node --version
+echo "  Yarn: $(yarn --version)"
+echo "  NPM: $(npm --version)" 
+echo "  Node: $(node --version)"
 
 if [ "$HTTP_PROXY" != "" ]; then
     if [ "$BUILD_TOOL" == "yarn" ]; then
