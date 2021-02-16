@@ -130,7 +130,7 @@ module.exports = {
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Commencing automated Selenium custom tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-custom.sh ${taskParams["teamName"]} ${taskParams["systemComponentName"]} ${version} ${taskParams["seleniumApplicationPropertiesFile"]} ${taskParams["seleniumApplicationPropertiesKey"]} ${taskParams["saucelabsApiUrlWithCredentials"]} ${taskParams["seleniumReportFolder"]} ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]} ${shellDir} ${testdir}`);
+        await exec(`${shellDir}/test/selenium-custom.sh "${taskParams["teamName"]}" ${taskParams["systemComponentName"]} ${version} ${taskParams["seleniumApplicationPropertiesFile"]} ${taskParams["seleniumApplicationPropertiesKey"]} ${taskParams["saucelabsApiUrlWithCredentials"]} ${taskParams["seleniumReportFolder"]} ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]} ${shellDir} ${testdir}`);
       }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
