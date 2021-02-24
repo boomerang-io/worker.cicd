@@ -189,7 +189,7 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-node.sh "${taskParams["buildTool"]}" ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
+      await exec(`${shellDir}/common/initialize-dependencies-node.sh "${taskParams["buildTool"]}" "${taskParams["buildToolVersion"]}" ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
