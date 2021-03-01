@@ -19,7 +19,7 @@ return_abnormal() {
     # If one or more rquired command line parameters are epmty add it to the total
     RETURN_ABNORMAL_TOTAL=0
     # Get the value of the parameter and echo it into the variable
-    if [[ $1 ]] && [[ ${1:0:1} != - ]]; then
+    if [[ $1 ]] && [[ ${1:0:1} != - ]] && [[ $1 != undefined ]]; then
         echo "$1"
     else
         # If the parameter is empty, print the message to stderr and return 1 (variable will not be changed)
@@ -41,6 +41,7 @@ get_parameters() {
         [CHART_NAME]=""
         [CHART_VERSION]=""
         [HELM_RELEASE_NAME]=""
+        [HELM_SET_ARGS]=""
         [HELM_IMAGE_KEY]=""
         [IMAGE_KEY_VERSION_NAME]=""
         [DEPLOY_KUBE_VERSION]=""
@@ -74,6 +75,10 @@ get_parameters() {
             ;;
         --release-name) # Takes an option argument; ensure it has been specified.
             PARAMETERS_ARRAY[HELM_RELEASE_NAME]=$(return_abnormal "$2" 'ERROR: "--release-name" requires a non-empty option argument.') || ((RETURN_ABNORMAL_TOTAL++))
+            shift
+            ;;
+        --helm-set-args) # Takes an option argument; ensure it has been specified.
+            PARAMETERS_ARRAY[HELM_SET_ARGS]=$(return_abnormal "$2" 'WARN: "--helm-set-args" optional argument was not provided.')
             shift
             ;;
         --image-key) # Takes an option argument; ensure it has been specified.
@@ -223,10 +228,9 @@ upgrade_helm_release() {
             echo "Commencing deployment (attempt #$INDEX)..."
             parse_helm_values "${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
             DEPLOYMENT_OUTPUT=$(helm upgrade --kube-context "${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}" "${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}" \
-                --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" --reuse-values \
-                --set "${PARAMETERS_ARRAY[HELM_IMAGE_KEY]}"="${PARAMETERS_ARRAY[IMAGE_KEY_VERSION_NAME]}" \
-                --version "${PARAMETERS_ARRAY[CHART_VERSION]}" "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}" \
-                "${HELM_GIT_VALUES_FILE[@]}" $DEBUG_OPTS)
+                --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" --reuse-values "${HELM_GIT_VALUES_FILE[@]}" $DEBUG_OPTS \
+                --set "${PARAMETERS_ARRAY[HELM_IMAGE_KEY]}"="${PARAMETERS_ARRAY[IMAGE_KEY_VERSION_NAME]}" --set "${PARAMETERS_ARRAY[HELM_SET_ARGS]}" \
+                --version "${PARAMETERS_ARRAY[CHART_VERSION]}" "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}")
             DEPLOYMENT_RESULT=$?
             if [[ $DEPLOYMENT_RESULT -ne 0 ]]; then
                 if [[ $DEPLOYMENT_OUTPUT =~ "timed out" ]]; then
