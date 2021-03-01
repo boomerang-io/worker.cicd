@@ -15,6 +15,24 @@ ART_PASSWORD=${10}
 SHELL_DIR=${11}
 TEST_DIR=${12}
 
+urlencode() {
+    # urlencode <string>
+    old_lc_collate=$LC_COLLATE
+    LC_COLLATE=C
+
+    local length="${#1}"
+    for (( i = 0; i < length; i++ )); do
+        local c="${1:i:1}"
+        case $c in
+            [a-zA-Z0-9.~_-]) printf "$c" ;;
+            ' ') printf "%%20" ;;
+            *) printf '%%%02X' "'$c" ;;
+        esac
+    done
+
+    LC_COLLATE=$old_lc_collate
+}
+
 # cd $TEST_DIR
 
 echo "TEAM_NAME=$TEAM_NAME"
@@ -63,7 +81,7 @@ if [ -d "$REPORT_FOLDER" ]; then
   echo "Zip Selenium report and upload to Artifactory"
   apk add zip
   zip -r SeleniumReport.zip $REPORT_FOLDER
-  ls -al SeleniumReport.zip
-  echo "Uploading SeleniumReport.zip to ${ART_URL}/boomerang/ci/repos/${TEAM_NAME}/${COMPONENT_NAME}/${VERSION_NAME}/SeleniumReport.zip"
-  curl -T SeleniumReport.zip "${ART_URL}/boomerang/ci/repos/${TEAM_NAME}/${COMPONENT_NAME}/${VERSION_NAME}/SeleniumReport.zip" --insecure -u $ART_USER:$ART_PASSWORD
+  TEAM_NAME_ENCODED=$(urlencode "${TEAM_NAME}")
+  echo "Uploading SeleniumReport.zip to ${ART_URL}/boomerang/ci/repos/${TEAM_NAME_ENCODED}/${COMPONENT_NAME}/${VERSION_NAME}/SeleniumReport.zip"
+  curl -T SeleniumReport.zip "${ART_URL}/boomerang/ci/repos/${TEAM_NAME_ENCODED}/${COMPONENT_NAME}/${VERSION_NAME}/SeleniumReport.zip" --insecure -u $ART_USER:$ART_PASSWORD
 fi
