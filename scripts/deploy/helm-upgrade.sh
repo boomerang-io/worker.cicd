@@ -134,7 +134,7 @@ debug_mode() {
     echo "--git-url=${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
     echo
     # Debug option for helm
-    DEBUG_OPTS='--debug'
+    DEBUG_OPTS="--debug"
 }
 
 helm_repo_add_and_update() {
@@ -158,7 +158,6 @@ parse_helm_values() {
             exit
         fi
         mv ${CURL_HEADER_OUTPUT[0]} $HELM_GIT_VALUES_FILE
-        sleep 1
         # Add extra validation for the YAML file
         yq eval 'true' $HELM_GIT_VALUES_FILE &>/dev/null
         # Return -f parameter and the final values file name
@@ -225,7 +224,7 @@ upgrade_helm_release() {
                 --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" --reuse-values \
                 --set "${PARAMETERS_ARRAY[HELM_IMAGE_KEY]}"="${PARAMETERS_ARRAY[IMAGE_KEY_VERSION_NAME]}" \
                 --version "${PARAMETERS_ARRAY[CHART_VERSION]}" "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}" \
-                "${HELM_GIT_VALUES_FILE[@]}" "$DEBUG_OPTS")
+                "${HELM_GIT_VALUES_FILE[@]}" $DEBUG_OPTS)
             DEPLOYMENT_RESULT=$?
             if [[ $DEPLOYMENT_RESULT -ne 0 ]]; then
                 if [[ $DEPLOYMENT_OUTPUT =~ "timed out" ]]; then
