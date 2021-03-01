@@ -63,5 +63,7 @@ if [ -d "$REPORT_FOLDER" ]; then
   echo "Zip Selenium report and upload to Artifactory"
   apk add zip
   zip -r SeleniumReport.zip $REPORT_FOLDER
+  ls -al SeleniumReport.zip
+  echo "Uploading SeleniumReport.zip to ${ART_URL}/boomerang/ci/repos/${TEAM_NAME}/${COMPONENT_NAME}/${VERSION_NAME}/SeleniumReport.zip"
   curl -T SeleniumReport.zip "${ART_URL}/boomerang/ci/repos/${TEAM_NAME}/${COMPONENT_NAME}/${VERSION_NAME}/SeleniumReport.zip" --insecure -u $ART_USER:$ART_PASSWORD
 fi
