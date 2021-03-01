@@ -160,7 +160,7 @@ parse_helm_values() {
         mv ${CURL_HEADER_OUTPUT[0]} $HELM_GIT_VALUES_FILE
         sleep 1
         # Add extra validation for the YAML file
-        yq e 'true' $HELM_GIT_VALUES_FILE &>/dev/null
+        yq eval 'true' $HELM_GIT_VALUES_FILE &>/dev/null
         # Return -f parameter and the final values file name
         HELM_GIT_VALUES_FILE=(-f $HELM_GIT_VALUES_FILE)
     fi

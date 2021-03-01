@@ -67,17 +67,17 @@ do
         printf "  Checking for additional dependencies in $DEPENDENCY_YAML_PATH...\n"
         if [ -f $DEPENDENCY_YAML_PATH ]; then
             # Loop through and ensure all custom dependencies are added
-            echo $(yq read $DEPENDENCY_YAML_PATH dependencies[*].repository)
+            echo $(yq eval '.dependencies[].repository' $DEPENDENCY_YAML_PATH)
 #             IFS='
 # ' #set as newline
-            DEP_ARRAY_STRING=`echo $(yq read $DEPENDENCY_YAML_PATH dependencies[*].repository) | tr '\n' ' '`
+            DEP_ARRAY_STRING=`echo $(yq eval '.dependencies[].repository' $DEPENDENCY_YAML_PATH) | tr '\n' ' '`
             echo "Dependencies found in string: $DEP_ARRAY_STRING"
             read -ra DEP_ARRAY <<< $DEP_ARRAY_STRING
             echo "Dependencies found array: ${DEP_ARRAY[@]}"
             for DEP in "${DEP_ARRAY[@]}"; do
                 if [[ $DEP =~ ^http ]]; then
                     echo "Adding dependency $DEP..."
-                    read -ra DEP_NAME <<< $(yq read $DEPENDENCY_YAML_PATH dependencies[repository==$DEP].name)
+                    read -ra DEP_NAME <<<$(yq eval '.dependencies[] | select (.repository == "'"$DEP"'") | .name as $name | $name' "$DEPENDENCY_YAML_PATH")
                     helm repo add $DEP_NAME $DEP
                 else
                     echo "Skipping '$DEP' as not a URL"
