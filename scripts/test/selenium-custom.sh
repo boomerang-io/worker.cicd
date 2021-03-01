@@ -59,9 +59,9 @@ export USE_PROXY=true
 
 env http.proxyHost=$PROXY_HOST http.proxyPort=$PROXY_PORT https.proxyHost=$PROXY_HOST https.proxyPort=$PROXY_PORT mvn clean test
 
-if [ -d "$REPORT" ]; then
+if [ -d "$REPORT_FOLDER" ]; then
   echo "Zip Selenium report and upload to Artifactory"
   apk add zip
-  zip -r SeleniumReport.zip $REPORT
+  zip -r SeleniumReport.zip $REPORT_FOLDER
   curl -T SeleniumReport.zip "${ART_URL}/boomerang/ci/repos/${TEAM_NAME}/${COMPONENT_NAME}/${VERSION_NAME}/SeleniumReport.zip" --insecure -u $ART_USER:$ART_PASSWORD
 fi
