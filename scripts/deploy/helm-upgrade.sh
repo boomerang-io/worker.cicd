@@ -100,8 +100,8 @@ get_parameters() {
             PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]=$(return_abnormal "$2" 'WARN: "--git-url" optional argument was not provided.')
             shift
             ;;
-        --debug) # If set, enables debug
-            PARAMETERS_ARRAY[DEBUG]=true
+        --debug) # If set to true it enables debug
+            PARAMETERS_ARRAY[DEBUG]=$(return_abnormal "$2" 'WARN: "--debug" optional argument was not provided.')
             debug_mode
             shift
             ;;
@@ -120,21 +120,23 @@ get_parameters() {
 }
 
 debug_mode() {
-    echo -e "\nDEBUG MODE ENABLED - Script input variables..."
-    echo "--repo-url=${PARAMETERS_ARRAY[HELM_REPO_URL]}"
-    echo "--chart-repo=${PARAMETERS_ARRAY[CHART_REPO]}"
-    echo "--chart-name=${PARAMETERS_ARRAY[CHART_NAME]}"
-    echo "--chart-version=${PARAMETERS_ARRAY[CHART_VERSION]}"
-    echo "--release-name=${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
-    echo "--image-key=${PARAMETERS_ARRAY[HELM_IMAGE_KEY]}"
-    echo "--image-version=${PARAMETERS_ARRAY[IMAGE_KEY_VERSION_NAME]}"
-    echo "--kube-version=${PARAMETERS_ARRAY[DEPLOY_KUBE_VERSION]}"
-    echo "--kube-namespace=${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}"
-    echo "--kube-host=${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}"
-    echo "--git-url=${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
-    echo
-    # Debug option for helm
-    DEBUG_OPTS="--debug"
+    if [[ ${PARAMETERS_ARRAY[DEBUG]} == true ]]; then
+        echo -e "\nDEBUG MODE ENABLED - Script input variables..."
+        echo "--repo-url=${PARAMETERS_ARRAY[HELM_REPO_URL]}"
+        echo "--chart-repo=${PARAMETERS_ARRAY[CHART_REPO]}"
+        echo "--chart-name=${PARAMETERS_ARRAY[CHART_NAME]}"
+        echo "--chart-version=${PARAMETERS_ARRAY[CHART_VERSION]}"
+        echo "--release-name=${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
+        echo "--image-key=${PARAMETERS_ARRAY[HELM_IMAGE_KEY]}"
+        echo "--image-version=${PARAMETERS_ARRAY[IMAGE_KEY_VERSION_NAME]}"
+        echo "--kube-version=${PARAMETERS_ARRAY[DEPLOY_KUBE_VERSION]}"
+        echo "--kube-namespace=${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}"
+        echo "--kube-host=${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}"
+        echo "--git-url=${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
+        echo
+        # Debug option for helm
+        DEBUG_OPTS="--debug"
+    fi
 }
 
 helm_repo_add_and_update() {
