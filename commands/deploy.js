@@ -113,12 +113,13 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["helmVersion"]}"`);
 
       log.ci("Deploying...");
-      await exec(`${shellDir}/deploy/helm-upgrade.sh --repo-url "${taskParams["helmChartRepoUrl"]}" \
+      await exec(`${shellDir}/deploy/helm-upgrade.sh --kube-host "${taskParams["kubeHost"]}" \
+      --kube-namespace "${taskParams["kubeNamespace"]}" --kube-version "${taskParams["kubeVersion"]}" \
+      --release-name "${taskParams["helmReleaseName"]}" --repo-url "${taskParams["helmChartRepoUrl"]}" \
       --chart-repo "${taskParams["helmChartRepo"]}" --chart-name "${taskParams["helmChartName"]}" \
-      --chart-version "${taskParams["helmChartVersion"]}" --release-name "${taskParams["helmReleaseName"]}" \
-      --helm-set-args "${taskParams["helmSetArgs"]}" --image-key "${taskParams["helmImageKey"]}" --image-version "${version}" \
-      --kube-version "${taskParams["kubeVersion"]}" --kube-namespace "${taskParams["kubeNamespace"]}" \
-      --kube-host "${taskParams["kubeHost"]}" --git-url "${taskParams["gitValuesUrl"]}" --debug "${taskParams["debug"]}"`);
+      --chart-version "${taskParams["helmChartVersion"]}" --helm-set-args "${taskParams["helmSetArgs"]}" \
+      --image-key "${taskParams["helmImageKey"]}" --image-version "${version}" \
+      --git-url "${taskParams["gitValuesUrl"]}" --debug "${taskParams["debug"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
