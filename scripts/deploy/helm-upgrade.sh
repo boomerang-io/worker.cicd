@@ -116,7 +116,7 @@ get_parameters() {
             shift
             ;;
         --release-name) # Takes an option argument; ensure it has been specified.
-            PARAMETERS_ARRAY[HELM_RELEASE_NAME]=$(return_abnormal "$2" "$(log -e "'$1' requires a non-empty option argument.")") || ((RETURN_ABNORMAL_TOTAL++))
+            PARAMETERS_ARRAY[HELM_RELEASE_NAME]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
         --helm-set-args) # Takes an option argument; ensure it has been specified.
@@ -150,7 +150,7 @@ get_parameters() {
             ;;
         esac
     done
-    if [[ RETURN_ABNORMAL_TOTAL -gt 0 ]]; then echo && exit; fi
+    if [[ $RETURN_ABNORMAL_TOTAL -gt 0 ]]; then echo && exit; fi
     eval set -- "$CMD_PARAMS"
 }
 
@@ -217,34 +217,82 @@ parse_helm_values() {
 
 # Retrieve the yaml output of a helm release
 get_yaml_output_for_helm_release() {
-    HELM_YAML_OUTPUT=$(helm list --kube-context "${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}" --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" \
-        --filter ^"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"$ -o yaml 2>&1)
+    HELM_YAML_OUTPUT=$(helm list --all --kube-context "${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}" --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" -o yaml 2>&1)
     if [[ $? -ne 0 ]]; then
         log -e "$HELM_YAML_OUTPUT"
         echo
         exit
     elif [[ $HELM_YAML_OUTPUT == [] ]]; then
-        log -e "Helm deployment could not be found using namespace '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' and release name '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}'"
+        log -e "There are no helm deployments in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace."
         echo
         exit
+    fi
+
+    # If both release and chart names were provided, check that the release matches with the chart name
+    if [[ ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]} ]] && [[ ${PARAMETERS_ARRAY[CHART_NAME]} ]]; then
+        RELEASE_NAME=$(yq eval '.[] | select (.chart == "*'"${PARAMETERS_ARRAY[CHART_NAME]}"'*") |
+            .name | select (. == "*'"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"'*")' - <<<"$HELM_YAML_OUTPUT")
+        if [[ $RELEASE_NAME != ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]} ]]; then
+            HELM_RELEASE_ARRAY=($(yq eval '.[] | select (.chart == "*'"${PARAMETERS_ARRAY[CHART_NAME]}"'*") | 
+                .name as $name | $name' - <<<"$HELM_YAML_OUTPUT"))
+            log -e "Release name '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}' does not match with any release from '${PARAMETERS_ARRAY[CHART_NAME]}' chart."
+            log -e "Available release names for '${PARAMETERS_ARRAY[CHART_NAME]}' chart name in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace: ${HELM_RELEASE_ARRAY[*]}"
+            echo
+            exit
+        fi
+    # If the release name is present and the chart name is empty, check that release name exists in that namespace
+    elif [[ ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]} ]] && [[ -z ${PARAMETERS_ARRAY[CHART_NAME]} ]]; then
+        RELEASE_EXISTS_IN_NS=$(yq eval '.[] | select (.name == "*'"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"'*")' - <<<"$HELM_YAML_OUTPUT")
+        if [[ -z $RELEASE_EXISTS_IN_NS ]]; then
+            log -e "Release name '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}' cannot be found in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace."
+            echo
+            exit
+        fi
+    fi
+
+    # Get Release Name based on the chart name.
+    # If there are multiple releases, show a warning message and stop
+    if [[ -z ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]} ]] && [[ ${PARAMETERS_ARRAY[CHART_NAME]} ]]; then
+        log -w "Release name was not provided, auto detecting it..."
+        HELM_RELEASE_ARRAY=($(yq eval '.[] | select (.chart == "*'"${PARAMETERS_ARRAY[CHART_NAME]}"'*") | 
+            .name as $name | $name' - <<<"$HELM_YAML_OUTPUT"))
+        if [[ ${#HELM_RELEASE_ARRAY[@]} -gt 1 ]]; then
+            log -e "Multiple releases found: ${HELM_RELEASE_ARRAY[*]}"
+            log -e "Auto detection works if there is only one release of the chart in the provided namespace."
+            log -e "You must provide the release name in order to deploy the chart."
+            echo
+            exit
+        else
+            PARAMETERS_ARRAY[HELM_RELEASE_NAME]="${HELM_RELEASE_ARRAY[*]}"
+            log -i "Release name detected as: ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
+        fi
+    elif [[ -z ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]} ]] && [[ -z ${PARAMETERS_ARRAY[CHART_NAME]} ]]; then
+        log -w "Release name was not provided, auto detecting it..."
+        log -e "Release name cannot be auto detected because chart name is empty."
+        log -e "You must provide the chart name in order to auto detect the release name."
+        echo
+        exit
+    fi
+
+    # CHART_NAME is blank. Helm release name is now required to fetch chart name.
+    if [[ -z ${PARAMETERS_ARRAY[CHART_NAME]} ]]; then
+        PARAMETERS_ARRAY[CHART_NAME]=$(yq eval '.[] | select (.name == "*'"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"'*") | 
+            .chart as $chart | $chart' - <<<"$HELM_YAML_OUTPUT" | cut -d- -f1)
+        log -w "Chart name was not provided, auto detecting it..."
+        log -i "Chart name detected as: ${PARAMETERS_ARRAY[CHART_NAME]}"
+    fi
+
+    # Get Chart Version based on the release name
+    if [[ -z ${PARAMETERS_ARRAY[CHART_VERSION]} ]]; then
+        PARAMETERS_ARRAY[CHART_VERSION]=$(yq eval '.[] | select (.name == "*'"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"'*") | 
+            .chart as $chart | $chart' - <<<"$HELM_YAML_OUTPUT" | cut -d- -f2)
+        log -w "Chart version was not provided, auto detecting it..."
+        log -i "Chart version detected as: ${PARAMETERS_ARRAY[CHART_VERSION]}"
     fi
 }
 
 upgrade_helm_release() {
     get_yaml_output_for_helm_release
-    # CHART_NAME is blank. Helm release name is now required to fetch chart name.
-    if [[ -z ${PARAMETERS_ARRAY[CHART_NAME]} ]]; then
-        PARAMETERS_ARRAY[CHART_NAME]=$(yq eval '.[].chart' - <<<"$HELM_YAML_OUTPUT" | cut -d- -f1)
-        log -w "Chart name was not provided, auto detecting it..."
-        log -i "Chart name detected as: ${PARAMETERS_ARRAY[CHART_NAME]}"
-    fi
-    # Get Chart Version based on the release name
-    if [[ -z ${PARAMETERS_ARRAY[CHART_VERSION]} ]]; then
-        PARAMETERS_ARRAY[CHART_VERSION]=$(yq eval '.[].chart' - <<<"$HELM_YAML_OUTPUT" | cut -d- -f2)
-        log -w "Chart version was not provided, auto detecting it..."
-        log -i "Chart version detected as: ${PARAMETERS_ARRAY[CHART_VERSION]}"
-    fi
-
     helm_repo_add_and_update
 
     log -i "Chart Namespace: ${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}"
@@ -274,8 +322,11 @@ upgrade_helm_release() {
             DEPLOYMENT_OUTPUT=$(helm upgrade --kube-context "${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}" "${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}" \
                 --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" --reuse-values "${HELM_GIT_VALUES_FILE[@]}" $DEBUG_OPTS \
                 --set "${PARAMETERS_ARRAY[HELM_IMAGE_KEY]}"="${PARAMETERS_ARRAY[IMAGE_KEY_VERSION_NAME]}" --set "${PARAMETERS_ARRAY[HELM_SET_ARGS]}" \
-                --version "${PARAMETERS_ARRAY[CHART_VERSION]}" "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}" 2>&1)
+                --version "${PARAMETERS_ARRAY[CHART_VERSION]}" "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}" 2>&1 >/dev/null)
             DEPLOYMENT_RESULT=$?
+            if [[ ${PARAMETERS_ARRAY[DEBUG]} == true ]] && [[ $DEPLOYMENT_RESULT -eq 0 ]]; then
+                log -d "$DEPLOYMENT_OUTPUT"
+            fi
             if [[ $DEPLOYMENT_RESULT -ne 0 ]]; then
                 if [[ $DEPLOYMENT_OUTPUT =~ "timed out" ]]; then
                     log -w "Time out reached. Retrying..."
