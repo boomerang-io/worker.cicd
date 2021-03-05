@@ -236,7 +236,7 @@ get_yaml_output_for_helm_release() {
             HELM_RELEASE_ARRAY=($(yq eval '.[] | select (.chart == "*'"${PARAMETERS_ARRAY[CHART_NAME]}"'*") | 
                 .name as $name | $name' - <<<"$HELM_YAML_OUTPUT"))
             log -e "Release name '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}' does not match with any release from '${PARAMETERS_ARRAY[CHART_NAME]}' chart."
-            log -e "Available release names for '${PARAMETERS_ARRAY[CHART_NAME]}' chart name in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace: ${HELM_RELEASE_ARRAY[*]}"
+            log -e "Available release names in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace for the selected chart name: ${HELM_RELEASE_ARRAY[*]}"
             echo
             exit
         fi
@@ -291,7 +291,19 @@ get_yaml_output_for_helm_release() {
     fi
 }
 
+check_kubernetes_connection() {
+    kubectl cluster-info &>/dev/null
+    if [[ $? -ne 0 ]]; then
+        log -e "Cluster connection could not be established using '${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}' context."
+        echo
+        exit
+    else
+        log -i "Cluster connection established using '${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}' context."
+    fi
+}
+
 upgrade_helm_release() {
+    check_kubernetes_connection
     get_yaml_output_for_helm_release
     helm_repo_add_and_update
 
