@@ -67,13 +67,22 @@ elif [[ "$USE_YARN" == true ]]; then
     yarn test $COMMAND_ARGS
 fi
 
+SRC_FOLDER=
+if [ -d "src" ]; then
+    echo "Source folder 'src' exists."
+    SRC_FOLDER=src
+else
+    echo "Source folder 'src' does not exist - defaulting to root folder of project and will scan all sub-folders."
+    SRC_FOLDER=.
+fi
+
 # Set NodeJS bin path
 NODE_PATH=$(which node)
 echo "NODE_PATH=$NODE_PATH"
 
 SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
 
-$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=src -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.scm.disabled=true -Dsonar.css.node=$NODE_PATH -Dsonar.nodejs.executable=$NODE_PATH $SONAR_FLAGS
+$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=$SRC_FOLDER -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.scm.disabled=true -Dsonar.css.node=$NODE_PATH -Dsonar.nodejs.executable=$NODE_PATH -Dsonar.javascript.node.maxspace=8192 $SONAR_FLAGS
 
 EXIT_CODE=$?
 echo "EXIT_CODE=$EXIT_CODE"
