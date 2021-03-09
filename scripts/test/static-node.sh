@@ -14,7 +14,7 @@ COMPONENT_NAME=$6
 apk add openjdk8
 
 # Set JS heap space
-export NODE_OPTIONS="--max-old-space-size=2048"
+export NODE_OPTIONS="--max-old-space-size=4096"
 
 # Install typescript
 npm install typescript -g

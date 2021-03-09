@@ -27,7 +27,7 @@ fi
 apk add openjdk8
 
 # Set JS heap space
-export NODE_OPTIONS="--max-old-space-size=2048"
+export NODE_OPTIONS="--max-old-space-size=4096"
 
 # Check SonarQube
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
