@@ -78,13 +78,17 @@ if [[ -d "./node_modules/jest" ]]; then
 fi
 
 if [[ "$USE_NPM" == true ]]; then
-    npm clean-install-test $COMMAND_ARGS
+    npm clean-install
+    npm test $COMMAND_ARGS
 elif [[ "$USE_YARN" == true ]]; then
     yarn test $COMMAND_ARGS
 fi
 
 SRC_FOLDER=
-if [ -d "src" ]; then
+if [ -d "dist" ]; then
+    echo "Source folder 'dist' exists."
+    SRC_FOLDER=src
+elif [ -d "src" ]; then
     echo "Source folder 'src' exists."
     SRC_FOLDER=src
 else

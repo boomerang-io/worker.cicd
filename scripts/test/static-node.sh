@@ -65,13 +65,17 @@ ls -al lint-report.json
 echo "SONAR_FLAGS=$SONAR_FLAGS"
 
 if [[ "$USE_NPM" == true ]]; then
-    npm clean-install-test
+    npm clean-install
+    npm test
 elif [[ "$USE_YARN" == true ]]; then
     yarn test
 fi
 
 SRC_FOLDER=
-if [ -d "src" ]; then
+if [ -d "dist" ]; then
+    echo "Source folder 'dist' exists."
+    SRC_FOLDER=src
+elif [ -d "src" ]; then
     echo "Source folder 'src' exists."
     SRC_FOLDER=src
 else
