@@ -30,7 +30,7 @@ apk add openjdk8
 export NODE_OPTIONS="--max-old-space-size=8192"
 
 # Install typescript
-npm install -D typescript@3.8.0
+npm install -D typescript
 npm link typescript
 
 # Install eslint
