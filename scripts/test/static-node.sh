@@ -10,12 +10,11 @@ SONAR_GATEID=2
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
 
-curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
-curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
-curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
-
 # Dependency for sonarscanner
 apk add openjdk8
+
+# Set JS heap space
+export NODE_OPTIONS="--max-old-space-size=2048"
 
 # Install typescript
 npm install typescript -g
@@ -24,6 +23,19 @@ npm link typescript
 # Install eslint
 npm install -g eslint
 npm link eslint
+
+# Install prettier
+npm install -g --save-dev --save-exact prettier
+npm link prettier
+
+# Install clean
+npm install -g clean
+npm link clean
+
+# Check SonarQube
+curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
+curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
+curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
 # Install sonar-scanner
 curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.0.0.1744.zip

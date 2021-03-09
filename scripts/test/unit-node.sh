@@ -23,12 +23,16 @@ if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]]; then
     exit 99
 fi
 
+# Dependency for sonarscanner
+apk add openjdk8
+
+# Set JS heap space
+export NODE_OPTIONS="--max-old-space-size=2048"
+
+# Check SonarQube
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
-
-# Dependency for sonarscanner
-apk add openjdk8
 
 # Install sonar-scanner
 curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.0.0.1744.zip
