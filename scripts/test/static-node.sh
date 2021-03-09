@@ -17,7 +17,7 @@ apk add openjdk8
 export NODE_OPTIONS="--max-old-space-size=8192"
 
 # Install typescript
-npm install typescript -g
+npm install -g typescript@3.8.0
 npm link typescript
 
 # Install eslint
@@ -25,7 +25,7 @@ npm install -g eslint
 npm link eslint
 
 # Install prettier
-npm install -g --save-dev --save-exact prettier
+npm install -g prettier
 npm link prettier
 
 # Install clean
@@ -70,7 +70,7 @@ fi
 NODE_PATH=$(which node)
 echo "NODE_PATH=$NODE_PATH"
 
-$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=$SRC_FOLDER -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.css.node=$NODE_PATH -Dsonar.nodejs.executable=$NODE_PATH -Dsonar.scm.disabled=true -Dsonar.javascript.node.maxspace=8192 $SONAR_FLAGS
+$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=$SRC_FOLDER -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.nodejs.executable=$NODE_PATH -Dsonar.scm.disabled=true -Dsonar.javascript.node.maxspace=8192 $SONAR_FLAGS
 
 EXIT_CODE=$?
 echo "EXIT_CODE=$EXIT_CODE"

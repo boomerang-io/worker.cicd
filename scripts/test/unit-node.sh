@@ -29,6 +29,22 @@ apk add openjdk8
 # Set JS heap space
 export NODE_OPTIONS="--max-old-space-size=8192"
 
+# Install typescript
+npm install -g typescript@3.8.0
+npm link typescript
+
+# Install eslint
+npm install -g eslint
+npm link eslint
+
+# Install prettier
+npm install -g prettier
+npm link prettier
+
+# Install clean
+npm install -g clean
+npm link clean
+
 # Check SonarQube
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
@@ -82,7 +98,7 @@ echo "NODE_PATH=$NODE_PATH"
 
 SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
 
-$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=$SRC_FOLDER -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.scm.disabled=true -Dsonar.css.node=$NODE_PATH -Dsonar.nodejs.executable=$NODE_PATH -Dsonar.javascript.node.maxspace=8192 $SONAR_FLAGS
+$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=$SRC_FOLDER -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.scm.disabled=true -Dsonar.nodejs.executable=$NODE_PATH -Dsonar.javascript.node.maxspace=8192 $SONAR_FLAGS
 
 EXIT_CODE=$?
 echo "EXIT_CODE=$EXIT_CODE"
