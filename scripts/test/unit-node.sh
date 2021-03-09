@@ -23,7 +23,6 @@ if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]]; then
     exit 99
 fi
 
-
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
@@ -31,11 +30,12 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qu
 # Dependency for sonarscanner
 apk add openjdk8
 
-curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492.zip
+# Install sonar-scanner
+curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.0.0.1744.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
-if [[ "$DEBUG" == "true" ]]; then
+if [ "$DEBUG" == "true" ]; then
     SONAR_FLAGS="-Dsonar.verbose=true"
 else
     SONAR_FLAGS=
@@ -63,6 +63,15 @@ elif [[ "$USE_YARN" == true ]]; then
     yarn test $COMMAND_ARGS
 fi
 
+# Set NodeJS bin path
+NODE_PATH=$(which node)
+echo "NODE_PATH=$NODE_PATH"
+
 SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
 
-$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=src -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.scm.disabled=true $SONAR_FLAGS
+$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=src -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.scm.disabled=true -Dsonar.css.node=$NODE_PATH -Dsonar.nodejs.executable=$NODE_PATH $SONAR_FLAGS
+
+EXIT_CODE=$?
+echo "EXIT_CODE=$EXIT_CODE"
+
+exit $EXIT_CODE
