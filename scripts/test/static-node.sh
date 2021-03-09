@@ -10,6 +10,13 @@ SONAR_GATEID=2
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
 
+[[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
+[[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
+
+if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]]; then
+    exit 99
+fi
+
 # Dependency for sonarscanner
 apk add openjdk8
 
@@ -17,7 +24,7 @@ apk add openjdk8
 export NODE_OPTIONS="--max-old-space-size=8192"
 
 # Install typescript
-npm install -g typescript@3.8.0
+npm install -D typescript@3.8.0
 npm link typescript
 
 # Install eslint
@@ -56,6 +63,12 @@ fi
 
 ls -al lint-report.json
 echo "SONAR_FLAGS=$SONAR_FLAGS"
+
+if [[ "$USE_NPM" == true ]]; then
+    npm clean-install-test
+elif [[ "$USE_YARN" == true ]]; then
+    yarn test
+fi
 
 SRC_FOLDER=
 if [ -d "src" ]; then

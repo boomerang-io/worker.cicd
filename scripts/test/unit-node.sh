@@ -30,7 +30,7 @@ apk add openjdk8
 export NODE_OPTIONS="--max-old-space-size=8192"
 
 # Install typescript
-npm install -g typescript@3.8.0
+npm install -D typescript@3.8.0
 npm link typescript
 
 # Install eslint
@@ -78,7 +78,7 @@ if [[ -d "./node_modules/jest" ]]; then
 fi
 
 if [[ "$USE_NPM" == true ]]; then
-    npm test $COMMAND_ARGS
+    npm clean-install-test $COMMAND_ARGS
 elif [[ "$USE_YARN" == true ]]; then
     yarn test $COMMAND_ARGS
 fi
