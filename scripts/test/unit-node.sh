@@ -78,7 +78,7 @@ if [[ -d "./node_modules/jest" ]]; then
 fi
 
 if [[ "$USE_NPM" == true ]]; then
-    npm clean-install
+    # npm clean-install
     npm test $COMMAND_ARGS
 elif [[ "$USE_YARN" == true ]]; then
     yarn test $COMMAND_ARGS

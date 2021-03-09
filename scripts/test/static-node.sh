@@ -65,7 +65,7 @@ ls -al lint-report.json
 echo "SONAR_FLAGS=$SONAR_FLAGS"
 
 if [[ "$USE_NPM" == true ]]; then
-    npm clean-install
+    # npm clean-install
     npm test
 elif [[ "$USE_YARN" == true ]]; then
     yarn test
