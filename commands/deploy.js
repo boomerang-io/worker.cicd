@@ -105,7 +105,7 @@ module.exports = {
       verbose: true
     };
 
-    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+    // const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" \
@@ -118,8 +118,8 @@ module.exports = {
       --release-name "${taskParams["helmReleaseName"]}" --repo-url "${taskParams["helmChartRepoUrl"]}" \
       --chart-repo "${taskParams["helmChartRepo"]}" --chart-name "${taskParams["helmChartName"]}" \
       --chart-version "${taskParams["helmChartVersion"]}" --helm-set-args "${taskParams["helmSetArgs"]}" \
-      --image-key "${taskParams["helmImageKey"]}" --image-version "${version}" \
-      --git-url "${taskParams["gitValuesUrl"]}" --debug "${taskParams["debug"]}"`);
+      --git-url "${taskParams["gitValuesUrl"]}" --rollback-release "${taskParams["rollback"]}" \
+      --debug "${taskParams["debug"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);

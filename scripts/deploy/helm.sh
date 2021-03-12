@@ -44,7 +44,7 @@ helm repo add boomerang-charts $HELM_REPO_URL && helm repo update
 # Chart Name is blank. Chart Release is now required to fetch chart name.
 if [ -z "$CHART_NAME" ] && [ ! -z "$CHART_RELEASE" ]; then
     echo "Auto detecting chart name..."
-    CHART_NAME=$(helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq eval '.[].chart' - | cut -d- -f1)
+    CHART_NAME=$(helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq eval '.[].chart' - | rev | cut -d- -f2- | rev)
     if [ $? -ne 0 ]; then exit 92; fi
 elif [ -z "$CHART_NAME" ] && [ -z "$CHART_RELEASE" ]; then
     exit 92
@@ -78,7 +78,7 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
     fi
     if [ ! -z "$CHART_RELEASE" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Release: $CHART_RELEASE"
-        CHART_VERSION=$(helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq eval '.[].chart' - | cut -d- -f2)
+        CHART_VERSION=$(helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq eval '.[].chart' - | rev | cut -d- -f1 | rev)
         if [ $? -ne 0 ]; then exit 94; fi
     fi
     if [ ! -z "$CHART_RELEASE" ] && [ ! -z "$CHART_VERSION" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then

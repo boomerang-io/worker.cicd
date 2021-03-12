@@ -72,12 +72,11 @@ get_parameters() {
         [CHART_VERSION]=""
         [HELM_RELEASE_NAME]=""
         [HELM_SET_ARGS]=""
-        [HELM_IMAGE_KEY]=""
-        [IMAGE_KEY_VERSION_NAME]=""
         [DEPLOY_KUBE_VERSION]=""
         [DEPLOY_KUBE_NAMESPACE]=""
         [DEPLOY_KUBE_HOST]=""
         [HELM_VALUES_RAW_GIT_URL]=""
+        [ROLLBACK_FAILED_RELEASE]=""
     )
     # Loop over the provided parameters and add them to the list
     CMD_PARAMS=""
@@ -123,16 +122,12 @@ get_parameters() {
             PARAMETERS_ARRAY[HELM_SET_ARGS]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --image-key) # Takes an option argument; ensure it has been specified.
-            PARAMETERS_ARRAY[HELM_IMAGE_KEY]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
-            shift
-            ;;
-        --image-version) # Takes an option argument; ensure it has been specified.
-            PARAMETERS_ARRAY[IMAGE_KEY_VERSION_NAME]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
-            shift
-            ;;
         --git-url) # Takes an option argument; ensure it has been specified.
             PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            shift
+            ;;
+        --rollback-release) # Takes an option argument; ensure it has been specified.
+            PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
         --debug) # If set to true it enables debug
@@ -162,10 +157,8 @@ debug_mode() {
         log -d "--repo-url=${PARAMETERS_ARRAY[HELM_REPO_URL]}"
         log -d "--chart-repo=${PARAMETERS_ARRAY[CHART_REPO]}"
         log -d "--chart-name=${PARAMETERS_ARRAY[CHART_NAME]}"
-        log -d "--chart-version=${PARAMETERS_ARRAY[CHART_VERSION]}"
+        log -d "--chart-version=${PARAMETERS_ARRAY[CHART_VERSION]/-*/}"
         log -d "--release-name=${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
-        log -d "--image-key=${PARAMETERS_ARRAY[HELM_IMAGE_KEY]}"
-        log -d "--image-version=${PARAMETERS_ARRAY[IMAGE_KEY_VERSION_NAME]}"
         log -d "--git-url=${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
         # Debug option for helm
         DEBUG_OPTS="--debug"
@@ -277,21 +270,22 @@ get_yaml_output_for_helm_release() {
     # CHART_NAME is blank. Helm release name is now required to fetch chart name.
     if [[ -z ${PARAMETERS_ARRAY[CHART_NAME]} ]]; then
         PARAMETERS_ARRAY[CHART_NAME]=$(yq eval '.[] | select (.name == "*'"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"'*") | 
-            .chart as $chart | $chart' - <<<"$HELM_YAML_OUTPUT" | cut -d- -f1)
+            .chart as $chart | $chart' - <<<"$HELM_YAML_OUTPUT" | rev | cut -d- -f2- | rev)
         log -w "Chart name was not provided, auto detecting it..."
         log -i "Chart name detected as: ${PARAMETERS_ARRAY[CHART_NAME]}"
     fi
 
     # Get Chart Version based on the release name
-    if [[ -z ${PARAMETERS_ARRAY[CHART_VERSION]} ]]; then
+    if [[ -z ${PARAMETERS_ARRAY[CHART_VERSION]/-*/} ]]; then
         PARAMETERS_ARRAY[CHART_VERSION]=$(yq eval '.[] | select (.name == "*'"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"'*") | 
-            .chart as $chart | $chart' - <<<"$HELM_YAML_OUTPUT" | cut -d- -f2)
+            .chart as $chart | $chart' - <<<"$HELM_YAML_OUTPUT" | rev | cut -d- -f1 | rev)
         log -w "Chart version was not provided, auto detecting it..."
-        log -i "Chart version detected as: ${PARAMETERS_ARRAY[CHART_VERSION]}"
+        log -i "Chart version detected as: ${PARAMETERS_ARRAY[CHART_VERSION]/-*/}"
     fi
 }
 
 check_kubernetes_connection() {
+    PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]="${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}-context"
     kubectl cluster-info &>/dev/null
     if [[ $? -ne 0 ]]; then
         log -e "Cluster connection could not be established using '${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}' context."
@@ -302,6 +296,51 @@ check_kubernetes_connection() {
     fi
 }
 
+check_helm_release_status() {
+    HELM_PENDING_STATUSES=("pending-rollback" "pending-upgrade" "pending-install" "uninstalling" "uninstalled" "unknown")
+    HELM_RELEASE_STATUS=$(yq eval '.[] | select (.name == "*'"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"'*") |
+        .status as $status | $status' - <<<"$HELM_YAML_OUTPUT")
+    if [[ " ${HELM_PENDING_STATUSES[@]} " =~ " $HELM_RELEASE_STATUS " ]]; then
+        log -w "Current helm release status: $HELM_RELEASE_STATUS"
+        log -w "Another operation (install/upgrade/rollback) left the deployment in a pending state."
+        if [[ ${PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]} == true ]]; then
+            HELM_RELEASE_HISTORY="$(
+                helm history "${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}" --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" -o yaml
+            )"
+            DEPLOYED_REVISION="$(yq eval '.[] | select (.status == "*deployed*") | 
+                .revision as $revision | $revision' - <<<"$HELM_RELEASE_HISTORY")"
+            SUPERSEDED_REVISION="$(yq eval '.[] | select (.status == "*superseded*") |
+                .revision as $revision | $revision' - <<<"$HELM_RELEASE_HISTORY" | tail -n1)"
+            [[ ${DEPLOYED_REVISION:-$SUPERSEDED_REVISION} ]] &&
+                {
+                    log -w "Trying to rollback the helm release..."
+                    {
+                        HELM_ROLLBACK=$(helm rollback --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" "${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}" \
+                            "${DEPLOYED_REVISION:-$SUPERSEDED_REVISION}")
+                        HELM_ROLLBACK_STATUS=$?
+                    }
+                    [[ $HELM_ROLLBACK_STATUS -eq 0 ]] &&
+                        log -i "Release rolled back to the latest stable revision: ${DEPLOYED_REVISION:-$SUPERSEDED_REVISION}" ||
+                        {
+                            log -e "Release could not be rolled back."
+                            echo
+                            exit
+                        }
+                } ||
+                {
+                    log -e "There is no stable revision to rollback to."
+                    echo
+                    exit
+                }
+        elif [[ ${PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]} != true ]]; then
+            log -w "In order to fix the release status automatically, you need to set rollback parameter to true."
+            log -e "Helm cannot upgrade releases with status '$HELM_RELEASE_STATUS'."
+            echo
+            exit
+        fi
+    fi
+}
+
 upgrade_helm_release() {
     check_kubernetes_connection
     get_yaml_output_for_helm_release
@@ -309,59 +348,50 @@ upgrade_helm_release() {
 
     log -i "Chart Namespace: ${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}"
     log -i "Chart Name: ${PARAMETERS_ARRAY[CHART_NAME]}"
-    log -i "Chart Version: ${PARAMETERS_ARRAY[CHART_VERSION]}"
+    log -i "Chart Version: ${PARAMETERS_ARRAY[CHART_VERSION]/-*/}"
     log -i "Release Name: ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
-    log -i "Application Image Path: ${PARAMETERS_ARRAY[HELM_IMAGE_KEY]}"
-    log -i "Application Image Version: ${PARAMETERS_ARRAY[IMAGE_KEY_VERSION_NAME]}"
     log -i "Helm set parameters: ${PARAMETERS_ARRAY[HELM_SET_ARGS]}"
 
-    HELM_CHART_EXITCODE=0
+    check_helm_release_status
+
     SLEEP=30
-    RETRIES=4
+    RETRIES=3
     log -i "Upgrading helm release..."
     log -i "NOTE: Timeout is set at 5 minutes with 3 retries"
     # default timeout for helm commands is 300 seconds so no need to adjust
     INDEX=0
-    until [[ $INDEX -ge $RETRIES ]]; do
-        let INDEX++
-        if [[ $INDEX -eq $RETRIES ]]; then
+    until [[ $INDEX -gt $RETRIES ]]; do
+        let ++INDEX
+        log -i "Commencing deployment (attempt #$INDEX)..."
+        parse_helm_values "${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
+        DEPLOYMENT_OUTPUT=$(helm upgrade --kube-context "${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}" "${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}" \
+            --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" --reuse-values "${HELM_GIT_VALUES_FILE[@]}" $DEBUG_OPTS \
+            --set "${PARAMETERS_ARRAY[HELM_SET_ARGS]}" "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}" \
+            --version "${PARAMETERS_ARRAY[CHART_VERSION]/-*/}" 2>&1 >/dev/null)
+        DEPLOYMENT_RESULT=$?
+        if [[ ${PARAMETERS_ARRAY[DEBUG]} == true ]]; then
+            log -d "$DEPLOYMENT_OUTPUT"
+        fi
+        if [[ $DEPLOYMENT_RESULT -ne 0 ]] && [[ $DEPLOYMENT_OUTPUT =~ "timed out" ]] && [[ $INDEX -lt $RETRIES ]]; then
+            log -w "Time out reached. Retrying..."
+            sleep $SLEEP
+            continue
+        elif [[ $DEPLOYMENT_RESULT -ne 0 ]] && [[ $DEPLOYMENT_OUTPUT =~ "timed out" ]] && [[ $INDEX -ge $RETRIES ]]; then
             log -e "Failed to achieve the helm deployment within allotted time and retry count."
-            HELM_CHART_EXITCODE=91
+            log -e "Unable to deploy to '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}'."
+            log -e "$DEPLOYMENT_OUTPUT"
             break
-        else
-            log -i "Commencing deployment (attempt #$INDEX)..."
-            parse_helm_values "${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
-            DEPLOYMENT_OUTPUT=$(helm upgrade --kube-context "${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}" "${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}" \
-                --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" --reuse-values "${HELM_GIT_VALUES_FILE[@]}" $DEBUG_OPTS \
-                --set "${PARAMETERS_ARRAY[HELM_IMAGE_KEY]}"="${PARAMETERS_ARRAY[IMAGE_KEY_VERSION_NAME]}" --set "${PARAMETERS_ARRAY[HELM_SET_ARGS]}" \
-                --version "${PARAMETERS_ARRAY[CHART_VERSION]}" "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}" 2>&1 >/dev/null)
-            DEPLOYMENT_RESULT=$?
-            if [[ ${PARAMETERS_ARRAY[DEBUG]} == true ]] && [[ $DEPLOYMENT_RESULT -eq 0 ]]; then
-                log -d "$DEPLOYMENT_OUTPUT"
-            fi
-            if [[ $DEPLOYMENT_RESULT -ne 0 ]]; then
-                if [[ $DEPLOYMENT_OUTPUT =~ "timed out" ]]; then
-                    log -w "Time out reached. Retrying..."
-                    sleep $SLEEP
-                    continue
-                else
-                    HELM_CHART_EXITCODE=91
-                    break
-                fi
-            fi
-            log -i "Deployment success."
-            echo
-            helm ls -n "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" -f ^"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"$
-            echo
+        elif [[ $DEPLOYMENT_RESULT -ne 0 ]]; then
+            log -e "Unable to deploy to '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}'."
+            log -e "$DEPLOYMENT_OUTPUT"
             break
         fi
+        log -i "Deployment success."
+        echo
+        helm ls -n "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" -f ^"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"$
+        echo
+        break
     done
-    # Final block to count success of print error for this loop
-    if [[ $HELM_CHART_EXITCODE -ne 0 ]]; then
-        log -e "$DEPLOYMENT_OUTPUT"
-        log -e "Unable to deploy to '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}'. The last error code received was: $HELM_CHART_EXITCODE. Please speak to a DevOps representative or try again."
-        # TODO: update to print out error statement based on code.
-    fi
 }
 
 # Call all the necessary functions
