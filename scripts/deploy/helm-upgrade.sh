@@ -11,25 +11,25 @@ log() {
     local TYPE MSG RED YELLOW GREEN CYAN RS DATE FN
     TYPE="$1"
     MSG="$2"
-    RED="\033[0;91m"
-    YELLOW="\033[0;93m"
-    GREEN="\033[0;92m"
-    CYAN="\033[0;96m"
-    RS="\033[0m"
+    # RED="\033[0;91m"
+    # YELLOW="\033[0;93m"
+    # GREEN="\033[0;92m"
+    # CYAN="\033[0;96m"
+    # RS="\033[0m"
     DATE=$(date '+%F %T %Z')
     FN=${FUNCNAME[*]: -2:1}
     case ${TYPE} in
     -e | --[eE][rR][rR][oO][rR])
-        printf "[${RED}ERROR${RS}] [${DATE}] [$FN] [$BASH_LINENO] %s\n" "$MSG"
+        printf "[ERROR] [${DATE}] [$FN] [$BASH_LINENO] %s\n" "$MSG"
         ;;
     -w | --[wW][aA][rR][nN])
-        printf "[${YELLOW}WARN${RS}]  [${DATE}] [$FN] [$BASH_LINENO] %s\n" "$MSG"
+        printf "[WARN]  [${DATE}] [$FN] [$BASH_LINENO] %s\n" "$MSG"
         ;;
     -d | --[dD][eE][bB][uU][gG])
-        printf "[${CYAN}DEBUG${RS}] [${DATE}] [$FN] [$BASH_LINENO] %s\n" "$MSG"
+        printf "[DEBUG] [${DATE}] [$FN] [$BASH_LINENO] %s\n" "$MSG"
         ;;
     -i | --[iI][nN][fF][oO])
-        printf "[${GREEN}INFO${RS}]  [${DATE}] [$FN] [$BASH_LINENO] %s\n" "$MSG"
+        printf "[INFO]  [${DATE}] [$FN] [$BASH_LINENO] %s\n" "$MSG"
         ;;
     *)
         printf "[OTHER] [${DATE}] [$FN] [$BASH_LINENO] '$1' option for function '${FUNCNAME[0]}' is not available\n"
@@ -40,8 +40,24 @@ log() {
 # Help synopsis
 show_help() {
     cat <<EOF
-Usage: ${0##*/} - TODO: Add help synopsis
+Usage: ${0##*/} [arguments]
+    --help                  Show script usage
 
+Required arguments:
+    --kube-namespace        The namespace where Helm can find the release
+    --kube-host             Kubernetes Host (will be used as '--kube-context')
+    --repo-url              Helm chart repository URL
+
+Optional arguments:
+    --kube-version          Kubernetes / kubectl app version
+    --chart-repo            Helm chart repo name
+    --chart-name            Helm chart name
+    --chart-version         Helm chart version
+    --release-name          Helm release name
+    --helm-set-args         Helm '--set' arguments (highest order of precedence)
+    --git-url               Git URL of a YAML file that will overwrite the default values (will be overridden by '--set' if the value paths are the same)
+    --rollback-release      true | false - whether to rollback the release to the latest stable release on fail
+    --debug                 true | false - whether to enable debug mode or not
 EOF
 }
 
@@ -159,7 +175,9 @@ debug_mode() {
         log -d "--chart-name=${PARAMETERS_ARRAY[CHART_NAME]}"
         log -d "--chart-version=${PARAMETERS_ARRAY[CHART_VERSION]/-*/}"
         log -d "--release-name=${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
+        log -d "--helm-set-args=${PARAMETERS_ARRAY[HELM_SET_ARGS]}"
         log -d "--git-url=${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
+        log -d "--rollback-release=${PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]}"
         # Debug option for helm
         DEBUG_OPTS="--debug"
     fi
@@ -201,8 +219,13 @@ parse_helm_values() {
             log -e "Referer URL: ${CURL_HEADER_OUTPUT[2]}"
             exit
         fi
-        # Add extra validation for the YAML file
-        yq eval 'true' $HELM_GIT_VALUES_FILE &>/dev/null
+        # Add extra validation for the YAML file. If the file is not a valid YAML syntax, exit.
+        GIT_FILE_STATUS=$(yq eval 'true' $HELM_GIT_VALUES_FILE 2>&1 >/dev/null) || {
+            log -e "'$HELM_GIT_VALUES_FILE' Git values file does not contain a valid YAML syntax."
+            log -e "$GIT_FILE_STATUS"
+            echo
+            exit
+        }
         # Return -f parameter and the final values file name
         HELM_GIT_VALUES_FILE=(-f $HELM_GIT_VALUES_FILE)
     fi
@@ -350,7 +373,8 @@ upgrade_helm_release() {
     log -i "Chart Name: ${PARAMETERS_ARRAY[CHART_NAME]}"
     log -i "Chart Version: ${PARAMETERS_ARRAY[CHART_VERSION]/-*/}"
     log -i "Release Name: ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
-    log -i "Helm set parameters: ${PARAMETERS_ARRAY[HELM_SET_ARGS]}"
+    [[ ${PARAMETERS_ARRAY[HELM_SET_ARGS]} ]] && log -i "Helm set parameters: ${PARAMETERS_ARRAY[HELM_SET_ARGS]}"
+    [[ ${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]} ]] && log -i "Helm values Git URL: ${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
 
     check_helm_release_status
 
