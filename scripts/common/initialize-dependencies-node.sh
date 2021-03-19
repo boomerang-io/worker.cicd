@@ -4,8 +4,8 @@
 
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
-BUILD_TOOL=$1
-BUILD_TOOL_VERSION=$2
+LANGUAGE_VERSION=$1
+BUILD_TOOL=$2
 ART_URL=$3
 ART_USER=$4
 ART_PASSWORD=$5
@@ -24,14 +24,12 @@ if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ]; then
     exit 99
 fi
 
-if [ ! -z "$BUILD_TOOL_VERSION" ]; then
-    # apk add -U curl bash ca-certificates openssl ncurses coreutils python2 make gcc g++ libgcc linux-headers grep util-linux binutils findutils
-    # curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    # nvm install -s $BUILD_TOOL_VERSION
-    nvm install $BUILD_TOOL_VERSION
+if [ ! -z "$LANGUAGE_VERSION" ]; then
+    unset npm_config_prefix
+    source ~/.nvm/nvm.sh
+    nvm install $LANGUAGE_VERSION
     nvm run node --version
+    NVM_OPTS="nvm run"
 fi
 
 curl -k -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/boomerang -o ~/.npmrc
@@ -40,12 +38,12 @@ if [[ $? -ne 0 ]]; then
 fi
 
 if [ "$DEBUG" == "true" ]; then
-    less ~/.npmrc
+    cat ~/.npmrc
 fi
 
 echo "Versions:"
-echo "  Yarn: $(yarn --version)"
-echo "  NPM: $(npm --version)" 
+if [ "$BUILD_TOOL" == "yarn" ]; then echo "  Yarn: $(yarn --version)"; fi
+if [ "$BUILD_TOOL" == "npm" ]; then echo "  npm: $(npm --version)"; fi
 echo "  Node: $(node --version)"
 
 if [ "$HTTP_PROXY" != "" ]; then

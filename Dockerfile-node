@@ -17,11 +17,12 @@ WORKDIR /opt/bin
 #Add Packages
 RUN apt-get -y update && apt-get --no-install-recommends -y install bash sed grep curl coreutils nodejs npm ca-certificates make openssh-client git socat skopeo openssl jq
 
+# Install img
 RUN curl -fSL "https://github.com/genuinetools/img/releases/download/v0.5.10/img-linux-amd64" -o "/opt/bin/img" && chmod a+x "/opt/bin/img"
 
+# Install nvm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash && \
-    export NVM_DIR="$HOME/.nvm" && \
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
+    source ~/.nvm/nvm.sh && \
     nvm use system && \
     nvm run system --version
 
