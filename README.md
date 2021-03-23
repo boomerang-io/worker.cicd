@@ -26,4 +26,6 @@ Via the Boomerang CICD system which will make the images available on Dockerhub
 
 ### Manually
 
-`VERSION=<tag> && docker build -t boomerangio/worker-cicd:$VERSION . && docker push boomerangio/worker-cicd:$VERSION`
+Standard: `VERSION=<tag> && docker build -t boomerangio/worker-cicd:$VERSION . && docker push boomerangio/worker-cicd:$VERSION`
+
+Node NVM Feature: `VERSION=<tag>-nvm.X && docker build -t boomerangio/worker-cicd:$VERSION . && docker push boomerangio/worker-cicd:$VERSION`
