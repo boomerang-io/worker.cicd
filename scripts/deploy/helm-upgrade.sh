@@ -44,20 +44,21 @@ Usage: ${0##*/} [arguments]
     --help                  Show script usage
 
 Required arguments:
-    --kube-namespace        The namespace where Helm can find the release
+    --chart-repo-url        Helm chart repository URL
     --kube-host             Kubernetes Host (will be used as '--kube-context')
-    --repo-url              Helm chart repository URL
+    --kube-namespace        The namespace where Helm can find the release
 
 Optional arguments:
-    --kube-version          Kubernetes / kubectl app version
-    --chart-repo            Helm chart repo name
     --chart-name            Helm chart name
+    --chart-repo-name       Helm chart repo name
     --chart-version         Helm chart version
-    --release-name          Helm release name
-    --helm-set-args         Helm '--set' arguments (highest order of precedence)
-    --git-url               Git URL of a YAML file that will overwrite the default values (will be overridden by '--set' if the value paths are the same)
-    --rollback-release      true | false - whether to rollback the release to the latest stable release on fail
     --debug                 true | false - whether to enable debug mode or not
+    --git-values-file       Helm values YAML file from Git that will overwrite the default values (will be overridden by '--set' if the value paths are the same)
+    --helm-set-args         Helm '--set' arguments (highest order of precedence)
+    --kube-version          Kubernetes / kubectl app version
+    --release-name          Helm release name
+    --rollback-release      true | false - whether to rollback the release to the latest stable release on fail
+    --working-dir           Current working directory
 EOF
 }
 
@@ -91,8 +92,9 @@ get_parameters() {
         [DEPLOY_KUBE_VERSION]=""
         [DEPLOY_KUBE_NAMESPACE]=""
         [DEPLOY_KUBE_HOST]=""
-        [HELM_VALUES_RAW_GIT_URL]=""
+        [HELM_VALUES_GIT_FILE]=""
         [ROLLBACK_FAILED_RELEASE]=""
+        [WORKING_DIR]=""
     )
     # Loop over the provided parameters and add them to the list
     CMD_PARAMS=""
@@ -114,11 +116,11 @@ get_parameters() {
             PARAMETERS_ARRAY[DEPLOY_KUBE_VERSION]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --repo-url) # Takes an option argument; ensure it has been specified.
+        --chart-repo-url) # Takes an option argument; ensure it has been specified.
             PARAMETERS_ARRAY[HELM_REPO_URL]=$(return_abnormal "$2" "$(log -e "'$1' requires a non-empty option argument.")") || ((RETURN_ABNORMAL_TOTAL++))
             shift
             ;;
-        --chart-repo) # Takes an option argument; ensure it has been specified.
+        --chart-repo-name) # Takes an option argument; ensure it has been specified.
             PARAMETERS_ARRAY[CHART_REPO]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
@@ -138,12 +140,16 @@ get_parameters() {
             PARAMETERS_ARRAY[HELM_SET_ARGS]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --git-url) # Takes an option argument; ensure it has been specified.
-            PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+        --git-values-file) # Takes an option argument; ensure it has been specified.
+            PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
         --rollback-release) # Takes an option argument; ensure it has been specified.
             PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            shift
+            ;;
+        --working-dir) # Takes an option argument; ensure it has been specified.
+            PARAMETERS_ARRAY[WORKING_DIR]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
         --debug) # If set to true it enables debug
@@ -170,14 +176,15 @@ debug_mode() {
         log -d "--kube-host=${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}"
         log -d "--kube-namespace=${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}"
         log -d "--kube-version=${PARAMETERS_ARRAY[DEPLOY_KUBE_VERSION]}"
-        log -d "--repo-url=${PARAMETERS_ARRAY[HELM_REPO_URL]}"
-        log -d "--chart-repo=${PARAMETERS_ARRAY[CHART_REPO]}"
+        log -d "--chart-repo-url=${PARAMETERS_ARRAY[HELM_REPO_URL]}"
+        log -d "--chart-repo-name=${PARAMETERS_ARRAY[CHART_REPO]}"
         log -d "--chart-name=${PARAMETERS_ARRAY[CHART_NAME]}"
         log -d "--chart-version=${PARAMETERS_ARRAY[CHART_VERSION]/-*/}"
         log -d "--release-name=${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
         log -d "--helm-set-args=${PARAMETERS_ARRAY[HELM_SET_ARGS]}"
-        log -d "--git-url=${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
+        log -d "--git-values-file=${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}"
         log -d "--rollback-release=${PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]}"
+        log -d "--working-dir=${PARAMETERS_ARRAY[WORKING_DIR]}"
         # Debug option for helm
         DEBUG_OPTS="--debug"
     fi
@@ -209,25 +216,23 @@ helm_repo_add_and_update() {
 }
 
 parse_helm_values() {
-    if [[ ${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]} ]]; then
-        CURL_HEADER_OUTPUT=($(curl -sLO "${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}" -w "%{filename_effective} %{http_code} %{url_effective}"))
-        # Normalize filename if it comes from a private repo that has token as URL parameter
-        HELM_GIT_VALUES_FILE=$(cut -d? -f1 <<<"${CURL_HEADER_OUTPUT[0]}")
-        mv ${CURL_HEADER_OUTPUT[0]} $HELM_GIT_VALUES_FILE
-        if [[ ${CURL_HEADER_OUTPUT[1]} -ne 200 ]]; then
-            log -e "Error ${CURL_HEADER_OUTPUT[1]}: '$HELM_GIT_VALUES_FILE' file could not be retrieved."
-            log -e "Referer URL: ${CURL_HEADER_OUTPUT[2]}"
-            exit
-        fi
-        # Add extra validation for the YAML file. If the file is not a valid YAML syntax, exit.
+    CURRENT_GIT_REPO_DIR="$(find ${PARAMETERS_ARRAY[WORKING_DIR]} -type d -name ${PARAMETERS_ARRAY[CHART_NAME]})"
+    log -i "Searching for '${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}' file in '$CURRENT_GIT_REPO_DIR' directory."
+    HELM_GIT_VALUES_FILE=$(find $CURRENT_GIT_REPO_DIR -maxdepth 1 -type f -name "${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}")
+    if [[ $HELM_GIT_VALUES_FILE ]]; then
         GIT_FILE_STATUS=$(yq eval 'true' $HELM_GIT_VALUES_FILE 2>&1 >/dev/null) || {
             log -e "'$HELM_GIT_VALUES_FILE' Git values file does not contain a valid YAML syntax."
             log -e "$GIT_FILE_STATUS"
             echo
             exit
         }
-        # Return -f parameter and the final values file name
-        HELM_GIT_VALUES_FILE=(-f $HELM_GIT_VALUES_FILE)
+        log -i "'$HELM_GIT_VALUES_FILE' file found. Proceeding with deployment..."
+        # Return -f parameter and the final values file path and name
+        HELM_GIT_VALUES_FILE=(-f "$HELM_GIT_VALUES_FILE")
+    else
+        log -e "'${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}' file could not be found."
+        echo
+        exit
     fi
 }
 
@@ -374,7 +379,7 @@ upgrade_helm_release() {
     log -i "Chart Version: ${PARAMETERS_ARRAY[CHART_VERSION]/-*/}"
     log -i "Release Name: ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
     [[ ${PARAMETERS_ARRAY[HELM_SET_ARGS]} ]] && log -i "Helm set parameters: ${PARAMETERS_ARRAY[HELM_SET_ARGS]}"
-    [[ ${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]} ]] && log -i "Helm values Git URL: ${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
+    [[ ${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]} ]] && log -i "Helm values file from Git: ${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}"
 
     check_helm_release_status
 

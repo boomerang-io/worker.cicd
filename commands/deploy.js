@@ -115,11 +115,11 @@ module.exports = {
       log.ci("Deploying...");
       await exec(`${shellDir}/deploy/helm-upgrade.sh --kube-host "${taskParams["kubeHost"]}" \
       --kube-namespace "${taskParams["kubeNamespace"]}" --kube-version "${taskParams["kubeVersion"]}" \
-      --release-name "${taskParams["helmReleaseName"]}" --repo-url "${taskParams["helmChartRepoUrl"]}" \
-      --chart-repo "${taskParams["helmChartRepo"]}" --chart-name "${taskParams["helmChartName"]}" \
-      --chart-version "${taskParams["helmChartVersion"]}" --helm-set-args "${taskParams["helmSetArgs"]}" \
-      --git-url "${taskParams["gitValuesUrl"]}" --rollback-release "${taskParams["rollback"]}" \
-      --debug "${taskParams["debug"]}"`);
+      --release-name "${taskParams["releaseName"]}" --chart-repo-url "${taskParams["chartRepoUrl"]}" \
+      --chart-repo-name "${taskParams["chartRepoName"]}" --chart-name "${taskParams["chartName"]}" \
+      --chart-version "${taskParams["chartVersion"]}" --helm-set-args "${taskParams["helmSetArgs"]}" \
+      --git-values-file "${taskParams["gitValuesFile"]}" --working-dir "${taskParams["workingDir"]}" \
+      --rollback-release "${taskParams["rollbackRelease"]}" --debug "${taskParams["debug"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
