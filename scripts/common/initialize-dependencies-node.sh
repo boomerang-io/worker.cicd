@@ -29,7 +29,6 @@ if [ ! -z "$LANGUAGE_VERSION" ]; then
     source ~/.nvm/nvm.sh
     nvm install $LANGUAGE_VERSION
     nvm run node --version
-    NVM_OPTS="nvm run"
 fi
 
 curl -k -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/boomerang -o ~/.npmrc
