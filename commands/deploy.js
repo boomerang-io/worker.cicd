@@ -118,8 +118,9 @@ module.exports = {
       --release-name "${taskParams["releaseName"]}" --chart-repo-url "${taskParams["chartRepoUrl"]}" \
       --chart-repo-name "${taskParams["chartRepoName"]}" --chart-name "${taskParams["chartName"]}" \
       --chart-version "${taskParams["chartVersion"]}" --helm-set-args "${taskParams["helmSetArgs"]}" \
-      --git-values-file "${taskParams["gitValuesFile"]}" --working-dir "${taskParams["workingDir"]}" \
-      --rollback-release "${taskParams["rollbackRelease"]}" --debug "${taskParams["debug"]}"`);
+      --git-values-file "${taskParams["gitValuesFile"]}" --git-values-custom-dir "${taskParams["gitValuesCustomDir"]}" \
+      --working-dir "${taskParams["workingDir"]}" --rollback-release "${taskParams["rollbackRelease"]}" \
+      --debug "${taskParams["debug"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);

@@ -41,24 +41,25 @@ log() {
 show_help() {
     cat <<EOF
 Usage: ${0##*/} [arguments]
-    --help                  Show script usage
+    --help                          Show script usage
 
 Required arguments:
-    --chart-repo-url        Helm chart repository URL
-    --kube-host             Kubernetes Host (will be used as '--kube-context')
-    --kube-namespace        The namespace where Helm can find the release
+    --chart-repo-url                Helm chart repository URL
+    --kube-host                     Kubernetes Host (will be used as '--kube-context')
+    --kube-namespace                The namespace where Helm can find the release
 
 Optional arguments:
-    --chart-name            Helm chart name
-    --chart-repo-name       Helm chart repo name
-    --chart-version         Helm chart version
-    --debug                 true | false - whether to enable debug mode or not
-    --git-values-file       Helm values YAML file from Git that will overwrite the default values (will be overridden by '--set' if the value paths are the same)
-    --helm-set-args         Helm '--set' arguments (highest order of precedence)
-    --kube-version          Kubernetes / kubectl app version
-    --release-name          Helm release name
-    --rollback-release      true | false - whether to rollback the release to the latest stable release on fail
-    --working-dir           Current working directory
+    --chart-name                    Helm chart name
+    --chart-repo-name               Helm chart repo name
+    --chart-version                 Helm chart version
+    --debug                         true | false - whether to enable debug mode or not
+    --git-values-custom-dir         Custom directory for the helm values YAML file from Git
+    --git-values-file               Helm values YAML file from Git that will overwrite the default values (will be overridden by '--set' if the value paths are the same)
+    --helm-set-args                 Helm '--set' arguments (highest order of precedence)
+    --kube-version                  Kubernetes / kubectl app version
+    --release-name                  Helm release name
+    --rollback-release              true | false - whether to rollback the release to the latest stable release on fail
+    --working-dir                   Current working directory
 EOF
 }
 
@@ -93,6 +94,7 @@ get_parameters() {
         [DEPLOY_KUBE_NAMESPACE]=""
         [DEPLOY_KUBE_HOST]=""
         [HELM_VALUES_GIT_FILE]=""
+        [HELM_VALUES_GIT_CUSTOM_DIR]=""
         [ROLLBACK_FAILED_RELEASE]=""
         [WORKING_DIR]=""
     )
@@ -104,51 +106,55 @@ get_parameters() {
             show_help # Display a help synopsis.
             exit
             ;;
-        --kube-namespace) # Takes an option argument; ensure it has been specified.
+        --kube-namespace)
             PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]=$(return_abnormal "$2" "$(log -e "'$1' requires a non-empty option argument.")") || ((RETURN_ABNORMAL_TOTAL++))
             shift
             ;;
-        --kube-host) # Takes an option argument; ensure it has been specified.
+        --kube-host)
             PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]=$(return_abnormal "$2" "$(log -e "'$1' requires a non-empty option argument.")") || ((RETURN_ABNORMAL_TOTAL++))
             shift
             ;;
-        --kube-version) # Takes an option argument; ensure it has been specified.
+        --kube-version)
             PARAMETERS_ARRAY[DEPLOY_KUBE_VERSION]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --chart-repo-url) # Takes an option argument; ensure it has been specified.
+        --chart-repo-url)
             PARAMETERS_ARRAY[HELM_REPO_URL]=$(return_abnormal "$2" "$(log -e "'$1' requires a non-empty option argument.")") || ((RETURN_ABNORMAL_TOTAL++))
             shift
             ;;
-        --chart-repo-name) # Takes an option argument; ensure it has been specified.
+        --chart-repo-name)
             PARAMETERS_ARRAY[CHART_REPO]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --chart-name) # Takes an option argument; ensure it has been specified.
+        --chart-name)
             PARAMETERS_ARRAY[CHART_NAME]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --chart-version) # Takes an option argument; ensure it has been specified.
+        --chart-version)
             PARAMETERS_ARRAY[CHART_VERSION]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --release-name) # Takes an option argument; ensure it has been specified.
+        --release-name)
             PARAMETERS_ARRAY[HELM_RELEASE_NAME]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --helm-set-args) # Takes an option argument; ensure it has been specified.
+        --helm-set-args)
             PARAMETERS_ARRAY[HELM_SET_ARGS]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --git-values-file) # Takes an option argument; ensure it has been specified.
+        --git-values-file)
             PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --rollback-release) # Takes an option argument; ensure it has been specified.
+        --git-values-custom-dir)
+            PARAMETERS_ARRAY[HELM_VALUES_GIT_CUSTOM_DIR]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            shift
+            ;;
+        --rollback-release)
             PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
-        --working-dir) # Takes an option argument; ensure it has been specified.
+        --working-dir)
             PARAMETERS_ARRAY[WORKING_DIR]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
             shift
             ;;
@@ -183,6 +189,7 @@ debug_mode() {
         log -d "--release-name=${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
         log -d "--helm-set-args=${PARAMETERS_ARRAY[HELM_SET_ARGS]}"
         log -d "--git-values-file=${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}"
+        log -d "--git-values-custom-dir=${PARAMETERS_ARRAY[HELM_VALUES_GIT_CUSTOM_DIR]}"
         log -d "--rollback-release=${PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]}"
         log -d "--working-dir=${PARAMETERS_ARRAY[WORKING_DIR]}"
         # Debug option for helm
@@ -216,23 +223,40 @@ helm_repo_add_and_update() {
 }
 
 parse_helm_values() {
-    CURRENT_GIT_REPO_DIR="$(find ${PARAMETERS_ARRAY[WORKING_DIR]} -type d -name ${PARAMETERS_ARRAY[CHART_NAME]})"
-    log -i "Searching for '${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}' file in '$CURRENT_GIT_REPO_DIR' directory."
-    HELM_GIT_VALUES_FILE=$(find $CURRENT_GIT_REPO_DIR -maxdepth 1 -type f -name "${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}")
-    if [[ $HELM_GIT_VALUES_FILE ]]; then
-        GIT_FILE_STATUS=$(yq eval 'true' $HELM_GIT_VALUES_FILE 2>&1 >/dev/null) || {
-            log -e "'$HELM_GIT_VALUES_FILE' Git values file does not contain a valid YAML syntax."
-            log -e "$GIT_FILE_STATUS"
+    if [[ ${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]} ]]; then
+        # If working dir is empty we cannot get the path for the YAML file
+        if [[ -z ${PARAMETERS_ARRAY[WORKING_DIR]} ]]; then
+            log -e "A helm git values file was provided, but the working directory was not provided."
+            log -e "Cannot search for the file without a given path."
             echo
             exit
-        }
-        log -i "'$HELM_GIT_VALUES_FILE' file found. Proceeding with deployment..."
-        # Return -f parameter and the final values file path and name
-        HELM_GIT_VALUES_FILE=(-f "$HELM_GIT_VALUES_FILE")
-    else
-        log -e "'${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}' file could not be found."
-        echo
-        exit
+        else
+            # If custom dir is not provided it will default to the PARAMETERS_ARRAY[CHART_NAME] variable
+            [[ ${PARAMETERS_ARRAY[HELM_VALUES_GIT_CUSTOM_DIR]} ]] &&
+                HELM_VALUES_DIR_NAME="${PARAMETERS_ARRAY[WORKING_DIR]}/*/${PARAMETERS_ARRAY[HELM_VALUES_GIT_CUSTOM_DIR]}" ||
+                HELM_VALUES_DIR_NAME="${PARAMETERS_ARRAY[WORKING_DIR]}/*/${PARAMETERS_ARRAY[CHART_NAME]}"
+            # Normalize directory name. It should not contain duplicated forward slashes
+            HELM_VALUES_DIR_NAME=$(echo $HELM_VALUES_DIR_NAME | sed -r -e 's/\/{2,}/\//g' -e 's/\/$//g')
+            log -i "Searching for '${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}' file in '$HELM_VALUES_DIR_NAME' directory."
+            HELM_GIT_VALUES_FILE="$(
+                find $HELM_VALUES_DIR_NAME -mindepth 1 -maxdepth 1 -type f -name ${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]} 2>/dev/null
+            )"
+            if [[ $HELM_GIT_VALUES_FILE ]]; then
+                GIT_FILE_STATUS=$(yq eval 'true' $HELM_GIT_VALUES_FILE 2>&1 >/dev/null) || {
+                    log -e "'$HELM_GIT_VALUES_FILE' helm git values file does not contain a valid YAML syntax."
+                    log -e "$GIT_FILE_STATUS"
+                    echo
+                    exit
+                }
+                log -i "'$HELM_GIT_VALUES_FILE' file found. Proceeding with deployment..."
+                # Return -f parameter and the final values file path and name
+                HELM_GIT_VALUES_FILE=(-f "$HELM_GIT_VALUES_FILE")
+            else
+                log -e "'${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}' file could not be found."
+                echo
+                exit
+            fi
+        fi
     fi
 }
 
@@ -380,6 +404,7 @@ upgrade_helm_release() {
     log -i "Release Name: ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
     [[ ${PARAMETERS_ARRAY[HELM_SET_ARGS]} ]] && log -i "Helm set parameters: ${PARAMETERS_ARRAY[HELM_SET_ARGS]}"
     [[ ${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]} ]] && log -i "Helm values file from Git: ${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}"
+    [[ ${PARAMETERS_ARRAY[HELM_VALUES_GIT_CUSTOM_DIR]} ]] && log -i "Helm values custom dir from Git: ${PARAMETERS_ARRAY[HELM_VALUES_GIT_CUSTOM_DIR]}"
 
     check_helm_release_status
 
