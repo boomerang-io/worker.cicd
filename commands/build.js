@@ -2,10 +2,10 @@ const { log, utils, CICDError } = require("@boomerang-io/worker-core");
 const shell = require("shelljs");
 
 function exec(command) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     log.debug("Command directory:", shell.pwd().toString());
     log.debug("Command to execute:", command);
-    shell.exec(command, config, function (code, stdout, stderr) {
+    shell.exec(command, config, function(code, stdout, stderr) {
       if (code) {
         reject(new CICDError(code, stderr));
       }
@@ -146,21 +146,22 @@ module.exports = {
         taskParams["imageName"] !== undefined && taskParams["imageName"] !== '""'
           ? taskParams["imageName"]
           : taskParams["componentName"]
-            .toString()
-            .replace(/[^a-zA-Z0-9\-]/g, "")
-            .toLowerCase();
+              .toString()
+              .replace(/[^a-zA-Z0-9\-]/g, "")
+              .toLowerCase();
       var dockerImagePath =
         taskParams["imagePath"] !== undefined && taskParams["imagePath"] !== '""'
           ? taskParams["imagePath"]
-            .toString()
-            .replace(/[^a-zA-Z0-9\-]/g, "")
-            .toLowerCase()
+              .toString()
+              .replace(/[^a-zA-Z0-9\-]/g, "")
+              .toLowerCase()
           : taskParams["teamName"]
-            .toString()
-            .replace(/[^a-zA-Z0-9\-]/g, "")
-            .toLowerCase();
+              .toString()
+              .replace(/[^a-zA-Z0-9\-]/g, "")
+              .toLowerCase();
       await exec(
-        `${shellDir}/build/package-container.sh "${dockerImageName}" "${version}" "${dockerImagePath}" "${taskParams["buildArgs"]}" "${dockerFile}" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${taskParams["globalContainerRegistryUser"]
+        `${shellDir}/build/package-container.sh "${dockerImageName}" "${version}" "${dockerImagePath}" "${taskParams["buildArgs"]}" "${dockerFile}" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${
+          taskParams["globalContainerRegistryUser"]
         }" "${taskParams["globalContainerRegistryPassword"]}" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${taskParams["containerRegistryPassword"]}"`
       );
     } catch (e) {
@@ -189,11 +190,11 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-node.sh "${taskParams["buildTool"]}" ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
+      await exec(`${shellDir}/common/initialize-dependencies-node.sh "${taskParams["languageVersion"]}" "${taskParams["buildTool"]}" ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      await exec(`${shellDir}/build/compile-node.sh "${taskParams["buildTool"]}" "${taskParams["packageScript"]}" "${taskParams["node-cypress-install-binary"]}"`);
+      await exec(`${shellDir}/build/compile-node.sh "${taskParams["languageVersion"]}" "${taskParams["buildTool"]}" "${taskParams["packageScript"]}" "${taskParams["node-cypress-install-binary"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);

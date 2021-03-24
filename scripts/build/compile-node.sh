@@ -2,15 +2,23 @@
 
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Build Artifact '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-BUILD_TOOL=$1
-BUILD_SCRIPT=$2
+LANGUAGE_VERSION=$1
+BUILD_TOOL=$2
+BUILD_SCRIPT=$3
 if [ -z "$BUILD_SCRIPT" ]; then
     echo "Defaulting npm script to 'build'..."
     BUILD_SCRIPT=build
 else
     echo "Setting npm script to $BUILD_SCRIPT..."
 fi
-CYPRESS_INSTALL_BINARY=$3
+CYPRESS_INSTALL_BINARY=$4
+
+NVM_OPTS=
+if [ ! -z "$LANGUAGE_VERSION" ]; then
+    echo "Running with NVM..."
+    unset npm_config_prefix
+    source ~/.nvm/nvm.sh
+fi
 
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
