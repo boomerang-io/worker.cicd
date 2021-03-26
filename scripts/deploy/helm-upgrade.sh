@@ -63,17 +63,16 @@ Optional arguments:
 EOF
 }
 
-return_abnormal() {
-    # If one or more rquired command line parameters are epmty add it to the total
-    RETURN_ABNORMAL_TOTAL=0
-    # Get the value of the parameter and echo it into the variable
-    if [[ $1 ]] && [[ ${1:0:1} != - ]] && [[ $1 != undefined ]]; then
-        echo "$1"
+return_param_status() {
+    if [[ $2 ]] && [[ ${2:0:1} != - ]] && [[ $2 != undefined ]]; then
+        RETURN_PARAM_OUTPUT="$2"
+        RETURN_PARAM_STATUS=0
     else
-        # If the parameter is empty, print the message to stderr and return 1 (variable will not be changed)
-        echo "$2" >&2
-        return 1
+        RETURN_PARAM_STATUS=1
+        [[ $1 == optional ]] && log -w "'$3' optional argument was not provided."
+        [[ $1 == required ]] && log -e "'$3' requires a non-empty option argument." >&2 && ((REQUIRED_EMPTY_PARAM_TOTAL++))
     fi
+    REQUIRED_EMPTY_PARAM_TOTAL=${REQUIRED_EMPTY_PARAM_TOTAL:-0}
 }
 
 get_parameters() {
@@ -107,65 +106,79 @@ get_parameters() {
             exit
             ;;
         --kube-namespace)
-            PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]=$(return_abnormal "$2" "$(log -e "'$1' requires a non-empty option argument.")") || ((RETURN_ABNORMAL_TOTAL++))
+            return_param_status "required" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --kube-host)
-            PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]=$(return_abnormal "$2" "$(log -e "'$1' requires a non-empty option argument.")") || ((RETURN_ABNORMAL_TOTAL++))
+            return_param_status "required" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --kube-version)
-            PARAMETERS_ARRAY[DEPLOY_KUBE_VERSION]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[DEPLOY_KUBE_VERSION]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --chart-repo-url)
-            PARAMETERS_ARRAY[HELM_REPO_URL]=$(return_abnormal "$2" "$(log -e "'$1' requires a non-empty option argument.")") || ((RETURN_ABNORMAL_TOTAL++))
+            return_param_status "required" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[HELM_REPO_URL]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --chart-repo-name)
-            PARAMETERS_ARRAY[CHART_REPO]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[CHART_REPO]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --chart-name)
-            PARAMETERS_ARRAY[CHART_NAME]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[CHART_NAME]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --chart-version)
-            PARAMETERS_ARRAY[CHART_VERSION]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[CHART_VERSION]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --release-name)
-            PARAMETERS_ARRAY[HELM_RELEASE_NAME]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[HELM_RELEASE_NAME]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --helm-set-args)
-            PARAMETERS_ARRAY[HELM_SET_ARGS]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[HELM_SET_ARGS]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --git-values-file)
-            PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --git-values-custom-dir)
-            PARAMETERS_ARRAY[HELM_VALUES_GIT_CUSTOM_DIR]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[HELM_VALUES_GIT_CUSTOM_DIR]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --rollback-release)
-            PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --working-dir)
-            PARAMETERS_ARRAY[WORKING_DIR]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[WORKING_DIR]="$RETURN_PARAM_OUTPUT"
             shift
             ;;
         --debug) # If set to true it enables debug
-            PARAMETERS_ARRAY[DEBUG]=$(return_abnormal "$2" "$(log -w "'$1' optional argument was not provided.")")
+            return_param_status "optional" "$2" "$1"
+            [[ $RETURN_PARAM_STATUS -eq 0 ]] && PARAMETERS_ARRAY[DEBUG]="$RETURN_PARAM_OUTPUT"
             debug_mode
             shift
             ;;
         -* | --*=) # unsupported flags
             log -e "Unsupported flag '$1'" >&2
-            exit
+            exit 1
             ;;
         *) # preserve positional arguments
             CMD_PARAMS="$CMD_PARAMS $1"
@@ -173,7 +186,7 @@ get_parameters() {
             ;;
         esac
     done
-    if [[ $RETURN_ABNORMAL_TOTAL -gt 0 ]]; then echo && exit; fi
+    [[ $REQUIRED_EMPTY_PARAM_TOTAL -eq 0 ]] || { echo && exit 1; }
     eval set -- "$CMD_PARAMS"
 }
 
@@ -208,7 +221,7 @@ helm_repo_add_and_update() {
     HELM_REPO_ADD=$(helm repo add "${PARAMETERS_ARRAY[CHART_REPO]}" "${PARAMETERS_ARRAY[HELM_REPO_URL]}" 2>&1)
     if [[ $? -ne 0 ]]; then
         log -e "$HELM_REPO_ADD"
-        exit
+        exit 1
     else
         log -i "$HELM_REPO_ADD"
     fi
@@ -216,7 +229,7 @@ helm_repo_add_and_update() {
     HELM_REPO_UPDATE=$(helm repo update)
     if [[ $? -ne 0 ]]; then
         log -e "$HELM_REPO_UPDATE"
-        exit
+        exit 1
     else
         log -i "$HELM_REPO_UPDATE"
     fi
@@ -226,10 +239,10 @@ parse_helm_values() {
     if [[ ${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]} ]]; then
         # If working dir is empty we cannot get the path for the YAML file
         if [[ -z ${PARAMETERS_ARRAY[WORKING_DIR]} ]]; then
-            log -e "A helm git values file was provided, but the working directory was not provided."
-            log -e "Cannot search for the file without a given path."
+            log -e "A helm git values file was provided, but the working directory was not provided." >&2
+            log -e "Cannot search for the file without a given path." >&2
             echo
-            exit
+            exit 127
         else
             # If custom dir is not provided it will default to the PARAMETERS_ARRAY[CHART_NAME] variable
             [[ ${PARAMETERS_ARRAY[HELM_VALUES_GIT_CUSTOM_DIR]} ]] &&
@@ -243,18 +256,18 @@ parse_helm_values() {
             )"
             if [[ $HELM_GIT_VALUES_FILE ]]; then
                 GIT_FILE_STATUS=$(yq eval 'true' $HELM_GIT_VALUES_FILE 2>&1 >/dev/null) || {
-                    log -e "'$HELM_GIT_VALUES_FILE' helm git values file does not contain a valid YAML syntax."
-                    log -e "$GIT_FILE_STATUS"
+                    log -e "'$HELM_GIT_VALUES_FILE' helm git values file does not contain a valid YAML syntax." >&2
+                    log -e "$GIT_FILE_STATUS" >&2
                     echo
-                    exit
+                    exit 127
                 }
                 log -i "'$HELM_GIT_VALUES_FILE' file found. Proceeding with deployment..."
                 # Return -f parameter and the final values file path and name
                 HELM_GIT_VALUES_FILE=(-f "$HELM_GIT_VALUES_FILE")
             else
-                log -e "'${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}' file could not be found."
+                log -e "'${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]}' file could not be found." >&2
                 echo
-                exit
+                exit 127
             fi
         fi
     fi
@@ -266,11 +279,11 @@ get_yaml_output_for_helm_release() {
     if [[ $? -ne 0 ]]; then
         log -e "$HELM_YAML_OUTPUT"
         echo
-        exit
+        exit 94
     elif [[ $HELM_YAML_OUTPUT == [] ]]; then
-        log -e "There are no helm deployments in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace."
+        log -e "There are no helm deployments in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace." >&2
         echo
-        exit
+        exit 94
     fi
 
     # If both release and chart names were provided, check that the release matches with the chart name
@@ -280,18 +293,18 @@ get_yaml_output_for_helm_release() {
         if [[ $RELEASE_NAME != ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]} ]]; then
             HELM_RELEASE_ARRAY=($(yq eval '.[] | select (.chart == "*'"${PARAMETERS_ARRAY[CHART_NAME]}"'*") | 
                 .name as $name | $name' - <<<"$HELM_YAML_OUTPUT"))
-            log -e "Release name '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}' does not match with any release from '${PARAMETERS_ARRAY[CHART_NAME]}' chart."
-            log -e "Available release names in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace for the selected chart name: ${HELM_RELEASE_ARRAY[*]}"
+            log -e "Release name '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}' does not match with any release from '${PARAMETERS_ARRAY[CHART_NAME]}' chart." >&2
+            log -e "Available release names in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace for the selected chart name: ${HELM_RELEASE_ARRAY[*]}" >&2
             echo
-            exit
+            exit 94
         fi
     # If the release name is present and the chart name is empty, check that release name exists in that namespace
     elif [[ ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]} ]] && [[ -z ${PARAMETERS_ARRAY[CHART_NAME]} ]]; then
         RELEASE_EXISTS_IN_NS=$(yq eval '.[] | select (.name == "*'"${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"'*")' - <<<"$HELM_YAML_OUTPUT")
         if [[ -z $RELEASE_EXISTS_IN_NS ]]; then
-            log -e "Release name '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}' cannot be found in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace."
+            log -e "Release name '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}' cannot be found in '${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}' namespace." >&2
             echo
-            exit
+            exit 94
         fi
     fi
 
@@ -302,21 +315,21 @@ get_yaml_output_for_helm_release() {
         HELM_RELEASE_ARRAY=($(yq eval '.[] | select (.chart == "*'"${PARAMETERS_ARRAY[CHART_NAME]}"'*") | 
             .name as $name | $name' - <<<"$HELM_YAML_OUTPUT"))
         if [[ ${#HELM_RELEASE_ARRAY[@]} -gt 1 ]]; then
-            log -e "Multiple releases found: ${HELM_RELEASE_ARRAY[*]}"
-            log -e "Auto detection works if there is only one release of the chart in the provided namespace."
-            log -e "You must provide the release name in order to deploy the chart."
+            log -e "Multiple releases found: ${HELM_RELEASE_ARRAY[*]}" >&2
+            log -e "Auto detection works if there is only one release of the chart in the provided namespace." >&2
+            log -e "You must provide the release name in order to deploy the chart." >&2
             echo
-            exit
+            exit 94
         else
             PARAMETERS_ARRAY[HELM_RELEASE_NAME]="${HELM_RELEASE_ARRAY[*]}"
             log -i "Release name detected as: ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}"
         fi
     elif [[ -z ${PARAMETERS_ARRAY[HELM_RELEASE_NAME]} ]] && [[ -z ${PARAMETERS_ARRAY[CHART_NAME]} ]]; then
         log -w "Release name was not provided, auto detecting it..."
-        log -e "Release name cannot be auto detected because chart name is empty."
-        log -e "You must provide the chart name in order to auto detect the release name."
+        log -e "Release name cannot be auto detected because chart name is empty." >&2
+        log -e "You must provide the chart name in order to auto detect the release name." >&2
         echo
-        exit
+        exit 94
     fi
 
     # CHART_NAME is blank. Helm release name is now required to fetch chart name.
@@ -340,9 +353,9 @@ check_kubernetes_connection() {
     PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]="${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}-context"
     kubectl cluster-info &>/dev/null
     if [[ $? -ne 0 ]]; then
-        log -e "Cluster connection could not be established using '${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}' context."
+        log -e "Cluster connection could not be established using '${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}' context." >&2
         echo
-        exit
+        exit 1
     else
         log -i "Cluster connection established using '${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}' context."
     fi
@@ -374,21 +387,21 @@ check_helm_release_status() {
                     [[ $HELM_ROLLBACK_STATUS -eq 0 ]] &&
                         log -i "Release rolled back to the latest stable revision: ${DEPLOYED_REVISION:-$SUPERSEDED_REVISION}" ||
                         {
-                            log -e "Release could not be rolled back."
+                            log -e "Release could not be rolled back." >&2
                             echo
-                            exit
+                            exit 91
                         }
                 } ||
                 {
-                    log -e "There is no stable revision to rollback to."
+                    log -e "There is no stable revision to rollback to." >&2
                     echo
-                    exit
+                    exit 91
                 }
         elif [[ ${PARAMETERS_ARRAY[ROLLBACK_FAILED_RELEASE]} != true ]]; then
             log -w "In order to fix the release status automatically, you need to set rollback parameter to true."
-            log -e "Helm cannot upgrade releases with status '$HELM_RELEASE_STATUS'."
+            log -e "Helm cannot upgrade releases with status '$HELM_RELEASE_STATUS'." >&2
             echo
-            exit
+            exit 91
         fi
     fi
 }
@@ -431,13 +444,13 @@ upgrade_helm_release() {
             sleep $SLEEP
             continue
         elif [[ $DEPLOYMENT_RESULT -ne 0 ]] && [[ $DEPLOYMENT_OUTPUT =~ "timed out" ]] && [[ $INDEX -ge $RETRIES ]]; then
-            log -e "Failed to achieve the helm deployment within allotted time and retry count."
-            log -e "Unable to deploy to '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}'."
-            log -e "$DEPLOYMENT_OUTPUT"
+            log -e "Failed to achieve the helm deployment within allotted time and retry count." >&2
+            log -e "Unable to deploy to '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}'." >&2
+            log -e "$DEPLOYMENT_OUTPUT" >&2
             break
         elif [[ $DEPLOYMENT_RESULT -ne 0 ]]; then
-            log -e "Unable to deploy to '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}'."
-            log -e "$DEPLOYMENT_OUTPUT"
+            log -e "Unable to deploy to '${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}'." >&2
+            log -e "$DEPLOYMENT_OUTPUT" >&2
             break
         fi
         log -i "Deployment success."
@@ -446,6 +459,7 @@ upgrade_helm_release() {
         echo
         break
     done
+    [[ $DEPLOYMENT_RESULT -eq 0 ]] || { echo && exit 91; }
 }
 
 # Call all the necessary functions
