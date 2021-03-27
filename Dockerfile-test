@@ -1,5 +1,5 @@
 # Get 'yq' from the source
-FROM mikefarah/yq:3.2.1 as yq
+FROM mikefarah/yq:4.6.1 as yq
 
 #Import the base docker image built on top of Alpine
 FROM alpine:3.11.3
