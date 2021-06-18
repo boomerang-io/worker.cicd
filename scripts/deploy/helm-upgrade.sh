@@ -406,6 +406,26 @@ check_helm_release_status() {
     fi
 }
 
+get_default_chart_values() {
+    DEFAULT_CHART_VALUES=$(helm show values "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}" \
+        --version "${PARAMETERS_ARRAY[CHART_VERSION]/-*/}" 2>&1)
+    if [[ $? -ne 0 ]]; then
+        log -e "$DEFAULT_CHART_VALUES" >&2
+        echo
+        exit 91
+    fi
+}
+
+get_server_values() {
+    HELM_SERVER_VALUES=$(helm get values -a --kube-context "${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}" \
+        "${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}" --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" 2>&1)
+    if [[ $? -ne 0 ]]; then
+        log -e "$HELM_SERVER_VALUES" >&2
+        echo
+        exit 91
+    fi
+}
+
 upgrade_helm_release() {
     check_kubernetes_connection
     get_yaml_output_for_helm_release
@@ -430,12 +450,23 @@ upgrade_helm_release() {
     until [[ $INDEX -gt $RETRIES ]]; do
         let ++INDEX
         log -i "Commencing deployment (attempt #$INDEX)..."
-        parse_helm_values "${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
-        DEPLOYMENT_OUTPUT=$(helm upgrade --kube-context "${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}" "${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}" \
-            --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" --reuse-values "${HELM_GIT_VALUES_FILE[@]}" $DEBUG_OPTS \
-            --set "${PARAMETERS_ARRAY[HELM_SET_ARGS]}" "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}" \
-            --version "${PARAMETERS_ARRAY[CHART_VERSION]/-*/}" 2>&1 >/dev/null)
-        DEPLOYMENT_RESULT=$?
+        if [[ -z ${PARAMETERS_ARRAY[HELM_VALUES_GIT_FILE]} && -z ${PARAMETERS_ARRAY[HELM_SET_ARGS]} ]]; then
+            DEPLOYMENT_OUTPUT=$(helm upgrade --kube-context "${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}" \
+                "${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}" --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" \
+                "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}" \
+                --version "${PARAMETERS_ARRAY[CHART_VERSION]/-*/}" $DEBUG_OPTS 2>&1 >/dev/null)
+            DEPLOYMENT_RESULT=$?
+        else
+            get_default_chart_values
+            get_server_values
+            parse_helm_values "${PARAMETERS_ARRAY[HELM_VALUES_RAW_GIT_URL]}"
+            DEPLOYMENT_OUTPUT=$(helm upgrade --kube-context "${PARAMETERS_ARRAY[DEPLOY_KUBE_HOST]}" \
+                "${PARAMETERS_ARRAY[HELM_RELEASE_NAME]}" --namespace "${PARAMETERS_ARRAY[DEPLOY_KUBE_NAMESPACE]}" \
+                -f <(echo "$DEFAULT_CHART_VALUES") -f <(echo "$HELM_SERVER_VALUES") "${HELM_GIT_VALUES_FILE[@]}" \
+                --set "${PARAMETERS_ARRAY[HELM_SET_ARGS]}" "${PARAMETERS_ARRAY[CHART_REPO]}"/"${PARAMETERS_ARRAY[CHART_NAME]}" \
+                --version "${PARAMETERS_ARRAY[CHART_VERSION]/-*/}" $DEBUG_OPTS 2>&1 >/dev/null)
+            DEPLOYMENT_RESULT=$?
+        fi
         if [[ ${PARAMETERS_ARRAY[DEBUG]} == true ]]; then
             log -d "$DEPLOYMENT_OUTPUT"
         fi
