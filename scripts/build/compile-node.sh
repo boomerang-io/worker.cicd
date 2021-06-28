@@ -25,6 +25,8 @@ else
     echo "Setting Cypress Install Binary to $CYPRESS_INSTALL_BINARY..."
 fi
 
+export NODE_OPTIONS="--max-old-space-size=8192"
+
 if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
     if [ -e 'yarn.lock' ]; then
         echo "Running YARN install..."
