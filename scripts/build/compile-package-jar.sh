@@ -4,13 +4,14 @@
 
 # The only difference between this and standard compile is the mvn versions:set
 
-BUILD_TOOL=$1
-BUILD_TOOL_VERSION=$2
-VERSION_NAME=$3
-ART_URL=$4
-ART_REPO_ID=$5
-ART_REPO_USER=$6
-ART_REPO_PASSWORD=$7
+BUILD_LANGUAGE_VERSION=$1
+BUILD_TOOL=$2
+BUILD_TOOL_VERSION=$3
+VERSION_NAME=$4
+ART_URL=$5
+ART_REPO_ID=$6
+ART_REPO_USER=$7
+ART_REPO_PASSWORD=$8
 ART_REPO_HOME=~/.m2/repository
 if [ -d "/cache" ]; then
     echo "Setting cache..."
@@ -18,6 +19,26 @@ if [ -d "/cache" ]; then
     ls -ltr /workspaces/cache
     ART_REPO_HOME=/workspaces/cache/repository
 fi
+
+if [ "$BUILD_LANGUAGE_VERSION" == "11" ]; then
+    echo "Language version specified. Installing Java 11..."
+    # apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+    export PATH=$JAVA_HOME/bin:$PATH
+elif [ "$BUILD_LANGUAGE_VERSION" == "12" ]; then
+    echo "Language version specified. Unfortunately we do not yet support Java 12. Reverting to Java 11."
+    # apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+    export PATH=$JAVA_HOME/bin:$PATH
+else
+    echo "No language version specified. Defaulting to Java 8..."
+    export JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
+    export PATH=$JAVA_HOME/bin:$PATH
+    # apk add openjdk8
+fi
+ls -ltr /usr/lib/jvm
+echo $JAVA_HOME
+java -version
 
 if [ "$BUILD_TOOL" == "maven" ]; then
     mkdir -p ~/.m2

@@ -57,12 +57,14 @@ echo "Logging into Boomerang Container Registry ($GLOBAL_DOCKER_SERVER)..."
 /opt/bin/img login $IMG_OPTS -u=$GLOBAL_REGISTRY_USER -p=$GLOBAL_REGISTRY_PASSWORD "$GLOBAL_DOCKER_SERVER"
 
 # Check for custom Dockerfile path
-DOCKERFILE_OPTS=
+# DOCKERFILE_OPTS=
+DOCKERFILE_OPTS="--dockerfile=Dockerfile"
 if [ -z "$DOCKER_FILE" ]; then
     echo "Defaulting Dockerfile..."
     DOCKER_FILE=Dockerfile
 else
-    DOCKERFILE_OPTS="-f $DOCKER_FILE"
+    # DOCKERFILE_OPTS="-f $DOCKER_FILE"
+    DOCKERFILE_OPTS="--dockerfile=$DOCKER_FILE"
 fi
 # echo "Dockerfile: $DOCKER_FILE"
 
@@ -82,10 +84,11 @@ if [ ! -z "$BUILD_ARGS" ]; then
     echo "  Build arguments set as: $BUILD_ARGS_STRING"
 fi
 
-IMG_STATE=/data/img
-mkdir -p $IMG_STATE
+# IMG_STATE=/data/img
+# mkdir -p $IMG_STATE
 if  [ -f "$DOCKER_FILE" ]; then
-    /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME -o "type=docker,dest=$IMAGE_NAME_$VERSION_NAME.tar" $IMG_OPTS --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY ${BUILD_ARGS_STRING} $DOCKERFILE_OPTS .
+    /kaniko/executor --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY ${BUILD_ARGS_STRING} $DOCKERFILE_OPTS --context=. --destination=$IMAGE_NAME:$VERSION_NAME --oci-layout-path=./image-digest
+    # /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME -o "type=docker,dest=$IMAGE_NAME_$VERSION_NAME.tar" $IMG_OPTS --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY ${BUILD_ARGS_STRING} $DOCKERFILE_OPTS .
     # /opt/bin/img build -s "$IMG_STATE" -t $IMAGE_NAME:$VERSION_NAME $IMG_OPTS --build-arg BMRG_TAG=$VERSION_NAME --build-arg https_proxy=$HTTP_PROXY --build-arg http_proxy=$HTTP_PROXY --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTP_PROXY --build-arg NO_PROXY=$NO_PROXY --build-arg no_proxy=$NO_PROXY --build-arg ART_USER=$ART_USER --build-arg ART_PASSWORD=$ART_PASSWORD --build-arg ART_URL=$ART_URL $DOCKERFILE_OPTS .
     RESULT=$?
     if [ $RESULT -ne 0 ] ; then
