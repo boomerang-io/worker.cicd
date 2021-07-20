@@ -26,6 +26,9 @@ if [ "$DEBUG" == "true" ]; then
     DEBUG_OPTS+="--verbose"
 fi
 
+# Set JS heap space
+export NODE_OPTIONS="--max-old-space-size=8192"
+
 if [ -z "$CYPRESS_INSTALL_BINARY" ]; then
     echo "Defaulting Cypress Install Binary to 0..."
     CYPRESS_INSTALL_BINARY=0
