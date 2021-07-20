@@ -1,0 +1,17 @@
+#Import the base docker image built on top of Alpine
+FROM alpine:3.13.5
+
+ADD ./alpine-mirrors /etc/apk/repositories
+
+WORKDIR /opt/bin
+
+#Add Packages
+RUN apk add --no-cache bash sed grep curl coreutils nodejs npm ca-certificates make openssh-client git socat skopeo openssl
+
+WORKDIR /cli
+ADD ./package.json ./package-lock.json ./.npmrc ./
+ADD ./scripts ./scripts
+ADD ./commands ./commands
+RUN npm install --production
+
+ENTRYPOINT [ "npm", "start" ]
