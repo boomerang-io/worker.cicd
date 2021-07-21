@@ -15,7 +15,8 @@ if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ]; then
     BUILD_TOOL="npm"
 fi
 
-if [ "$LANGUAGE_VERSION" != "undefined" ] && [ ! -z "$LANGUAGE_VERSION" ]; then
+if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+    echo "Using NVM with Node version: $LANGUAGE_VERSION"
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
     nvm install $LANGUAGE_VERSION

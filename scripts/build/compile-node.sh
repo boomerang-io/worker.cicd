@@ -20,7 +20,7 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 NVM_OPTS=
-if [ "$LANGUAGE_VERSION" != "undefined" ] && [ ! -z "$LANGUAGE_VERSION" ]; then
+if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     echo "Running with NVM..."
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
