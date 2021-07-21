@@ -1,17 +1,18 @@
 #!/bin/bash
 
-# ( printf '\n'; printf '%.0s-' {1..30}; printf ' Package Docker Image '; printf '%.0s-' {1..30}; printf '\n\n' )
+# Use Skopeo to copy container from one registry to another
+#
+# Notes:
+# - Registry Hosts will potentially required a NO_PROXY entry in the controller service
+# - Parameters such as Image Path are sanitized for allow characters prior to script
 
 IMAGE_NAME=`echo $1 | tr '[:upper:]' '[:lower:]'`
-VERSION_NAME=$2
-TEAM_NAME=$3
-IMAGE_ORG=`echo $TEAM_NAME | sed 's/[^a-zA-Z0-9]//g' | tr '[:upper:]' '[:lower:]'`
-# Registry Host will potentially required a NO_PROXY entry in the controller service
+IMAGE_VERSION=$2
+IMAGE_PATH=$3
 DESTINATION_REGISTRY_HOST=`echo $4 | sed 's/"//g'`
 DESTINATION_REGISTRY_PORT=$5
 DESTINATION_REGISTRY_USER=$6
 DESTINATION_REGISTRY_PASSWORD=$7
-# DESTINATION_REGISTRY_IMAGE_PREFIX=`echo $8 | sed 's/[^a-zA-Z0-9]//g' | tr '[:upper:]' '[:lower:]'`
 DESTINATION_REGISTRY_IMAGE_PATH=$8
 GLOBAL_REGISTRY_HOST=`echo $9 | sed 's/"//g'`
 GLOBAL_REGISTRY_PORT=${10}
@@ -20,9 +21,8 @@ GLOBAL_REGISTRY_PASSWORD=${12}
 
 if [ "$DEBUG" == "true" ]; then
     echo "IMAGE_NAME=$IMAGE_NAME"
-    echo "VERSION_NAME=$VERSION_NAME"
-    echo "TEAM_NAME=$TEAM_NAME"
-    echo "IMAGE_ORG=$IMAGE_ORG"
+    echo "IMAGE_VERSION=$IMAGE_VERSION"
+    echo "IMAGE_PATH=$IMAGE_PATH"
     echo "DESTINATION_REGISTRY_HOST=$DESTINATION_REGISTRY_HOST"
     echo "DESTINATION_REGISTRY_PORT=$DESTINATION_REGISTRY_PORT"
     echo "DESTINATION_REGISTRY_USER=$DESTINATION_REGISTRY_USER"
@@ -83,10 +83,10 @@ fi
 sleep 10
 
 echo "Copying from Origin to Destination..."
-echo "- Origin: $GLOBAL_DOCKER_SERVER/$IMAGE_ORG/$IMAGE_NAME:$VERSION_NAME"
-echo "- Destination: $DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$VERSION_NAME"
+echo "- Origin: $GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
+echo "- Destination: $DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
 echo ""
-skopeo --insecure-policy $SKOPEO_OPTS copy --src-tls-verify=false --dest-tls-verify=false $GLOBAL_REGISTRY_CREDS $DESTINATION_REGISTRY_CREDS docker://$GLOBAL_DOCKER_SERVER/$IMAGE_ORG/$IMAGE_NAME:$VERSION_NAME docker://$DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$VERSION_NAME
+skopeo --insecure-policy $SKOPEO_OPTS copy --src-tls-verify=false --dest-tls-verify=false $GLOBAL_REGISTRY_CREDS $DESTINATION_REGISTRY_CREDS docker://$GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION docker://$DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION
 RESULT=$?
 if [ $RESULT -ne 0 ] ; then
     exit 88

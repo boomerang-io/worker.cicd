@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# ( printf '\n'; printf '%.0s-' {1..30}; printf ' Package Docker Image '; printf '%.0s-' {1..30}; printf '\n\n' )
+# Uses Skopeo to put TAR of a container into a registry
+#
+# Notes:
+# - Registry Hosts will potentially required a NO_PROXY entry in the controller service
+# - Parameters such as Image Path are sanitized for allow characters prior to script
 
 IMAGE_NAME=$1
 IMAGE_VERSION=$2
@@ -13,7 +17,8 @@ CUSTOM_REGISTRY_HOST=$8
 CUSTOM_REGISTRY_PORT=$9
 CUSTOM_REGISTRY_USER=${10}
 CUSTOM_REGISTRY_PASSWORD=${11}
-# if [ "$DEBUG" == "true" ]; then
+
+if [ "$DEBUG" == "true" ]; then
     echo "IMAGE_NAME=$IMAGE_NAME"
     echo "IMAGE_VERSION=$IMAGE_VERSION"
     echo "IMAGE_PATH=$IMAGE_PATH"
@@ -25,7 +30,7 @@ CUSTOM_REGISTRY_PASSWORD=${11}
     echo "CUSTOM_REGISTRY_PORT=$CUSTOM_REGISTRY_PORT"
     echo "CUSTOM_REGISTRY_USER=$CUSTOM_REGISTRY_USER"
     echo "CUSTOM_REGISTRY_PASSWORD=$CUSTOM_REGISTRY_PASSWORD"
-# fi
+fi
 
 SKOPEO_OPTS=
 if [ "$DEBUG" == "true" ]; then
