@@ -20,7 +20,7 @@ CYPRESS_INSTALL_BINARY=$4
 # fi
 
 NVM_OPTS=
-if [ ! -z "$LANGUAGE_VERSION" ]; then
+if [ "$LANGUAGE_VERSION" != "undefined" ] && [ ! -z "$LANGUAGE_VERSION" ]; then
     echo "Running with NVM..."
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
