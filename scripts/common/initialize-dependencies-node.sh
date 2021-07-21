@@ -11,7 +11,8 @@ ART_USER=$4
 ART_PASSWORD=$5
 
 if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ]; then
-    exit 99
+    echo "build-tool not specified, defaulting to npm..."
+    BUILD_TOOL="npm"
 fi
 
 if [ "$LANGUAGE_VERSION" != "undefined" ] && [ ! -z "$LANGUAGE_VERSION" ]; then
