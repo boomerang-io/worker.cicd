@@ -10,16 +10,6 @@ ART_URL=$3
 ART_USER=$4
 ART_PASSWORD=$5
 
-# if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
-#     # TODO: Updated the dependencies and add user supplied ones
-#     # apk add --no-cache curl-dev bash gcc g++ make libc6-compat libc-dev lcms2-dev libpng-dev automake autoconf libtool yarn python && apk add --no-cache fftw-dev build-base --repository http://dl-3.alpinelinux.org/alpine/edge/testing --repository http://dl-3.alpinelinux.org/alpine/edge/main
-#     # if [ ! -z "$BUILD_TOOL_VERSION" ]; then
-#     #     apk add --no-cache nodejs=$BUILD_TOOL_VERSION nodejs-npm --repository http://dl-3.alpinelinux.org/alpine/edge/main
-#     # fi
-# else
-#     exit 99
-# fi
-
 if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ]; then
     exit 99
 fi

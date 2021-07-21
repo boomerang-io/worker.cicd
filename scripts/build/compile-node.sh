@@ -12,6 +12,12 @@ else
     echo "Setting npm script to $BUILD_SCRIPT..."
 fi
 CYPRESS_INSTALL_BINARY=$4
+# if [ "$DEBUG" == "true" ]; then
+    echo "DEBUG - Script input variables..."
+    echo "LANGUAGE_VERSION=$LANGUAGE_VERSION"
+    echo "BUILD_SCRIPT=$BUILD_SCRIPT"
+    echo "CYPRESS_INSTALL_BINARY=$CYPRESS_INSTALL_BINARY"
+# fi
 
 NVM_OPTS=
 if [ ! -z "$LANGUAGE_VERSION" ]; then
