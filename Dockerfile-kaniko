@@ -1,6 +1,0 @@
-#Import the base docker image built on top of Alpine
-FROM gcr.io/kaniko-project/executor:debug
-
-ADD ./run.sh .
-
-ENTRYPOINT ["/busybox/sh", "-c", "./run.sh"]

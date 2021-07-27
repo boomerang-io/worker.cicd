@@ -1,5 +1,11 @@
 #!/busybox/sh
 
+# Validates and adjusts the parameters and then calls Kaniko for container build
+#
+# Notes: 
+# - This script is embedded in the Tekton Task script element
+# - It is not directly referenced or used inside the worker 
+
 mkdir -p /kaniko/.docker
 
 # Check for custom registry port
