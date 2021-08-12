@@ -143,8 +143,6 @@ module.exports = {
     // let dir = "/workspace/" + taskParams["workflow-activity-id"];
     let dir = workingDir(taskParams["workingDir"]);
 
-    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
-
     log.ci("Deploying...");
     try {
       var dockerImageName =
@@ -165,7 +163,7 @@ module.exports = {
             .replace(/[^a-zA-Z0-9\-]/g, "")
             .toLowerCase();
       await exec(
-        `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${version}" "${dockerImagePath}" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${taskParams["containerRegistryPassword"]}" "${taskParams["containerRegistryPath"]
+        `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${taskParams["version"]}" "${dockerImagePath}" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${taskParams["containerRegistryPassword"]}" "${taskParams["containerRegistryPath"]
         }" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${taskParams["globalContainerRegistryUser"]}" "${taskParams["globalContainerRegistryPassword"]}"`
       );
     } catch (e) {
