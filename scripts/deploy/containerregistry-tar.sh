@@ -65,7 +65,7 @@ else
     DESTINATION_REGISTRY_CREDS="--dest-no-creds=true"
 fi
 
-skopeo $SKOPEO_OPTS copy --dest-tls-verify=false $DESTINATION_REGISTRY_CREDS docker-archive:${IMAGE_NAME}_${IMAGE_VERSION}.tar docker://"$GLOBAL_REGISTRY_HOST:$GLOBAL_REGISTRY_PORT/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
+skopeo $SKOPEO_OPTS copy --dest-tls-verify=false $DESTINATION_REGISTRY_CREDS docker-archive:${IMAGE_NAME}.tar docker://"$GLOBAL_REGISTRY_HOST:$GLOBAL_REGISTRY_PORT/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
 RESULT=$?
 if [ $RESULT -ne 0 ] ; then
     exit 90
