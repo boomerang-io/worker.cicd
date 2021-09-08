@@ -43,9 +43,9 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 # Set source connection settings
-if [ "$GLOBAL_REGISTRY_PORT" != "undefined" ]; then
+if [ "$GLOBAL_REGISTRY_PORT" != "undefined" ] && [ "$GLOBAL_REGISTRY_PORT" != "" ]; then
     GLOBAL_DOCKER_SERVER="$GLOBAL_REGISTRY_HOST:$GLOBAL_REGISTRY_PORT"
-else 
+else
     GLOBAL_DOCKER_SERVER="$GLOBAL_REGISTRY_HOST"
 fi
 
