@@ -43,6 +43,12 @@ fi
 echo "   ⋯ Installing kubectl $KUBE_CLI_VERSION (linux-amd64)..."
 curl --progress-bar -fL -o $KUBE_CLI --retry 5 https://storage.googleapis.com/kubernetes-release/release/$KUBE_CLI_VERSION/bin/linux/amd64/kubectl  && chmod +x $KUBE_CLI
 
+echo "Installing oc cli ..."
+OC_CLI=$BIN_HOME/oc
+curl --progress-bar -fL -o oc-linux.tar.gz https://tools.boomerangplatform.net/artifactory/boomerang-public/software/openshift/cli/oc-4.9.5-linux.tar.gz --insecure
+tar -xvzf oc-linux.tar.gz
+mv oc $OC_CLI && chmod +x $OC_CLI
+
 # TODO: Move these variables up to the top
 KUBE_NAMESPACE=$DEPLOY_KUBE_NAMESPACE
 KUBE_CLUSTER_HOST=$DEPLOY_KUBE_HOST
@@ -59,10 +65,8 @@ if [[ "$KUBE_CLUSTER_HOST" == *intranet.ibm.com ]] ; then
   KUBE_CLUSTER_USERNAME=`echo $KUBE_TOKEN | cut -d':' -f1`
   KUBE_CLUSTER_PASSWORD=`echo $KUBE_TOKEN | cut -d':' -f2`
 
-  $KUBE_CLI config set-cluster $KUBE_CLUSTER_HOST --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --insecure-skip-tls-verify=true && \
-  $KUBE_CLI config set-credentials $KUBE_CLUSTER_HOST-user --username=$KUBE_CLUSTER_USERNAME --password=$KUBE_CLUSTER_PASSWORD && \
-  $KUBE_CLI config set-context $KUBE_CLUSTER_HOST-context --cluster=$KUBE_CLUSTER_HOST --user=$KUBE_CLUSTER_HOST-user --namespace=$KUBE_NAMESPACE && \
-  $KUBE_CLI config use-context $KUBE_CLUSTER_HOST-context
+  oc login --username=$KUBE_CLUSTER_USERNAME --password=$KUBE_CLUSTER_PASSWORD --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --insecure-skip-tls-verify=true
+
   RESULT=$?
   if [ $RESULT -ne 0 ] ; then
       echo
