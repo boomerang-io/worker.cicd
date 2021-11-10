@@ -46,9 +46,8 @@ curl --progress-bar -fL -o $KUBE_CLI --retry 5 https://storage.googleapis.com/ku
 echo "Installing oc cli ..."
 curl --progress-bar -fL -o oc-linux.tar.gz https://tools.boomerangplatform.net/artifactory/boomerang-public/software/openshift/cli/oc-4.9.5-linux.tar.gz --insecure
 tar xvzf oc-linux.tar.gz
-chmod +x oc
-OC_CLI=./oc
-$OC_CLI version
+ls -al ./oc
+./oc version
 
 # TODO: Move these variables up to the top
 KUBE_NAMESPACE=$DEPLOY_KUBE_NAMESPACE
@@ -66,10 +65,12 @@ if [[ "$KUBE_CLUSTER_HOST" == *intranet.ibm.com ]] ; then
   KUBE_CLUSTER_USERNAME=`echo $KUBE_TOKEN | cut -d':' -f1`
   KUBE_CLUSTER_PASSWORD=`echo $KUBE_TOKEN | cut -d':' -f2`
 
-  $OC_CLI login --username=$KUBE_CLUSTER_USERNAME --password=$KUBE_CLUSTER_PASSWORD --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --insecure-skip-tls-verify=true
+  ./oc login --username=$KUBE_CLUSTER_USERNAME --password=$KUBE_CLUSTER_PASSWORD --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --insecure-skip-tls-verify=true
 
   RESULT=$?
   if [ $RESULT -ne 0 ] ; then
+      echo "Sleeping 5 minutes ..."
+      sleep 300
       echo
       echo  "   ✗ An error occurred configuring kube config. Please see output for details or talk to a support representative." "error"
       echo
