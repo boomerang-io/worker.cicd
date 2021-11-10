@@ -46,7 +46,8 @@ curl --progress-bar -fL -o $KUBE_CLI --retry 5 https://storage.googleapis.com/ku
 echo "Installing oc cli ..."
 OC_CLI=$BIN_HOME/oc
 curl --progress-bar -fL -o oc-linux.tar.gz https://tools.boomerangplatform.net/artifactory/boomerang-public/software/openshift/cli/oc-4.9.5-linux.tar.gz --insecure
-tar -xvzf oc-linux.tar.gz
+ls -al oc-linux.tar.gz
+tar xvzf oc-linux.tar.gz
 mv oc $OC_CLI && chmod +x $OC_CLI
 
 # TODO: Move these variables up to the top
