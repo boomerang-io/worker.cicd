@@ -36,6 +36,7 @@ else
     echo "Defaulting kubectl version..."
     KUBE_CLI_VERSION=v1.13.5 #ICP 3.2.1
 fi
+$KUBE_CLI_VERSION version
 
 # Relies on proxy settings coming through if there is a proxy
 # echo "Using Kubectl version from the Clusters Common Services."
@@ -43,11 +44,16 @@ fi
 echo "   ⋯ Installing kubectl $KUBE_CLI_VERSION (linux-amd64)..."
 curl --progress-bar -fL -o $KUBE_CLI --retry 5 https://storage.googleapis.com/kubernetes-release/release/$KUBE_CLI_VERSION/bin/linux/amd64/kubectl  && chmod +x $KUBE_CLI
 
+echo "Install libc6-compat for oc cli ..."
+apk add libc6-compat
+
 echo "Installing oc cli ..."
+OC_CLI=$BIN_HOME/oc
 curl --progress-bar -fL -o openshift-client-linux.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz
 tar xvzf openshift-client-linux.tar.gz
-ls -al ./oc
-./oc version
+cp oc $OC_CLI
+chmod a+x $OC_CLI
+$OC_CLI version
 
 # TODO: Move these variables up to the top
 KUBE_NAMESPACE=$DEPLOY_KUBE_NAMESPACE
@@ -65,7 +71,7 @@ if [[ "$KUBE_CLUSTER_HOST" == *intranet.ibm.com ]] ; then
   KUBE_CLUSTER_USERNAME=`echo $KUBE_TOKEN | cut -d':' -f1`
   KUBE_CLUSTER_PASSWORD=`echo $KUBE_TOKEN | cut -d':' -f2`
 
-  ./oc login --username=$KUBE_CLUSTER_USERNAME --password=$KUBE_CLUSTER_PASSWORD --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --insecure-skip-tls-verify=true
+  $OC_CLI login --username=$KUBE_CLUSTER_USERNAME --password=$KUBE_CLUSTER_PASSWORD --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --insecure-skip-tls-verify=true
 
   RESULT=$?
   if [ $RESULT -ne 0 ] ; then
