@@ -44,7 +44,7 @@ echo "   ⋯ Installing kubectl $KUBE_CLI_VERSION (linux-amd64)..."
 curl --progress-bar -fL -o $KUBE_CLI --retry 5 https://storage.googleapis.com/kubernetes-release/release/$KUBE_CLI_VERSION/bin/linux/amd64/kubectl  && chmod +x $KUBE_CLI
 
 echo "Installing oc cli ..."
-curl --progress-bar -fL -o oc-linux.tar.gz https://tools.boomerangplatform.net/artifactory/boomerang-public/software/openshift/cli/oc-4.9.5-linux.tar.gz --insecure
+curl --progress-bar -fL -o oc-linux.tar.gz https://tools.boomerangplatform.net/artifactory/boomerang-public/software/openshift/cli/oc-3.11.542-linux.tar.gz --insecure
 tar xvzf oc-linux.tar.gz
 ls -al ./oc
 ./oc version
