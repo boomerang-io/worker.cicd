@@ -52,16 +52,35 @@ KUBE_TOKEN=$DEPLOY_KUBE_TOKEN
 
 # TODO: add ability for user to provide ca.crt or a mechanism to retrieve cert.
 # $KUBE_CLI config set-cluster $KUBE_CLUSTER_HOST --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --certificate-authority="./ca.crt" --embed-certs=true
+
 echo "   ⋯ Configuring Kube Config..."
-$KUBE_CLI config set-cluster $KUBE_CLUSTER_HOST --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --insecure-skip-tls-verify=true && \
-$KUBE_CLI config set-credentials $KUBE_CLUSTER_HOST-user --token=$KUBE_TOKEN && \
-$KUBE_CLI config set-context $KUBE_CLUSTER_HOST-context --cluster=$KUBE_CLUSTER_HOST --user=$KUBE_CLUSTER_HOST-user --namespace=$KUBE_NAMESPACE && \
-$KUBE_CLI config use-context $KUBE_CLUSTER_HOST-context
-RESULT=$?
-if [ $RESULT -ne 0 ] ; then
-    echo
-    echo  "   ✗ An error occurred configuring kube config. Please see output for details or talk to a support representative." "error"
-    echo
-    exit 1
+if [[ "$KUBE_CLUSTER_HOST" == "*intranet.ibm.com" ]] ; then
+  KUBE_CLUSTER_USERNAME=`echo $KUBE_TOKEN | cut -d':' -f1`
+  KUBE_CLUSTER_PASSWORD=`echo $KUBE_TOKEN | cut -d':' -f2`
+
+  $KUBE_CLI config set-cluster $KUBE_CLUSTER_HOST --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --insecure-skip-tls-verify=true && \
+  $KUBE_CLI config set-credentials $KUBE_CLUSTER_HOST-user --username=$KUBE_CLUSTER_USERNAME --password=$KUBE_CLUSTER_PASSWORD && \
+  $KUBE_CLI config set-context $KUBE_CLUSTER_HOST-context --cluster=$KUBE_CLUSTER_HOST --user=$KUBE_CLUSTER_HOST-user --namespace=$KUBE_NAMESPACE && \
+  $KUBE_CLI config use-context $KUBE_CLUSTER_HOST-context
+  RESULT=$?
+  if [ $RESULT -ne 0 ] ; then
+      echo
+      echo  "   ✗ An error occurred configuring kube config. Please see output for details or talk to a support representative." "error"
+      echo
+      exit 1
+  fi
+else
+  $KUBE_CLI config set-cluster $KUBE_CLUSTER_HOST --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --insecure-skip-tls-verify=true && \
+  $KUBE_CLI config set-credentials $KUBE_CLUSTER_HOST-user --token=$KUBE_TOKEN && \
+  $KUBE_CLI config set-context $KUBE_CLUSTER_HOST-context --cluster=$KUBE_CLUSTER_HOST --user=$KUBE_CLUSTER_HOST-user --namespace=$KUBE_NAMESPACE && \
+  $KUBE_CLI config use-context $KUBE_CLUSTER_HOST-context
+  RESULT=$?
+  if [ $RESULT -ne 0 ] ; then
+      echo
+      echo  "   ✗ An error occurred configuring kube config. Please see output for details or talk to a support representative." "error"
+      echo
+      exit 1
+  fi
 fi
+
 echo " ↣ Kubernetes configuration completed."
