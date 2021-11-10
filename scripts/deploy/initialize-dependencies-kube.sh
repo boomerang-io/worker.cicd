@@ -54,7 +54,8 @@ KUBE_TOKEN=$DEPLOY_KUBE_TOKEN
 # $KUBE_CLI config set-cluster $KUBE_CLUSTER_HOST --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --certificate-authority="./ca.crt" --embed-certs=true
 
 echo "   ⋯ Configuring Kube Config..."
-if [[ "$KUBE_CLUSTER_HOST" == "*intranet.ibm.com" ]] ; then
+if [[ "$KUBE_CLUSTER_HOST" == *intranet.ibm.com ]] ; then
+  echo "Authenticating with username and password ..."
   KUBE_CLUSTER_USERNAME=`echo $KUBE_TOKEN | cut -d':' -f1`
   KUBE_CLUSTER_PASSWORD=`echo $KUBE_TOKEN | cut -d':' -f2`
 
@@ -70,6 +71,8 @@ if [[ "$KUBE_CLUSTER_HOST" == "*intranet.ibm.com" ]] ; then
       exit 1
   fi
 else
+  echo "Authenticating with token ..."
+
   $KUBE_CLI config set-cluster $KUBE_CLUSTER_HOST --server=https://$KUBE_CLUSTER_IP:$KUBE_CLUSTER_PORT --insecure-skip-tls-verify=true && \
   $KUBE_CLI config set-credentials $KUBE_CLUSTER_HOST-user --token=$KUBE_TOKEN && \
   $KUBE_CLI config set-context $KUBE_CLUSTER_HOST-context --cluster=$KUBE_CLUSTER_HOST --user=$KUBE_CLUSTER_HOST-user --namespace=$KUBE_NAMESPACE && \
