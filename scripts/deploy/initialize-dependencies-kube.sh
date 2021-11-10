@@ -44,14 +44,10 @@ echo "   ⋯ Installing kubectl $KUBE_CLI_VERSION (linux-amd64)..."
 curl --progress-bar -fL -o $KUBE_CLI --retry 5 https://storage.googleapis.com/kubernetes-release/release/$KUBE_CLI_VERSION/bin/linux/amd64/kubectl  && chmod +x $KUBE_CLI
 
 echo "Installing oc cli ..."
-OC_CLI=$BIN_HOME/oc
 curl --progress-bar -fL -o oc-linux.tar.gz https://tools.boomerangplatform.net/artifactory/boomerang-public/software/openshift/cli/oc-4.9.5-linux.tar.gz --insecure
-ls -al oc-linux.tar.gz
 tar xvzf oc-linux.tar.gz
-ls -al oc
-cp oc $OC_CLI
-chmod +x $OC_CLI
-ls -al $OC_CLI
+chmod +x oc
+OC_CLI=./oc
 $OC_CLI version
 
 # TODO: Move these variables up to the top
