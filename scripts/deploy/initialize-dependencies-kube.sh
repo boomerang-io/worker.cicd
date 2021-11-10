@@ -44,8 +44,8 @@ echo "   ⋯ Installing kubectl $KUBE_CLI_VERSION (linux-amd64)..."
 curl --progress-bar -fL -o $KUBE_CLI --retry 5 https://storage.googleapis.com/kubernetes-release/release/$KUBE_CLI_VERSION/bin/linux/amd64/kubectl  && chmod +x $KUBE_CLI
 
 echo "Installing oc cli ..."
-curl --progress-bar -fL -o oc-linux.tar.gz https://tools.boomerangplatform.net/artifactory/boomerang-public/software/openshift/cli/oc-3.11.542-linux.tar.gz --insecure
-tar xvzf oc-linux.tar.gz
+curl --progress-bar -fL -o openshift-client-linux.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz
+tar xvzf openshift-client-linux.tar.gz
 ls -al ./oc
 ./oc version
 
@@ -70,7 +70,7 @@ if [[ "$KUBE_CLUSTER_HOST" == *intranet.ibm.com ]] ; then
   RESULT=$?
   if [ $RESULT -ne 0 ] ; then
       echo "Sleeping 5 minutes ..."
-      sleep 300
+      sleep 600
       echo
       echo  "   ✗ An error occurred configuring kube config. Please see output for details or talk to a support representative." "error"
       echo
