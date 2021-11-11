@@ -44,7 +44,7 @@ echo "   ⋯ Installing kubectl $KUBE_CLI_VERSION (linux-amd64)..."
 curl -fL -o $KUBE_CLI --retry 5 https://storage.googleapis.com/kubernetes-release/release/$KUBE_CLI_VERSION/bin/linux/amd64/kubectl  && chmod +x $KUBE_CLI
 
 echo "Verify kubectl version ..."
-$KUBE_CLI_VERSION version
+$KUBE_CLI version
 
 echo "Install libc6-compat for oc cli ..."
 apk add libc6-compat
