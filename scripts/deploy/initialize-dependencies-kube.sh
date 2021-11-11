@@ -36,13 +36,15 @@ else
     echo "Defaulting kubectl version..."
     KUBE_CLI_VERSION=v1.13.5 #ICP 3.2.1
 fi
-$KUBE_CLI_VERSION version
 
 # Relies on proxy settings coming through if there is a proxy
 # echo "Using Kubectl version from the Clusters Common Services."
 # curl -kL https://icp-console.apps.$DEPLOY_KUBE_HOST:443/api/cli/kubectl-linux-amd64 -o $KUBE_CLI && chmod +x $KUBE_CLI
 echo "   ⋯ Installing kubectl $KUBE_CLI_VERSION (linux-amd64)..."
 curl -fL -o $KUBE_CLI --retry 5 https://storage.googleapis.com/kubernetes-release/release/$KUBE_CLI_VERSION/bin/linux/amd64/kubectl  && chmod +x $KUBE_CLI
+
+echo "Verify kubectl version ..."
+$KUBE_CLI_VERSION version
 
 echo "Install libc6-compat for oc cli ..."
 apk add libc6-compat
@@ -53,6 +55,8 @@ curl -fL -o openshift-client-linux.tar.gz https://mirror.openshift.com/pub/opens
 tar xvzf openshift-client-linux.tar.gz
 cp oc $OC_CLI
 chmod a+x $OC_CLI
+
+echo "Verify oc cli version ..."
 $OC_CLI version
 
 # TODO: Move these variables up to the top
