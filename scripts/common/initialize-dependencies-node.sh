@@ -10,7 +10,7 @@ ART_URL=$3
 ART_USER=$4
 ART_PASSWORD=$5
 
-if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ]; then
+if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ] && [ "$BUILD_TOOL" != "pnpm" ]; then
     echo "build-tool not specified, defaulting to npm..."
     BUILD_TOOL="npm"
 fi
@@ -37,21 +37,30 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 echo "Versions:"
-if [ "$BUILD_TOOL" == "yarn" ]; then echo "  Yarn: $(yarn --version)"; fi
+if [ "$BUILD_TOOL" == "yarn" ]; then echo "  yarn: $(yarn --version)"; fi
 if [ "$BUILD_TOOL" == "npm" ]; then echo "  npm: $(npm --version)"; fi
+if [ "$BUILD_TOOL" == "pnpm" ]; then echo "  pnpm: $(pnpm --version)"; fi
+
 echo "  Node: $(node --version)"
 
 if [ "$HTTP_PROXY" != "" ]; then
-    if [ "$BUILD_TOOL" == "yarn" ]; then
-        echo "Setting YARN Proxy Settings..."
-        yarn config set proxy http://$PROXY_HOST:$PROXY_PORT
-        yarn config set https-proxy http://$PROXY_HOST:$PROXY_PORT
-        yarn config set no-proxy $NO_PROXY
-    else
-        echo "Setting NPM Proxy Settings..."
+    if [ "$BUILD_TOOL" == "npm" ]; then
+        echo "Setting npm proxy Settings..."
         npm config set proxy http://$PROXY_HOST:$PROXY_PORT
         npm config set https-proxy http://$PROXY_HOST:$PROXY_PORT
         npm config set no-proxy $NO_PROXY
+    fi
+    if [ "$BUILD_TOOL" == "yarn" ]; then
+        echo "Setting yarn proxy Settings..."
+        yarn config set proxy http://$PROXY_HOST:$PROXY_PORT
+        yarn config set https-proxy http://$PROXY_HOST:$PROXY_PORT
+        yarn config set no-proxy $NO_PROXY
+    fi
+    if [ "$BUILD_TOOL" == "pnpm" ]; then
+        echo "Setting pnpm proxy Settings..."
+        pnpm config set proxy http://$PROXY_HOST:$PROXY_PORT
+        pnpm config set https-proxy http://$PROXY_HOST:$PROXY_PORT
+        pnpm config set no-proxy $NO_PROXY
     fi
 fi
 
@@ -59,9 +68,13 @@ if [ -d "/cache" ]; then
     echo "Setting cache..."
     mkdir -p /cache/modules
     ls -ltr /cache
+    if [ "$BUILD_TOOL" == "npm" ]; then
+        npm config set cache /cache/modules
+    fi
     if [ "$BUILD_TOOL" == "yarn" ]; then
         yarn config set cache-folder /cache/modules
-    else
-        npm config set cache /cache/modules
+    fi
+    if [ "$BUILD_TOOL" == "pnpm" ]; then
+        pnpm config set cache /cache/modules
     fi
 fi

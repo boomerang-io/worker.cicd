@@ -12,8 +12,9 @@ COMPONENT_NAME=$6
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
+[[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
 
-if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]]; then
+if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]] && [[ "$USE_PNPM" == false ]]; then
     exit 99
 fi
 
@@ -69,6 +70,8 @@ if [[ "$USE_NPM" == true ]]; then
     npm test
 elif [[ "$USE_YARN" == true ]]; then
     yarn test
+elif [[ "$USE_PNPM" == true ]]; then
+    pnpm test
 fi
 
 SRC_FOLDER=

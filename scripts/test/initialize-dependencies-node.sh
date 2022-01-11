@@ -19,22 +19,30 @@ else
 fi
 
 if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
-    if [ -e 'yarn.lock' ]; then
-        echo "Running YARN install..."
-        yarn install $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    elif [ -e 'package-lock.json' ]; then
-        echo "Running NPM ci..."
+    if [ -e 'package-lock.json' ]; then
+        echo "Running npm ci..."
         npm ci $DEBUG_OPTS
         RESULT=$?
         if [ $RESULT -ne 0 ] ; then
             exit 89
         fi
+    elif [ -e 'yarn.lock' ]; then
+        echo "Running yarn install..."
+        yarn install $DEBUG_OPTS
+        RESULT=$?
+        if [ $RESULT -ne 0 ] ; then
+            exit 89
+        fi
+    elif [ -e 'pnpm-lock.yaml' ]; then
+        echo "Running pnpm install..."
+        pnpm install $DEBUG_OPTS
+        RESULT=$?
+        if [ $RESULT -ne 0 ] ; then
+            exit 89
+        fi
     else
-        echo "Running NPM install..."
+        echo "No lockfile found. Defaulting to npm."
+        echo "Running npm install..."
         npm install $DEBUG_OPTS
         RESULT=$?
         if [ $RESULT -ne 0 ] ; then

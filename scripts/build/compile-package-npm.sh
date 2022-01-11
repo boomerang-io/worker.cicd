@@ -10,15 +10,21 @@ if [ "$DEBUG" == "true" ]; then
     DEBUG_OPTS+="--verbose"
 fi
 
-if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
-    if [ -e 'yarn.lock' ]; then
-        echo "Running YARN install..."
-        yarn install DEBUG_OPTS
-    elif [ -e 'package-lock.json' ]; then
-        echo "Running NPM ci..."
+"pnpm-lock.yaml"
+
+if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ] || [ "$BUILD_TOOL" == "pnpm" ]; then
+    if [ -e 'package-lock.json' ]; then
+        echo "Running npm ci..."
         npm ci DEBUG_OPTS
+    elif [ -e 'yarn.lock' ]; then
+        echo "Running yarn install..."
+        yarn install DEBUG_OPTS
+    elif [ -e 'pnpm-lock.yaml' ]; then
+        echo "Running pnpm install..."
+        pnpm install DEBUG_OPTS
     else
-        echo "Running NPM install..."
+       echo "No lockfile found. Defaulting to npm."
+       echo "Running npm install..."
         npm install DEBUG_OPTS
     fi
 else
@@ -31,6 +37,8 @@ if [ "$SCRIPT" != "undefined" ]; then
         npm publish
     elif [ "$BUILD_TOOL" == "yarn" ]; then
         yarn publish
+    elif [ "$BUILD_TOOL" == "pnpm" ]; then
+        pnpm publish
     else
         exit 97
     fi

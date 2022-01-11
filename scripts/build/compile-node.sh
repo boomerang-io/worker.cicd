@@ -21,7 +21,7 @@ fi
 
 NVM_OPTS=
 if [ "$LANGUAGE_VERSION" != "undefined" ]; then
-    echo "Running with NVM..."
+    echo "Running with nvm..."
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
 fi
@@ -36,29 +36,37 @@ fi
 export NODE_OPTIONS="--max-old-space-size=8192"
 
 if [ -z "$CYPRESS_INSTALL_BINARY" ]; then
-    echo "Defaulting Cypress Install Binary to 0..."
+    echo "Defaulting Cypress install binary to 0..."
     CYPRESS_INSTALL_BINARY=0
 else
-    echo "Setting Cypress Install Binary to $CYPRESS_INSTALL_BINARY..."
+    echo "Setting Cypress install binary to $CYPRESS_INSTALL_BINARY..."
 fi
 
-if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
-    if [ -e 'yarn.lock' ]; then
-        echo "Running YARN install..."
-        yarn install $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    elif [ -e 'package-lock.json' ]; then
-        echo "Running NPM ci..."
+if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ] || [ "$BUILD_TOOL" != "pnpm" ]; then
+    if [ -e 'package-lock.json' ]; then
+        echo "Running npm ci..."
         npm ci $DEBUG_OPTS
         RESULT=$?
         if [ $RESULT -ne 0 ] ; then
             exit 89
         fi
+    elif [ -e 'yarn.lock' ]; then
+        echo "Running yarn install..."
+        yarn install $DEBUG_OPTS
+        RESULT=$?
+        if [ $RESULT -ne 0 ] ; then
+            exit 89
+        fi 
+    elif [ -e 'pnpm-lock.yaml' ]; then
+        echo "Running pnpm install..."
+        pnpm install $DEBUG_OPTS
+        RESULT=$?
+        if [ $RESULT -ne 0 ] ; then
+            exit 89
+        fi
     else
-        echo "Running NPM install..."
+        echo "No lockfile found. Defaulting to npm."
+        echo "Running npm install..."
         npm install $DEBUG_OPTS
         RESULT=$?
         if [ $RESULT -ne 0 ] ; then
@@ -80,6 +88,12 @@ if [ "$SCRIPT" != "undefined" ]; then
         fi
     elif [ "$BUILD_TOOL" == "yarn" ]; then
         yarn run build $DEBUG_OPTS
+        RESULT=$?
+        if [ $RESULT -ne 0 ] ; then
+            exit 89
+        fi
+    elif [ "$BUILD_TOOL" == "pnpm" ]; then
+        pnpm run build $DEBUG_OPTS
         RESULT=$?
         if [ $RESULT -ne 0 ] ; then
             exit 89

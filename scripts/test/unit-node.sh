@@ -18,8 +18,9 @@ fi
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
+[[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
 
-if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]]; then
+if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]] && [[ "$USE_PNPM" == false ]]; then
     exit 99
 fi
 
@@ -74,6 +75,10 @@ if [[ -d "./node_modules/jest" ]]; then
         echo "Installing $TEST_REPORTER"
         COMMAND_ARGS="--testResultsProcessor $TEST_REPORTER"
         yarn add -D $TEST_REPORTER
+    elif [[ "$USE_PNPM" == true ]]; then
+        echo "Installing $TEST_REPORTER"
+        COMMAND_ARGS="--testResultsProcessor $TEST_REPORTER"
+        pnpm i -D $TEST_REPORTER
     fi
 fi
 
@@ -82,6 +87,8 @@ if [[ "$USE_NPM" == true ]]; then
     npm test $COMMAND_ARGS
 elif [[ "$USE_YARN" == true ]]; then
     yarn test $COMMAND_ARGS
+elif [[ "$USE_PNPM" == true ]]; then
+    pnpm test $COMMAND_ARGS
 fi
 
 SRC_FOLDER=
