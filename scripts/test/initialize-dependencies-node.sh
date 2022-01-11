@@ -18,7 +18,7 @@ else
     echo "Setting Cypress Install Binary to $CYPRESS_INSTALL_BINARY..."
 fi
 
-if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
+if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ] || [ "$BUILD_TOOL" == "pnpm" ]; then
     if [ -e 'package-lock.json' ]; then
         echo "Running npm ci..."
         npm ci $DEBUG_OPTS
