@@ -65,7 +65,7 @@ if [[ -d "./node_modules/jest" ]]; then
     TEST_REPORTER="jest-sonar-reporter"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.spec.js"
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js"
     if [[ "$USE_NPM" == true ]]; then
         echo "Installing $TEST_REPORTER"
         COMMAND_ARGS="-- --testResultsProcessor $TEST_REPORTER"
