@@ -2,9 +2,12 @@
 
 # Validates and adjusts the parameters and then calls Kaniko for container build
 #
-# Notes: 
+# Notes:
 # - This script is embedded in the Tekton Task script element
-# - It is not directly referenced or used inside the worker 
+# - It is not directly referenced or used inside the worker
+
+# Set JS heap space
+export NODE_OPTIONS="--max-old-space-size=8192"
 
 mkdir -p /kaniko/.docker
 
