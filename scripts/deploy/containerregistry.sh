@@ -83,7 +83,10 @@ fi
 sleep 10
 
 echo "Updating skopeo configuration..."
-sed -i "s/default-docker:/default-docker:\n  sigstore: https:\/\/$GLOBAL_REGISTRY_HOST\/artifactory\/boomeranglib-docker/g" /etc/containers/registries.d/default.yaml
+# sed -i "s/default-docker:/default-docker:\n  sigstore: https:\/\/$GLOBAL_REGISTRY_HOST\/artifactory\/boomeranglib-docker/g" /etc/containers/registries.d/default.yaml
+echo "docker:" >> /etc/containers/registries.d/default.yaml
+echo "  tools.boomerangplatform.net:8500:" >> /etc/containers/registries.d/default.yaml
+echo "    sigstore: https://tools.boomerangplatform.net/artifactory/boomeranglib-docker" >> /etc/containers/registries.d/default.yaml
 cat /etc/containers/registries.d/default.yaml
 echo ""
 echo "Copying from Origin to Destination..."
