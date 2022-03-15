@@ -87,6 +87,7 @@ echo "Updating skopeo configuration..."
 echo "docker:" >> /etc/containers/registries.d/default.yaml
 echo "  tools.boomerangplatform.net:8500:" >> /etc/containers/registries.d/default.yaml
 echo "    sigstore: https://tools.boomerangplatform.net/artifactory/boomeranglib-docker" >> /etc/containers/registries.d/default.yaml
+echo "    sigstore-staging: file:///var/lib/atomic/sigstore" >> /etc/containers/registries.d/default.yaml
 sed -i "s/sigstore-staging:/#sigstore-staging:/g" /etc/containers/registries.d/default.yaml
 cat /etc/containers/registries.d/default.yaml
 echo ""
