@@ -85,7 +85,6 @@ sleep 10
 echo "Updating skopeo configuration..."
 sed -i "s/default-docker:/default-docker:\n  sigstore: https:\/\/$GLOBAL_REGISTRY_HOST\/artifactory\/boomeranglib-docker/g" /etc/containers/registries.d/default.yaml
 cat /etc/containers/registries.d/default.yaml
-
 echo ""
 echo "Copying from Origin to Destination..."
 echo "- Origin: $GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
