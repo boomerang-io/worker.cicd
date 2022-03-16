@@ -83,7 +83,7 @@ fi
 
 sleep 10
 
-if ( echo "${DESTINATION_REGISTRY_HOST}" |grep -q icr.io ) && [ "$CISO_CODESIGN_ENABLE" == "true" ]; then 
+if ( echo "${DESTINATION_REGISTRY_HOST}" |grep -q icr.io ) && [ "$CISO_CODESIGN_ENABLE" = "true" ]; then 
     echo "Updating skopeo configuration..."
     mkdir codesign
     cat > codesign/default.yaml << EOF
@@ -92,7 +92,6 @@ docker:
     sigstore: https://$GLOBAL_REGISTRY_HOST/artifactory/boomeranglib-docker
     sigstore-staging: file:///var/lib/atomic/sigstore
 EOF
-    cat codesign/default.yaml
     SKOPEO_OPTS+="--registries.d codesign/"
 fi
 echo ""
