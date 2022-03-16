@@ -96,6 +96,7 @@ EOF
     SKOPEO_OPTS+="--registries.d codesign/"
 fi
 echo ""
+
 echo "Copying from Origin to Destination..."
 echo "- Origin: $GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
 echo "- Destination: $DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
