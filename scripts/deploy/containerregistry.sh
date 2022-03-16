@@ -95,7 +95,6 @@ EOF
     cat codesign/default.yaml
     SKOPEO_OPTS+="--registries.d codesign/"
 fi
-
 echo ""
 echo "Copying from Origin to Destination..."
 echo "- Origin: $GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
