@@ -18,6 +18,7 @@ GLOBAL_REGISTRY_HOST=`echo $9 | sed 's/"//g'`
 GLOBAL_REGISTRY_PORT=${10}
 GLOBAL_REGISTRY_USER=${11}
 GLOBAL_REGISTRY_PASSWORD=${12}
+CISO_CODESIGN_ENABLE=${13}
 
 if [ "$DEBUG" == "true" ]; then
     echo "IMAGE_NAME=$IMAGE_NAME"
@@ -82,14 +83,15 @@ fi
 
 sleep 10
 
-
-if ( echo ${DESTINATION_REGISTRY_HOST} |grep -q icr.io ); then 
+if ( echo "${DESTINATION_REGISTRY_HOST}" |grep -q icr.io ) && [ "$CISO_CODESIGN_ENABLE" == "true" ]; then 
     echo "Updating skopeo configuration..."
     mkdir codesign
-    echo "docker:" > codesign/default.yaml
-    echo "  tools.boomerangplatform.net:8500:" >> codesign/default.yaml
-    echo "    sigstore: https://$GLOBAL_REGISTRY_HOST/artifactory/boomeranglib-docker" >> codesign/default.yaml
-    echo "    sigstore-staging: file:///var/lib/atomic/sigstore" >> codesign/default.yaml
+    cat > codesign/default.yaml << EOF
+docker:
+  tools.boomerangplatform.net:8500:
+    sigstore: https://$GLOBAL_REGISTRY_HOST/artifactory/boomeranglib-docker
+    sigstore-staging: file:///var/lib/atomic/sigstore
+EOF
     cat codesign/default.yaml
     SKOPEO_OPTS+="--registries.d codesign/"
 fi
