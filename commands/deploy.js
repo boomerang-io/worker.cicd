@@ -164,7 +164,7 @@ module.exports = {
             .toLowerCase();
       await exec(
         `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${taskParams["version"]}" "${dockerImagePath}" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${taskParams["containerRegistryPassword"]}" "${taskParams["containerRegistryPath"]
-        }" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${taskParams["globalContainerRegistryUser"]}" "${taskParams["globalContainerRegistryPassword"]}"`
+        }" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${taskParams["globalContainerRegistryUser"]}" "${taskParams["globalContainerRegistryPassword"]}" "${taskParams["cisoCodesignEnable"]}"`
       );
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
