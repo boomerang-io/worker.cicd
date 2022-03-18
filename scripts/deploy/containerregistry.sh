@@ -83,7 +83,8 @@ fi
 
 sleep 10
 
-if ( echo "${DESTINATION_REGISTRY_HOST}" |grep -q icr.io ) && [ "$CISO_CODESIGN_ENABLE" == "true" ]; then 
+SUPPORTED_SIGNED_REGISTRY=$( echo "${DESTINATION_REGISTRY_HOST}" |grep icr.io )
+if [ ! -z "$SUPPORTED_SIGNED_REGISTRY" ] && [ "$CISO_CODESIGN_ENABLE" == "true" ]; then 
     echo "Updating skopeo configuration..."
     mkdir codesign
     cat > codesign/default.yaml << EOF
