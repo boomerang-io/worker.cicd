@@ -21,6 +21,9 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | b
     nvm use system && \
     nvm run system --version
 
+# Install yarn
+RUN npm install --global yarn
+
 WORKDIR /cli
 ADD ./package.json ./package-lock.json ./.npmrc ./
 ADD ./scripts ./scripts
