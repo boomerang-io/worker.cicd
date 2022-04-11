@@ -44,9 +44,9 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 # Set source connection settings
-if [ "$GLOBAL_REGISTRY_PORT" != "undefined" ]; then
+if [ "$GLOBAL_REGISTRY_PORT" != "undefined" ] && [ "$GLOBAL_REGISTRY_PORT" != "" ]; then
     GLOBAL_DOCKER_SERVER="$GLOBAL_REGISTRY_HOST:$GLOBAL_REGISTRY_PORT"
-else 
+else
     GLOBAL_DOCKER_SERVER="$GLOBAL_REGISTRY_HOST"
 fi
 
@@ -84,7 +84,7 @@ fi
 sleep 10
 
 SUPPORTED_SIGNED_REGISTRY=$( echo "${DESTINATION_REGISTRY_HOST}" |grep icr.io )
-if [ ! -z "$SUPPORTED_SIGNED_REGISTRY" ] && [ "$CISO_CODESIGN_ENABLE" == "true" ]; then 
+if [ ! -z "$SUPPORTED_SIGNED_REGISTRY" ] && [ "$CISO_CODESIGN_ENABLE" == "true" ]; then
     echo "Updating skopeo configuration..."
     mkdir codesign
     cat > codesign/default.yaml << EOF
