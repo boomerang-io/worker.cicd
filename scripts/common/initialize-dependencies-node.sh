@@ -21,11 +21,18 @@ if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     source ~/.nvm/nvm.sh
     nvm install $LANGUAGE_VERSION
     nvm run node --version
+    
 else
     # TODO: Move these into the base node builder image
     # Cannot run if using NVM as thats on Ubuntu
-    apk add --no-cache gcc g++ make libc6-compat libc-dev lcms2-dev libpng-dev automake autoconf libtool yarn python && apk add --no-cache fftw-dev build-base --repository http://dl-3.alpinelinux.org/alpine/edge/testing --repository http://dl-3.alpinelinux.org/alpine/edge/main && apk add --no-cache nodejs nodejs-npm --repository http://dl-3.alpinelinux.org/alpine/edge/main
+    apk add --no-cache gcc g++ make libc6-compat libc-dev lcms2-dev libpng-dev automake autoconf libtool python && apk add --no-cache fftw-dev build-base --repository http://dl-3.alpinelinux.org/alpine/edge/testing --repository http://dl-3.alpinelinux.org/alpine/edge/main && apk add --no-cache nodejs nodejs-npm --repository http://dl-3.alpinelinux.org/alpine/edge/main
 fi
+
+# Install yarn if set as the build tool regardless of LANGUAGE_VERSION condition above
+if [ "$BUILD_TOOL" == "yarn" ]; then
+    npm install --global yarn
+fi
+
 
 curl -k -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/boomerang -o ~/.npmrc
 if [[ $? -ne 0 ]]; then
