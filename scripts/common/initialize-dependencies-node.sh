@@ -10,12 +10,24 @@ ART_URL=$3
 ART_USER=$4
 ART_PASSWORD=$5
 
+ 
 if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ]; then
-    echo "build-tool not specified, defaulting to npm..."
+    echo "Build tool not specified, defaulting to npm..."
     BUILD_TOOL="npm"
 fi
 
+echo "Using build tool $BUILD_TOOL"
+
 if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+    # Install yarn if set as the build tool in Ubuntu path
+    if [ "$BUILD_TOOL" == "yarn" ]; then
+        echo "Installing yarn without FE" 
+        export DEBIAN_FRONTEND=noninteractive
+        curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+        echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+        apt-get update -y && apt-get install --no-install-recommends yarn -y
+    fi
+
     echo "Using NVM with Node version: $LANGUAGE_VERSION"
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
@@ -25,13 +37,10 @@ if [ "$LANGUAGE_VERSION" != "undefined" ]; then
 else
     # TODO: Move these into the base node builder image
     # Cannot run if using NVM as thats on Ubuntu
-    apk add --no-cache gcc g++ make libc6-compat libc-dev lcms2-dev libpng-dev automake autoconf libtool python && apk add --no-cache fftw-dev build-base --repository http://dl-3.alpinelinux.org/alpine/edge/testing --repository http://dl-3.alpinelinux.org/alpine/edge/main && apk add --no-cache nodejs nodejs-npm --repository http://dl-3.alpinelinux.org/alpine/edge/main
+    apk add --no-cache gcc g++ make libc6-compat libc-dev lcms2-dev libpng-dev automake autoconf libtool python yarn && apk add --no-cache fftw-dev build-base --repository http://dl-3.alpinelinux.org/alpine/edge/testing --repository http://dl-3.alpinelinux.org/alpine/edge/main && apk add --no-cache nodejs nodejs-npm --repository http://dl-3.alpinelinux.org/alpine/edge/main
 fi
 
-# Install yarn if set as the build tool regardless of LANGUAGE_VERSION condition above
-if [ "$BUILD_TOOL" == "yarn" ]; then
-    npm install --global yarn
-fi
+
 
 
 curl -k -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/boomerang -o ~/.npmrc

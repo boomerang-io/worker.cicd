@@ -11,6 +11,14 @@ if [ "$DEBUG" == "true" ]; then
     DEBUG_OPTS+="--verbose"
 fi
 
+if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ]; then
+    echo "build tool not specified, defaulting to npm..."
+    BUILD_TOOL="npm"
+fi
+
+BUILD_TOOL="yarn"
+echo "Using build tool $BUILD_TOOL"
+
 if [ "$CYPRESS_INSTALL_BINARY" == "undefined" ]; then
     echo "Defaulting Cypress Install Binary to 0..."
     CYPRESS_INSTALL_BINARY=0
@@ -18,15 +26,18 @@ else
     echo "Setting Cypress Install Binary to $CYPRESS_INSTALL_BINARY..."
 fi
 
-if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
-    if [ -e 'yarn.lock' ]; then
-        echo "Running YARN install..."
-        yarn install $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    elif [ -e 'package-lock.json' ]; then
+if [ "$BUILD_TOOL" == "yarn" ]; then
+    echo "Running YARN install..."
+    yarn install $DEBUG_OPTS
+    RESULT=$?
+    if [ $RESULT -ne 0 ] ; then
+        exit 89
+    fi
+fi
+
+## Determine which npm command to use
+if  [ "$BUILD_TOOL" == "npm" ]; then
+    if [ -e 'package-lock.json' ]; then
         echo "Running NPM ci..."
         npm ci $DEBUG_OPTS
         RESULT=$?
@@ -41,6 +52,4 @@ if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
             exit 89
         fi
     fi
-else
-    exit 99
 fi
