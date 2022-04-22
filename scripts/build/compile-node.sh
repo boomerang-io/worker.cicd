@@ -11,14 +11,13 @@ if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ]; then
     BUILD_TOOL="npm"
 fi
 
-echo "Using build tool $BUILD_TOOL"
-
 if [ -z "$BUILD_SCRIPT" ]; then
     echo "Defaulting npm script to 'build'..."
     BUILD_SCRIPT=build
 else
     echo "Setting npm script to $BUILD_SCRIPT..."
 fi
+
 CYPRESS_INSTALL_BINARY=$4
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
@@ -32,6 +31,8 @@ if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     echo "Running with NVM..."
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
+    nvm install $LANGUAGE_VERSION
+    nvm use $LANGUAGE_VERSION
 fi
 
 DEBUG_OPTS=
@@ -50,9 +51,9 @@ else
     echo "Setting Cypress Install Binary to $CYPRESS_INSTALL_BINARY..."
 fi
 
+
 if [ "$BUILD_TOOL" == "yarn" ]; then
     echo "Running YARN install..."
-    # cd remix-hello-yarn
     yarn install $DEBUG_OPTS
     RESULT=$?
     if [ $RESULT -ne 0 ] ; then
@@ -60,7 +61,7 @@ if [ "$BUILD_TOOL" == "yarn" ]; then
     fi
 fi
 
-## Determine which npm command to use
+# Determine which npm command to use
 if  [ "$BUILD_TOOL" == "npm" ]; then
     if [ -e 'package-lock.json' ]; then
         echo "Running NPM ci..."
@@ -82,22 +83,10 @@ fi
 # This needs to be checking for undefined as thats whats returned by the node command
 SCRIPT=$(node -pe "require('./package.json').scripts.$BUILD_SCRIPT");
 if [ "$SCRIPT" != "undefined" ]; then
-    if [ "$BUILD_TOOL" == "npm" ]; then
-        npm run build $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    elif [ "$BUILD_TOOL" == "yarn" ]; then
-
-        # Don't pass through DEBUG_OPTS as they will be appended the script that is run 
-        yarn build 
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    else
-        exit 97
+    npm run $BUILD_SCRIPT $DEBUG_OPTS
+    RESULT=$?
+    if [ $RESULT -ne 0 ] ; then
+        exit 89
     fi
 else
     # exit 97

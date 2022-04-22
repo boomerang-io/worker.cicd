@@ -173,7 +173,7 @@ module.exports = {
     }
   },
   async nodejs() {
-    log.debug("Starting Boomerang CICD NodeJS build activity...");
+    log.debug("Starting Boomerang CICD Node.js build activity...");
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
@@ -201,7 +201,7 @@ module.exports = {
       process.exit(1);
     } finally {
       await exec(shellDir + "/common/footer.sh");
-      log.debug("Finished Boomerang CICD NodeJS build activity");
+      log.debug("Finished Boomerang CICD Node.js build activity");
     }
   },
   async npm() {
