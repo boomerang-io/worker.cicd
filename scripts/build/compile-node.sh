@@ -5,12 +5,19 @@
 LANGUAGE_VERSION=$1
 BUILD_TOOL=$2
 BUILD_SCRIPT=$3
+
+if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ]; then
+    echo "Build tool not specified, defaulting to npm..."
+    BUILD_TOOL="npm"
+fi
+
 if [ -z "$BUILD_SCRIPT" ]; then
     echo "Defaulting npm script to 'build'..."
     BUILD_SCRIPT=build
 else
     echo "Setting npm script to $BUILD_SCRIPT..."
 fi
+
 CYPRESS_INSTALL_BINARY=$4
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
@@ -24,6 +31,8 @@ if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     echo "Running with NVM..."
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
+    nvm install $LANGUAGE_VERSION
+    nvm use $LANGUAGE_VERSION
 fi
 
 DEBUG_OPTS=
@@ -42,15 +51,19 @@ else
     echo "Setting Cypress Install Binary to $CYPRESS_INSTALL_BINARY..."
 fi
 
-if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
-    if [ -e 'yarn.lock' ]; then
-        echo "Running YARN install..."
-        yarn install $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    elif [ -e 'package-lock.json' ]; then
+
+if [ "$BUILD_TOOL" == "yarn" ]; then
+    echo "Running YARN install..."
+    yarn install $DEBUG_OPTS
+    RESULT=$?
+    if [ $RESULT -ne 0 ] ; then
+        exit 89
+    fi
+fi
+
+# Determine which npm command to use
+if  [ "$BUILD_TOOL" == "npm" ]; then
+    if [ -e 'package-lock.json' ]; then
         echo "Running NPM ci..."
         npm ci $DEBUG_OPTS
         RESULT=$?
@@ -65,27 +78,15 @@ if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ]; then
             exit 89
         fi
     fi
-else
-    exit 99
 fi
 
 # This needs to be checking for undefined as thats whats returned by the node command
 SCRIPT=$(node -pe "require('./package.json').scripts.$BUILD_SCRIPT");
 if [ "$SCRIPT" != "undefined" ]; then
-    if [ "$BUILD_TOOL" == "npm" ]; then
-        npm run build $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    elif [ "$BUILD_TOOL" == "yarn" ]; then
-        yarn run build $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    else
-        exit 97
+    npm run $BUILD_SCRIPT $DEBUG_OPTS
+    RESULT=$?
+    if [ $RESULT -ne 0 ] ; then
+        exit 89
     fi
 else
     # exit 97
