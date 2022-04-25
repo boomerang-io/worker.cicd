@@ -36,7 +36,6 @@ if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     echo "Running with nvm..."
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
-    nvm install $LANGUAGE_VERSION
     nvm use $LANGUAGE_VERSION
 fi
 
