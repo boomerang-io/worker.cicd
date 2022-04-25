@@ -2,7 +2,9 @@
 
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Build Artifact '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-BUILD_TOOL=$1
+ART_URL=$1
+ART_USER=$2
+ART_PASSWORD=$3
 
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
@@ -10,38 +12,17 @@ if [ "$DEBUG" == "true" ]; then
     DEBUG_OPTS+="--verbose"
 fi
 
-"pnpm-lock.yaml"
+# Get the scope of the package from the name field
+SCOPE=$(node -pe "require('./package.json').name" | cut -d/ -f1);
 
-if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ] || [ "$BUILD_TOOL" == "pnpm" ]; then
-    if [ -e 'package-lock.json' ]; then
-        echo "Running npm ci..."
-        npm ci DEBUG_OPTS
-    elif [ -e 'yarn.lock' ]; then
-        echo "Running yarn install..."
-        yarn install DEBUG_OPTS
-    elif [ -e 'pnpm-lock.yaml' ]; then
-        echo "Running pnpm install..."
-        pnpm install DEBUG_OPTS
-    else
-       echo "No lockfile found. Defaulting to npm."
-       echo "Running npm install..."
-        npm install DEBUG_OPTS
-    fi
-else
-    exit 99
+if [[ $SCOPE != @* ]]; then
+    echo "Package name must include a scope e.g. '@project/my-package'"
+    exit 97
 fi
 
-SCRIPT=$(node -pe "require('./package.json').scripts.publish");
-if [ "$SCRIPT" != "undefined" ]; then
-    if [ "$BUILD_TOOL" == "npm" ]; then
-        npm publish
-    elif [ "$BUILD_TOOL" == "yarn" ]; then
-        yarn publish
-    elif [ "$BUILD_TOOL" == "pnpm" ]; then
-        pnpm publish
-    else
-        exit 97
-    fi
-else
-    exit 97
+curl -k -v -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/$SCOPE -o .npmrc
+npm publish --registry https://tools.boomerangplatform.net/artifactory/api/npm/boomeranglib-npm/ $DEBUG_OPTS
+RESULT=$?
+if [ $RESULT -ne 0 ] ; then
+    exit 89
 fi
