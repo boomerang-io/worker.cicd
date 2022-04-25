@@ -20,8 +20,8 @@ if [[ $SCOPE != @* ]]; then
     exit 97
 fi
 
-curl -k -v -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/$SCOPE -o .npmrc
-npm publish --registry https://tools.boomerangplatform.net/artifactory/api/npm/boomeranglib-npm/ $DEBUG_OPTS
+curl -k -v -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/"${SCOPE:1}" -o .npmrc
+npm publish --registry $ART_URL/api/npm/boomeranglib-npm/ $DEBUG_OPTS
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
     exit 89
