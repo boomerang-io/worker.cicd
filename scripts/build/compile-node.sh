@@ -5,12 +5,25 @@
 LANGUAGE_VERSION=$1
 BUILD_TOOL=$2
 BUILD_SCRIPT=$3
+
+[[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
+[[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
+[[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
+
+if [ "$USE_NPM" == false ] && [ "$USE_YARN" == false ] && [ "$USE_PNPM" == false ]; then
+    echo "Build tool not specified, defaulting to 'npm'..."
+    BUILD_TOOL="npm"
+fi
+
+echo "Using build tool $BUILD_TOOL"
+
 if [ -z "$BUILD_SCRIPT" ]; then
-    echo "Defaulting npm script to 'build'..."
+    echo "Build script not specified, defaulting to 'build'..."
     BUILD_SCRIPT=build
 else
-    echo "Setting npm script to $BUILD_SCRIPT..."
+    echo "Setting build script to $BUILD_SCRIPT..."
 fi
+
 CYPRESS_INSTALL_BINARY=$4
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
@@ -24,6 +37,8 @@ if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     echo "Running with nvm..."
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
+    nvm install $LANGUAGE_VERSION
+    nvm use $LANGUAGE_VERSION
 fi
 
 DEBUG_OPTS=
@@ -42,7 +57,8 @@ else
     echo "Setting Cypress install binary to $CYPRESS_INSTALL_BINARY..."
 fi
 
-if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ] || [ "$BUILD_TOOL" == "pnpm" ]; then
+# Determine how to install dependencies based on package manager and lockfile
+if  [ "$USE_NPM" == true ]; then
     if [ -e 'package-lock.json' ]; then
         echo "Running npm ci..."
         npm ci $DEBUG_OPTS
@@ -50,22 +66,8 @@ if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ] || [ "$BUILD_TOOL" 
         if [ $RESULT -ne 0 ] ; then
             exit 89
         fi
-    elif [ -e 'yarn.lock' ]; then
-        echo "Running yarn install..."
-        yarn install $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi 
-    elif [ -e 'pnpm-lock.yaml' ]; then
-        echo "Running pnpm install..."
-        pnpm install $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
     else
-        echo "No lockfile found. Defaulting to npm."
+        echo "No lockfile found. Defaulting to 'npm install'."
         echo "Running npm install..."
         npm install $DEBUG_OPTS
         RESULT=$?
@@ -73,33 +75,30 @@ if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ] || [ "$BUILD_TOOL" 
             exit 89
         fi
     fi
-else
-    exit 99
 fi
+
+if [ "$USE_YARN" == true ]; then
+    echo "Running yarn install..."
+    yarn install $DEBUG_OPTS
+    RESULT=$?
+    if [ $RESULT -ne 0 ] ; then
+        exit 89
+    fi
+fi
+
+if [ "$USE_NPM" == true ]; then
+    echo "Running pnpm install..."
+    pnpm install $DEBUG_OPTS
+fi
+
 
 # This needs to be checking for undefined as thats whats returned by the node command
 SCRIPT=$(node -pe "require('./package.json').scripts.$BUILD_SCRIPT");
 if [ "$SCRIPT" != "undefined" ]; then
-    if [ "$BUILD_TOOL" == "npm" ]; then
-        npm run build $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    elif [ "$BUILD_TOOL" == "yarn" ]; then
-        yarn run build $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    elif [ "$BUILD_TOOL" == "pnpm" ]; then
-        pnpm run build $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    else
-        exit 97
+    npm run $BUILD_SCRIPT $DEBUG_OPTS
+    RESULT=$?
+    if [ $RESULT -ne 0 ] ; then
+        exit 89
     fi
 else
     # exit 97

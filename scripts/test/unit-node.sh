@@ -10,19 +10,22 @@ SONAR_GATEID=2
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
 
-# fail fast if testing script or build tool is not present
+[[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
+[[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
+[[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
+
+# Fail fast if testing script or build tool is not present
 SCRIPT=$(node -pe "require('./package.json').scripts.test");
 if [[ "$SCRIPT" == "undefined" ]]; then
     exit 95
 fi
 
-[[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
-[[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
-[[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
-
 if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]] && [[ "$USE_PNPM" == false ]]; then
-    exit 99
+    echo "build tool not specified, defaulting to 'npm'..."
+    BUILD_TOOL="npm"
 fi
+
+echo "Using build tool $BUILD_TOOL"
 
 # Dependency for sonarscanner
 apk add openjdk8
@@ -66,7 +69,9 @@ if [[ -d "./node_modules/jest" ]]; then
     TEST_REPORTER="jest-sonar-reporter"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.spec.js"
+    
+    # Support Typscript and other common naming standards
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js"
     if [[ "$USE_NPM" == true ]]; then
         echo "Installing $TEST_REPORTER"
         COMMAND_ARGS="-- --testResultsProcessor $TEST_REPORTER"
@@ -103,7 +108,7 @@ else
     SRC_FOLDER=.
 fi
 
-# Set NodeJS bin path
+# Set Node.js bin path
 NODE_PATH=$(which node)
 echo "NODE_PATH=$NODE_PATH"
 

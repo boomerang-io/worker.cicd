@@ -2,33 +2,45 @@
 
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Initialize Dependencies '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
-
 LANGUAGE_VERSION=$1
 BUILD_TOOL=$2
 ART_URL=$3
 ART_USER=$4
 ART_PASSWORD=$5
 
-if [ "$BUILD_TOOL" != "npm" ] && [ "$BUILD_TOOL" != "yarn" ] && [ "$BUILD_TOOL" != "pnpm" ]; then
-    echo "build-tool not specified, defaulting to npm..."
+[[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
+[[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
+[[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
+
+if [ "$USE_NPM" == false ] && [ "$USE_YARN" == false ] && [ "$USE_PNPM" == false ]; then
+    echo "Build tool not specified, defaulting to 'npm'..."
     BUILD_TOOL="npm"
 fi
 
+echo "Using build tool $BUILD_TOOL"
+
 if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+    # Install specified version of Node.js
     echo "Using NVM with Node version: $LANGUAGE_VERSION"
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
     nvm install $LANGUAGE_VERSION
-    nvm run node --version
+    nvm use $LANGUAGE_VERSION
+
 else
     # TODO: Move these into the base node builder image
     # Cannot run if using NVM as thats on Ubuntu
-    apk add --no-cache gcc g++ make libc6-compat libc-dev lcms2-dev libpng-dev automake autoconf libtool yarn python && apk add --no-cache fftw-dev build-base --repository http://dl-3.alpinelinux.org/alpine/edge/testing --repository http://dl-3.alpinelinux.org/alpine/edge/main && apk add --no-cache nodejs nodejs-npm --repository http://dl-3.alpinelinux.org/alpine/edge/main
+    apk add --no-cache gcc g++ make libc6-compat libc-dev lcms2-dev libpng-dev automake autoconf libtool python && apk add --no-cache fftw-dev build-base --repository http://dl-3.alpinelinux.org/alpine/edge/testing --repository http://dl-3.alpinelinux.org/alpine/edge/main && apk add --no-cache nodejs nodejs-npm --repository http://dl-3.alpinelinux.org/alpine/edge/main
+fi
 
-    ## add pnpm
-    npm install -g pnpm 
+# Install yarn if set as the build tool
+if [ "$USE_YARN" == true ]; then
+    npm install --global yarn
+fi
 
+# Install pnpm if set as the build tool
+if [ "$USE_PNPM" == true ]; then
+    npm install --global pnpm
 fi
 
 curl -k -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/boomerang -o ~/.npmrc
@@ -41,27 +53,27 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 echo "Versions:"
-if [ "$BUILD_TOOL" == "yarn" ]; then echo "  yarn: $(yarn --version)"; fi
-if [ "$BUILD_TOOL" == "npm" ]; then echo "  npm: $(npm --version)"; fi
-if [ "$BUILD_TOOL" == "pnpm" ]; then echo "  pnpm: $(pnpm --version)"; fi
+if [ "$USE_NPM" == true ]; then echo "  npm: $(npm --version)"; fi
+if [ "$USE_YARN" == true ]; then echo "  yarn: $(yarn --version)"; fi
+if [ "$USE_PNPM" == true ]; then echo "  pnpm: $(pnpm --version)"; fi
 
 echo "  Node: $(node --version)"
 
 if [ "$HTTP_PROXY" != "" ]; then
-    if [ "$BUILD_TOOL" == "npm" ]; then
-        echo "Setting npm proxy Settings..."
+    if [ "$USE_NPM" == true ]; then
+        echo "Setting npm proxy settings..."
         npm config set proxy http://$PROXY_HOST:$PROXY_PORT
         npm config set https-proxy http://$PROXY_HOST:$PROXY_PORT
         npm config set no-proxy $NO_PROXY
     fi
-    if [ "$BUILD_TOOL" == "yarn" ]; then
-        echo "Setting yarn proxy Settings..."
+    if [ "$USE_YARN" == true ]; then
+        echo "Setting yarn proxy settings..."
         yarn config set proxy http://$PROXY_HOST:$PROXY_PORT
         yarn config set https-proxy http://$PROXY_HOST:$PROXY_PORT
         yarn config set no-proxy $NO_PROXY
     fi
-    if [ "$BUILD_TOOL" == "pnpm" ]; then
-        echo "Setting pnpm proxy Settings..."
+    if [ "$USE_PNPM" == true ]; then
+        echo "Setting pnpm proxy settings..."
         pnpm config set proxy http://$PROXY_HOST:$PROXY_PORT
         pnpm config set https-proxy http://$PROXY_HOST:$PROXY_PORT
         pnpm config set no-proxy $NO_PROXY
@@ -72,13 +84,13 @@ if [ -d "/cache" ]; then
     echo "Setting cache..."
     mkdir -p /cache/modules
     ls -ltr /cache
-    if [ "$BUILD_TOOL" == "npm" ]; then
+    if [ "$USE_NPM" == true ]; then
         npm config set cache /cache/modules
     fi
-    if [ "$BUILD_TOOL" == "yarn" ]; then
+    if [ "$USE_YARN" == true ]; then
         yarn config set cache-folder /cache/modules
     fi
-    if [ "$BUILD_TOOL" == "pnpm" ]; then
+    if [ "$USE_PNPM" == true ]; then
         pnpm config set cache /cache/modules
     fi
 fi

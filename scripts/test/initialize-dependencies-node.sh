@@ -5,6 +5,17 @@
 BUILD_TOOL=$1
 CYPRESS_INSTALL_BINARY=$2
 
+[[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
+[[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
+[[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
+
+if [ "$USE_NPM" == false ] && [ "$USE_YARN" == false ] && [ "$USE_PNPM" == false ]; then
+    echo "build tool not specified, defaulting to 'npm'..."
+    BUILD_TOOL="npm"
+fi
+
+echo "Using build tool $BUILD_TOOL"
+
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
     echo "Enabling debug logging..."
@@ -18,7 +29,8 @@ else
     echo "Setting Cypress Install Binary to $CYPRESS_INSTALL_BINARY..."
 fi
 
-if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ] || [ "$BUILD_TOOL" == "pnpm" ]; then
+# Determine how to install dependencies based on package manager and lockfile
+if  [ "$USE_NPM" == true ]; then
     if [ -e 'package-lock.json' ]; then
         echo "Running npm ci..."
         npm ci $DEBUG_OPTS
@@ -26,22 +38,8 @@ if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ] || [ "$BUILD_TOOL" 
         if [ $RESULT -ne 0 ] ; then
             exit 89
         fi
-    elif [ -e 'yarn.lock' ]; then
-        echo "Running yarn install..."
-        yarn install $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
-    elif [ -e 'pnpm-lock.yaml' ]; then
-        echo "Running pnpm install..."
-        pnpm install $DEBUG_OPTS
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
-        fi
     else
-        echo "No lockfile found. Defaulting to npm."
+        echo "No lockfile found. Defaulting to 'npm install'."
         echo "Running npm install..."
         npm install $DEBUG_OPTS
         RESULT=$?
@@ -49,6 +47,20 @@ if [ "$BUILD_TOOL" == "npm" ] || [ "$BUILD_TOOL" == "yarn" ] || [ "$BUILD_TOOL" 
             exit 89
         fi
     fi
-else
-    exit 99
 fi
+
+if [ "$USE_YARN" == true ]; then
+    echo "Running yarn install..."
+    yarn install $DEBUG_OPTS
+    RESULT=$?
+    if [ $RESULT -ne 0 ] ; then
+        exit 89
+    fi
+fi
+
+if [ "$USE_PNPM" == true ]; then
+    echo "Running pnpm install..."
+    pnpm install $DEBUG_OPTS
+fi
+
+

@@ -18,6 +18,7 @@ GLOBAL_REGISTRY_HOST=`echo $9 | sed 's/"//g'`
 GLOBAL_REGISTRY_PORT=${10}
 GLOBAL_REGISTRY_USER=${11}
 GLOBAL_REGISTRY_PASSWORD=${12}
+CISO_CODESIGN_ENABLE=${13}
 
 if [ "$DEBUG" == "true" ]; then
     echo "IMAGE_NAME=$IMAGE_NAME"
@@ -43,9 +44,9 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 # Set source connection settings
-if [ "$GLOBAL_REGISTRY_PORT" != "undefined" ]; then
+if [ "$GLOBAL_REGISTRY_PORT" != "undefined" ] && [ "$GLOBAL_REGISTRY_PORT" != "" ]; then
     GLOBAL_DOCKER_SERVER="$GLOBAL_REGISTRY_HOST:$GLOBAL_REGISTRY_PORT"
-else 
+else
     GLOBAL_DOCKER_SERVER="$GLOBAL_REGISTRY_HOST"
 fi
 
@@ -82,6 +83,19 @@ fi
 
 sleep 10
 
+SUPPORTED_SIGNED_REGISTRY=$( echo "${DESTINATION_REGISTRY_HOST}" |grep icr.io )
+if [ ! -z "$SUPPORTED_SIGNED_REGISTRY" ] && [ "$CISO_CODESIGN_ENABLE" == "true" ]; then
+    echo "Updating skopeo configuration..."
+    mkdir codesign
+    cat > codesign/default.yaml << EOF
+docker:
+  tools.boomerangplatform.net:8500:
+    sigstore: https://$GLOBAL_REGISTRY_HOST/artifactory/boomeranglib-docker
+    sigstore-staging: file:///var/lib/atomic/sigstore
+EOF
+    SKOPEO_OPTS+="--registries.d codesign/"
+fi
+echo ""
 echo "Copying from Origin to Destination..."
 echo "- Origin: $GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
 echo "- Destination: $DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
