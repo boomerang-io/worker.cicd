@@ -192,10 +192,11 @@ module.exports = {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-node.sh "${taskParams["languageVersion"]}" "${taskParams["buildTool"]}" ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
+      await exec(`${shellDir}/build/initialize-dependencies-node.sh "${taskParams["languageVersion"]}" "${taskParams["buildTool"]}" "${taskParams["node-cypress-install-binary"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      await exec(`${shellDir}/build/compile-node.sh "${taskParams["languageVersion"]}" "${taskParams["buildTool"]}" "${taskParams["packageScript"]}" "${taskParams["node-cypress-install-binary"]}"`);
+      await exec(`${shellDir}/build/compile-node.sh "${taskParams["packageScript"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -210,6 +211,7 @@ module.exports = {
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
     // const { path, script } = taskParams;
+    log.debug({ taskParams });
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
@@ -222,10 +224,12 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
+      await exec(`${shellDir}/common/initialize-dependencies-node.sh "${taskParams["languageVersion"]}" "${taskParams["buildTool"]}" ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoUser"]} "${taskParams["repoPassword"]}"`);
+      await exec(`${shellDir}/build/initialize-dependencies-node.sh "${taskParams["languageVersion"]}" "${taskParams["buildTool"]}" "${taskParams["node-cypress-install-binary"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      await exec(`${shellDir}/build/compile-package-npm.sh "${taskParams["buildTool"]}"`);
+      await exec(`${shellDir}/build/compile-package-npm.sh ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]}`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
