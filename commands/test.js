@@ -109,40 +109,76 @@ module.exports = {
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/static-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]} ${taskParams["sonarExclusions"]}`);
+        await exec(`${shellDir}/test/static-java.sh \
+        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]} \
+        ${taskParams["sonarExclusions"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
         await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
         shell.cd(workdir);
-        await exec(`${shellDir}/test/unit-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
+        await exec(`${shellDir}/test/unit-java.sh \
+        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
         shell.cd(workdir);
         await exec(
-          `${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${
-            taskParams["asocClientCli"]
-          } ${taskParams["asocJavaRuntime"]} ${shellDir} ${testdir}`
+          `${shellDir}/test/security-java.sh \
+          ${taskParams["systemComponentName"]} \
+          ${version} \
+          ${JSON.stringify(taskParams["asocRepoUrl"])} \
+          ${taskParams["asocRepoUser"]} \
+          ${taskParams["asocRepoPassword"]} \
+          ${taskParams["asocAppId"]} \
+          ${taskParams["asocLoginKeyId"]} \
+          ${taskParams["asocLoginSecret"]} \
+          ${taskParams["asocClientCli"]} \
+          ${taskParams["asocJavaRuntime"]} \
+          ${shellDir} \
+          ${testdir}`
         );
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
-        await exec(
-          `${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${
-            taskParams["platformType"]
-          } ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir} ${testdir}`
-        );
+        await exec(`${shellDir}/test/selenium-native.sh \
+        ${taskParams["systemComponentName"]} ${version} \
+        ${taskParams["saucelabsApiKey"]} \
+        ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} \
+        ${taskParams["browserName"]} \
+        ${taskParams["browserVersion"]} \
+        ${taskParams["platformType"]} \
+        ${taskParams["platformVersion"]} \
+        ${taskParams["webTestsFolder"]} \
+        ${taskParams["gitUser"]} \
+        ${taskParams["gitPassword"]} \
+        ${shellDir} \
+        ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Commencing automated Selenium custom tests");
         shell.cd(workdir);
-        await exec(
-          `${shellDir}/test/selenium-custom.sh "${taskParams["teamName"]}" ${taskParams["systemComponentName"]} ${version} ${taskParams["seleniumApplicationPropertiesFile"]} ${taskParams["seleniumApplicationPropertiesKey"]} ${taskParams["saucelabsApiUrlWithCredentials"]} ${
-            taskParams["seleniumReportFolder"]
-          } ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]} ${shellDir} ${testdir}`
-        );
+        await exec(`${shellDir}/test/selenium-custom.sh "\
+        ${taskParams["teamName"]}" \
+        ${taskParams["systemComponentName"]} ${version} \
+        ${taskParams["seleniumApplicationPropertiesFile"]} \
+        ${taskParams["seleniumApplicationPropertiesKey"]} \
+        ${taskParams["saucelabsApiUrlWithCredentials"]} \
+        ${taskParams["seleniumReportFolder"]} \
+        ${JSON.stringify(taskParams["artifactoryUrl"])} \
+        ${taskParams["artifactoryUser"]} \
+        ${taskParams["artifactoryPassword"]} \
+        ${shellDir} \
+        ${testdir}`);
       }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
@@ -184,7 +220,9 @@ module.exports = {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
-      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh \
+      ${taskParams["buildTool"]} \
+      ${taskParams["buildToolVersion"]}`);
 
       if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<plugins>", undefined, false)) {
         log.debug("No Maven plugins found, adding...");
@@ -211,22 +249,41 @@ module.exports = {
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/static-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]} ${taskParams["sonarExclusions"]}`);
+        await exec(`${shellDir}/test/static-java.sh \
+        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]} \
+        ${taskParams["sonarExclusions"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
         await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
         shell.cd(workdir);
-        await exec(`${shellDir}/test/unit-java.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
+        await exec(`${shellDir}/test/unit-java.sh \
+        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
         shell.cd(workdir);
-        await exec(
-          `${shellDir}/test/security-java.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${
-            taskParams["asocClientCli"]
-          } ${taskParams["asocJavaRuntime"]} ${shellDir} ${testdir}`
-        );
+        await exec(`${shellDir}/test/security-java.sh \
+          ${taskParams["systemComponentName"]} \
+          ${version} \
+          ${JSON.stringify(taskParams["asocRepoUrl"])} \
+          ${taskParams["asocRepoUser"]} \
+          ${taskParams["asocRepoPassword"]} \
+          ${taskParams["asocAppId"]} \
+          ${taskParams["asocLoginKeyId"]} \
+          ${taskParams["asocLoginSecret"]} \
+          ${taskParams["asocClientCli"]} \
+          ${taskParams["asocJavaRuntime"]} \
+          ${shellDir} \
+          ${testdir}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Native Selenium testing type not supported for Jar");
@@ -273,34 +330,73 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-node.sh ${taskParams["languageVersion"]} ${taskParams["buildTool"]} ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-node.sh \
+      ${taskParams["languageVersion"]} \
+      ${taskParams["buildTool"]} \
+      ${JSON.stringify(taskParams["artifactoryUrl"])} \
+      ${taskParams["artifactoryUser"]} \
+      ${taskParams["artifactoryPassword"]}`);
 
       log.ci("Test Artifacts");
       shell.cd(workdir);
-      await exec(`${shellDir}/test/initialize-dependencies-node.sh ${taskParams["languageVersion"]} ${taskParams["buildTool"]} ${taskParams["nodeCypressInstallBinary"]}`);
+      await exec(`${shellDir}/test/initialize-dependencies-node.sh \
+      ${taskParams["languageVersion"]} \
+      ${taskParams["buildTool"]} \
+      ${taskParams["nodeCypressInstallBinary"]}`);
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        await exec(`${shellDir}/test/static-node.sh ${taskParams["languageVersion"]} ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
+        await exec(`${shellDir}/test/static-node.sh \
+        ${taskParams["languageVersion"]} \
+        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
-        await exec(`${shellDir}/test/unit-node.sh ${taskParams["languageVersion"]} ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
+        await exec(`${shellDir}/test/unit-node.sh \
+        ${taskParams["languageVersion"]} \
+        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
         await exec(
-          `${shellDir}/test/security-node.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${
-            taskParams["asocClientCli"]
-          } ${taskParams["asocJavaRuntime"]} ${shellDir} ${testdir}`
+          `${shellDir}/test/security-node.sh \
+          ${taskParams["systemComponentName"]} \
+          ${version} \
+          ${JSON.stringify(taskParams["asocRepoUrl"])} \
+          ${taskParams["asocRepoUser"]} \
+          ${taskParams["asocRepoPassword"]} \
+          ${taskParams["asocAppId"]} \
+          ${taskParams["asocLoginKeyId"]} \
+          ${taskParams["asocLoginSecret"]} \
+          ${taskParams["asocClientCli"]} \
+          ${taskParams["asocJavaRuntime"]} \
+          ${shellDir} \
+          ${testdir}`
         );
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
         await exec(
-          `${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${
-            taskParams["platformType"]
-          } ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir} ${testdir}`
+          `${shellDir}/test/selenium-native.sh \
+          ${taskParams["systemComponentName"]} ${version} \
+          ${taskParams["saucelabsApiKey"]} \
+          ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} \
+          ${taskParams["browserName"]} \
+          ${taskParams["browserVersion"]} ${taskParams["platformType"]} \
+          ${taskParams["platformVersion"]} \
+          ${taskParams["webTestsFolder"]} \
+          ${taskParams["gitUser"]} \
+          ${taskParams["gitPassword"]} \
+          ${shellDir} \
+          ${testdir}`
         );
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
@@ -345,26 +441,58 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-node.sh ${taskParams["languageVersion"]} ${taskParams["buildTool"]} ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-node.sh \
+      ${taskParams["languageVersion"]} \
+      ${taskParams["buildTool"]} \
+      ${JSON.stringify(taskParams["artifactoryUrl"])} \
+      ${taskParams["artifactoryUser"]} \
+      ${taskParams["artifactoryPassword"]}`);
 
       log.ci("Test Artifacts");
       shell.cd(workdir);
-      await exec(`${shellDir}/test/initialize-dependencies-node.sh ${taskParams["languageVersion"]} ${taskParams["buildTool"]} ${taskParams["nodeCypressInstallBinary"]}`);
+      await exec(`${shellDir}/test/initialize-dependencies-node.sh \
+      ${taskParams["languageVersion"]} \
+      ${taskParams["buildTool"]} \
+      ${taskParams["nodeCypressInstallBinary"]}`);
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        await exec(`${shellDir}/test/static-node.sh ${taskParams["languageVersion"]} ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
+        await exec(`${shellDir}/test/static-node.sh \
+        ${taskParams["languageVersion"]} \
+        ${taskParams["buildTool"]} \
+        ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
-        await exec(`${shellDir}/test/unit-node.sh ${taskParams["languageVersion"]} ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
+        await exec(`${shellDir}/test/unit-node.sh \
+        ${taskParams["languageVersion"]} \
+        ${taskParams["buildTool"]} \
+        ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
         await exec(
-          `${shellDir}/test/security-node.sh ${taskParams["systemComponentName"]} ${version} ${JSON.stringify(taskParams["asocRepoUrl"])} ${taskParams["asocRepoUser"]} ${taskParams["asocRepoPassword"]} ${taskParams["asocAppId"]} ${taskParams["asocLoginKeyId"]} ${taskParams["asocLoginSecret"]} ${
-            taskParams["asocClientCli"]
-          } ${taskParams["asocJavaRuntime"]} ${shellDir} ${testdir}`
+          `${shellDir}/test/security-node.sh \
+          ${taskParams["systemComponentName"]} \
+          ${version} \
+          ${JSON.stringify(taskParams["asocRepoUrl"])} \
+          ${taskParams["asocRepoUser"]} \
+          ${taskParams["asocRepoPassword"]} \
+          ${taskParams["asocAppId"]} \
+          ${taskParams["asocLoginKeyId"]} \
+          ${taskParams["asocLoginSecret"]} \
+          ${taskParams["asocClientCli"]} \
+          ${taskParams["asocJavaRuntime"]} \
+          ${shellDir} \
+          ${testdir}`
         );
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
@@ -412,13 +540,24 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-python.sh ${taskParams["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-python.sh \
+      ${taskParams["languageVersion"]}`);
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        await exec(`${shellDir}/test/initialize-dependencies-static-python.sh ${taskParams["languageVersion"]} ${JSON.stringify(taskParams["pypiRegistryHost"])} ${taskParams["pypiRepoId"]} ${taskParams["pypiRepoUser"]} ${taskParams["pypiRepoPassword"]}`);
+        await exec(`${shellDir}/test/initialize-dependencies-static-python.sh \
+        ${taskParams["languageVersion"]} ${JSON.stringify(taskParams["pypiRegistryHost"])} \
+        ${taskParams["pypiRepoId"]} \
+        ${taskParams["pypiRepoUser"]} \
+        ${taskParams["pypiRepoPassword"]}`);
+
         shell.cd(workdir);
-        await exec(`${shellDir}/test/static-python.sh ${taskParams["buildTool"]} ${version} ${taskParams["sonarUrl"]} ${taskParams["sonarApiKey"]} ${taskParams["systemComponentId"]} ${taskParams["systemComponentName"]}`);
+        await exec(`${shellDir}/test/static-python.sh \
+        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Python");
@@ -430,9 +569,20 @@ module.exports = {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
         await exec(
-          `${shellDir}/test/selenium-native.sh ${taskParams["systemComponentName"]} ${version} ${taskParams["saucelabsApiKey"]} ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} ${taskParams["browserName"]} ${taskParams["browserVersion"]} ${
-            taskParams["platformType"]
-          } ${taskParams["platformVersion"]} ${taskParams["webTestsFolder"]} ${taskParams["gitUser"]} ${taskParams["gitPassword"]} ${shellDir} ${testdir}`
+          `${shellDir}/test/selenium-native.sh \
+          ${taskParams["systemComponentName"]} ${version} \
+          ${taskParams["saucelabsApiKey"]} \
+          ${taskParams["saucelabsApiUser"]} \
+          ${JSON.stringify(taskParams["saucelabsApiUrl"])} \
+          ${taskParams["browserName"]} \
+          ${taskParams["browserVersion"]} \
+          ${taskParams["platformType"]} \
+          ${taskParams["platformVersion"]} \
+          ${taskParams["webTestsFolder"]} \
+          ${taskParams["gitUser"]} \
+          ${taskParams["gitPassword"]} \
+          ${shellDir} \
+          ${testdir}`
         );
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
@@ -477,12 +627,16 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["buildToolVersion"]}"`);
+      await exec(`${shellDir}/common/initialize-dependencies-helm.sh ${taskParams["buildToolVersion"]}"`);
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Linting Helm Chart(s)");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/lint-helm.sh ${taskParams["buildTool"]} ${taskParams["helmRepoUrl"]} ${taskParams["helmChartDirectory"]} ${taskParams["helmChartIgnore"]}`);
+        await exec(`${shellDir}/test/lint-helm.sh \
+        ${taskParams["buildTool"]} \
+        ${taskParams["helmRepoUrl"]} \
+        ${taskParams["helmChartDirectory"]} \
+        ${taskParams["helmChartIgnore"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Helm");

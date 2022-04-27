@@ -42,7 +42,13 @@ module.exports = {
 
     try {
       log.ci("Retrieving Source Code");
-      await exec(`${shellDir}/common/git-clone.sh "${repoDir}" "${taskParams["privateKey"]}" ${JSON.stringify(taskParams["repoSshUrl"])} ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["commitId"]} ${taskParams["lfsEnabled"]}`);
+      await exec(`${shellDir}/common/git-clone.sh \
+      "${repoDir}" \
+      "${taskParams["privateKey"]}" \
+      ${JSON.stringify(taskParams["repoSshUrl"])} \
+      ${JSON.stringify(taskParams["repoUrl"])} \
+      ${taskParams["commitId"]} \
+      ${taskParams["lfsEnabled"]}`);
 
       log.sys("Finished Git Clone task...");
     } catch (e) {
