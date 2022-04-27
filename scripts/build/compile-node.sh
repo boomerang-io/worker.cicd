@@ -2,7 +2,16 @@
 
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Build Artifact '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-BUILD_SCRIPT=$1
+LANGUAGE_VERSION=$1
+BUILD_SCRIPT=$2
+
+# Check if using ubuntu or alpine base image
+if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+    echo "Running with nvm..."
+    unset npm_config_prefix
+    source ~/.nvm/nvm.sh
+    nvm use $LANGUAGE_VERSION
+fi
 
 if [ -z "$BUILD_SCRIPT" ]; then
     echo "Build script not specified, defaulting to 'build'..."

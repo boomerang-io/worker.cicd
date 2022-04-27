@@ -2,9 +2,18 @@
 
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Build Artifact '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-ART_URL=$1
-ART_USER=$2
-ART_PASSWORD=$3
+LANGUAGE_VERSION=$1
+ART_URL=$2
+ART_USER=$3
+ART_PASSWORD=$4
+
+# Check if using ubuntu or alpine base image
+if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+    echo "Running with nvm..."
+    unset npm_config_prefix
+    source ~/.nvm/nvm.sh
+    nvm use $LANGUAGE_VERSION
+fi
 
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then

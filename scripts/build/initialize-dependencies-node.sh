@@ -31,7 +31,7 @@ if [ "$DEBUG" == "true" ]; then
     echo "CYPRESS_INSTALL_BINARY=$CYPRESS_INSTALL_BINARY"
 fi
 
-NVM_OPTS=
+# Check if using ubuntu or alpine base image
 if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     echo "Running with nvm..."
     unset npm_config_prefix

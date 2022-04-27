@@ -2,52 +2,104 @@
 
 #( printf '\n'; printf '%.0s-' {1..30}; printf ' Static Code Analysis '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-BUILD_TOOL=$1
-VERSION_NAME=$2
-SONAR_URL=$3
-SONAR_APIKEY=$4
+LANGUAGE_VERSION=$1
+BUILD_TOOL=$2
+VERSION_NAME=$3
+SONAR_URL=$4
+SONAR_APIKEY=$5
 SONAR_GATEID=2
-COMPONENT_ID=$5
-COMPONENT_NAME=$6
+COMPONENT_ID=$6
+COMPONENT_NAME=$7
+
+# Check if using ubuntu or alpine base
+if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+    # Dependency for sonarscanner
+    export ENV DEBIAN_FRONTEND noninteractive
+    apt-get -y update
+    apt-get --no-install-recommends -y install openjdk-8-jdk
+
+    # Set Node.js version
+    echo "Running with nvm..."
+    unset npm_config_prefix
+    source ~/.nvm/nvm.sh
+    nvm use $LANGUAGE_VERSION
+else
+    # Dependency for sonarscanner
+    apk add openjdk8
+fi
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
 [[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
 
-# Fail fast if testing script or build tool is not present
+# Fail fast if testing script is not present
 SCRIPT=$(node -pe "require('./package.json').scripts.test");
 if [[ "$SCRIPT" == "undefined" ]]; then
+    echo "Test script not defined"
     exit 95
 fi
 
 if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]] && [[ "$USE_PNPM" == false ]]; then
-    echo "build tool not specified, defaulting to 'npm'..."
+    echo "Build tool not specified, defaulting to 'npm'..."
     BUILD_TOOL="npm"
 fi
 
 echo "Using build tool $BUILD_TOOL"
 
-# Dependency for sonarscanner
-apk add openjdk8
-
 # Set JS heap space
 export NODE_OPTIONS="--max-old-space-size=8192"
 
-# Install typescript
-npm install -D typescript
-npm link typescript
+# if [ "$USE_NPM" == true ]; then
+#     # Install typescript
+#     npm install -D typescript
+#     npm link typescript
 
-# Install eslint
-npm install -g eslint
-npm link eslint
+#     # Install eslint
+#     npm install -g eslint
+#     npm link eslint
 
-# Install prettier
-npm install -g prettier
-npm link prettier
+#     # Install prettier
+#     npm install -g prettier
+#     npm link prettier
 
-# Install clean
-npm install -g clean
-npm link clean
+#     # Install clean
+#     npm install -g clean
+#     npm link clean
+
+# elif [ "$USE_YARN" == true ]; then
+#     # Install typescript
+#     yarn add -D typescript
+#     yarn link typescript
+
+#     # Install eslint
+#     yarn global add eslint
+#     yarn link eslint
+
+#     # Install prettier
+#     yarn global add prettier
+#     yarn link prettier
+
+#     # Install clean
+#     yarn global add clean
+#     yarn link clean
+    
+# elif [ "$USE_PNPM" == true ]; then
+#     # Install typescript
+#     pnpm add -D typescript
+#     pnpm link typescript
+
+#     # Install eslint
+#     pnpm add -g eslint
+#     pnpm link eslint
+
+#     # Install prettier
+#     pnpm add -g prettier
+#     pnpm link prettier
+
+#     # Install clean
+#     pnpm add -g clean
+#     pnpm link clean
+# fi
 
 # Check SonarQube
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
