@@ -19,7 +19,7 @@ fi
 
 echo "Using build tool $BUILD_TOOL"
 
-# Check if using ubuntu or alpine base image
+# Install configured version of Node.js via nvm if present
 if [ "$LANGUAGE_VERSION" != "undefined" ]; then
 
     # Install specified version of Node.js

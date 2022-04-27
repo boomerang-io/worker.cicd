@@ -7,7 +7,7 @@ ART_URL=$2
 ART_USER=$3
 ART_PASSWORD=$4
 
-# Check if using ubuntu or alpine base image
+# Install configured version of Node.js via nvm if present
 if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     echo "Running with nvm..."
     unset npm_config_prefix

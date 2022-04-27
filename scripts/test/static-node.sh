@@ -11,7 +11,9 @@ SONAR_GATEID=2
 COMPONENT_ID=$6
 COMPONENT_NAME=$7
 
-# Check if using ubuntu or alpine base image
+# Install configured version of Node.js via nvm if present
+# Also install JDK correctly depending on what the underlying Linux image is
+# Ubuntu or Alpine
 if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     # Dependency for sonarscanner
     export ENV DEBIAN_FRONTEND noninteractive
