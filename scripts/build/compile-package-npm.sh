@@ -7,6 +7,15 @@ ART_URL=$2
 ART_USER=$3
 ART_PASSWORD=$4
 
+# Get the scope of the package from the name field
+SCOPE=$(node -pe "require('./package.json').name" | cut -d/ -f1);
+
+if [[ $SCOPE != @* ]]; then
+    echo "Package name must include a scope e.g. '@scope/my-package'"
+    echo "The scope should be unique to your organization/team"
+    exit 95
+fi
+
 # Install configured version of Node.js via nvm if present
 if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     echo "Running with nvm..."
@@ -19,14 +28,6 @@ DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
     echo "Enabling debug logging..."
     DEBUG_OPTS+="--verbose"
-fi
-
-# Get the scope of the package from the name field
-SCOPE=$(node -pe "require('./package.json').name" | cut -d/ -f1);
-
-if [[ $SCOPE != @* ]]; then
-    echo "Package name must include a scope e.g. '@project/my-package'"
-    exit 97
 fi
 
 curl -k -v -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/"${SCOPE:1}" -o .npmrc

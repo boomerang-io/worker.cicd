@@ -11,12 +11,20 @@ SONAR_GATEID=2
 COMPONENT_ID=$6
 COMPONENT_NAME=$7
 
+# Fail fast if testing script is not present
+SCRIPT=$(node -pe "require('./package.json').scripts.test");
+if [[ "$SCRIPT" == "undefined" ]]; then
+    echo "'test' script not defined in the package.json file"
+    exit 95
+fi
+
 # Check if using ubuntu or alpine base
+# and install the correct dependencies
 if [ "$LANGUAGE_VERSION" != "undefined" ]; then
     # Dependency for sonarscanner
     export ENV DEBIAN_FRONTEND noninteractive
     apt-get -y update
-    apt-get --no-install-recommends -y install openjdk-8-jdk
+    apt-get --no-install-recommends -y install openjdk-8-jdk unzip
 
     # Set Node.js version
     echo "Running with nvm..."
@@ -32,13 +40,6 @@ fi
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
 [[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
 
-# Fail fast if testing script is not present
-SCRIPT=$(node -pe "require('./package.json').scripts.test");
-if [[ "$SCRIPT" == "undefined" ]]; then
-    echo "Test script not defined"
-    exit 95
-fi
-
 if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]] && [[ "$USE_PNPM" == false ]]; then
     echo "Build tool not specified, defaulting to 'npm'..."
     BUILD_TOOL="npm"
@@ -49,65 +50,13 @@ echo "Using build tool $BUILD_TOOL"
 # Set JS heap space
 export NODE_OPTIONS="--max-old-space-size=8192"
 
-# if [ "$USE_NPM" == true ]; then
-#     # Install typescript
-#     npm install -D typescript
-#     npm link typescript
-
-#     # Install eslint
-#     npm install -g eslint
-#     npm link eslint
-
-#     # Install prettier
-#     npm install -g prettier
-#     npm link prettier
-
-#     # Install clean
-#     npm install -g clean
-#     npm link clean
-
-# elif [ "$USE_YARN" == true ]; then
-#     # Install typescript
-#     yarn add -D typescript
-#     yarn link typescript
-
-#     # Install eslint
-#     yarn global add eslint
-#     yarn link eslint
-
-#     # Install prettier
-#     yarn global add prettier
-#     yarn link prettier
-
-#     # Install clean
-#     yarn global add clean
-#     yarn link clean
-    
-# elif [ "$USE_PNPM" == true ]; then
-#     # Install typescript
-#     pnpm add -D typescript
-#     pnpm link typescript
-
-#     # Install eslint
-#     pnpm add -g eslint
-#     pnpm link eslint
-
-#     # Install prettier
-#     pnpm add -g prettier
-#     pnpm link prettier
-
-#     # Install clean
-#     pnpm add -g clean
-#     pnpm link clean
-# fi
-
 # Check SonarQube
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
 # Install sonar-scanner
-curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.0.0.1744.zip
+curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
@@ -134,7 +83,7 @@ if [[ -d "./node_modules/jest" ]]; then
         yarn add -D $TEST_REPORTER
     elif [[ "$USE_PNPM" == true ]]; then
         echo "Installing $TEST_REPORTER"
-        COMMAND_ARGS="--testResultsProcessor $TEST_REPORTER"
+        COMMAND_ARGS="-- --testResultsProcessor $TEST_REPORTER"
         pnpm i -D $TEST_REPORTER
     fi
 fi
@@ -166,7 +115,7 @@ echo "NODE_PATH=$NODE_PATH"
 
 SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
 
-$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=$SRC_FOLDER -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.scm.disabled=true -Dsonar.nodejs.executable=$NODE_PATH -Dsonar.javascript.node.maxspace=8192 $SONAR_FLAGS
+$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=$SRC_FOLDER -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.nodejs.executable=$NODE_PATH -Dsonar.scm.disabled=true -Dsonar.javascript.node.maxspace=8192 $SONAR_FLAGS
 
 EXIT_CODE=$?
 echo "EXIT_CODE=$EXIT_CODE"

@@ -29,7 +29,7 @@ if [ "$SCRIPT" != "undefined" ]; then
         exit 89
     fi
 else
-    # exit 97
-    echo "npm script ($BUILD_SCRIPT) not defined in package.json. Skipping..."
+    # Allow Node.js components to not have a build step
+    echo "npm script ($BUILD_SCRIPT) not defined in the package.json file. Skipping..."
 fi
 

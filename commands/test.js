@@ -344,9 +344,9 @@ module.exports = {
       ${taskParams["buildTool"]} \
       ${taskParams["nodeCypressInstallBinary"]}`);
 
-      if (testTypes.includes(TestType.Static)) {
-        log.debug("Commencing static tests");
-        await exec(`${shellDir}/test/static-node.sh \
+      if (testTypes.includes(TestType.Unit)) {
+        log.debug("Commencing unit tests");
+        await exec(`${shellDir}/test/unit-node.sh \
         ${taskParams["languageVersion"]} \
         ${taskParams["buildTool"]} ${version} \
         ${taskParams["sonarUrl"]} \
@@ -354,9 +354,9 @@ module.exports = {
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]}`);
       }
-      if (testTypes.includes(TestType.Unit)) {
-        log.debug("Commencing unit tests");
-        await exec(`${shellDir}/test/unit-node.sh \
+      if (testTypes.includes(TestType.Static)) {
+        log.debug("Commencing static tests");
+        await exec(`${shellDir}/test/static-node.sh \
         ${taskParams["languageVersion"]} \
         ${taskParams["buildTool"]} ${version} \
         ${taskParams["sonarUrl"]} \
@@ -386,11 +386,14 @@ module.exports = {
         log.debug("Commencing automated Selenium native tests");
         await exec(
           `${shellDir}/test/selenium-native.sh \
-          ${taskParams["systemComponentName"]} ${version} \
+          ${taskParams["systemComponentName"]} \
+          ${version} \
           ${taskParams["saucelabsApiKey"]} \
-          ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} \
+          ${taskParams["saucelabsApiUser"]} \
+          ${JSON.stringify(taskParams["saucelabsApiUrl"])} \
           ${taskParams["browserName"]} \
-          ${taskParams["browserVersion"]} ${taskParams["platformType"]} \
+          ${taskParams["browserVersion"]} \
+          ${taskParams["platformType"]} \
           ${taskParams["platformVersion"]} \
           ${taskParams["webTestsFolder"]} \
           ${taskParams["gitUser"]} \
@@ -403,7 +406,7 @@ module.exports = {
         log.debug("Custom Selenium testing type not supported for Node.js");
       }
     } catch (e) {
-      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
+      log.err("Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
       await exec(shellDir + "/common/footer.sh");
@@ -495,8 +498,8 @@ module.exports = {
           ${testdir}`
         );
       }
-      if (testTypes.includes(TestType.SeleniumCustom)) {
-        log.debug("Custom Selenium testing type not supported for npm packages");
+      if (testTypes.includes(TestType.SeleniumNative)) {
+        log.debug("Native Selenium testing type not supported for npm packages");
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Custom Selenium testing type not supported for npm packages");
@@ -570,7 +573,8 @@ module.exports = {
         shell.cd(workdir);
         await exec(
           `${shellDir}/test/selenium-native.sh \
-          ${taskParams["systemComponentName"]} ${version} \
+          ${taskParams["systemComponentName"]} \
+          ${version} \
           ${taskParams["saucelabsApiKey"]} \
           ${taskParams["saucelabsApiUser"]} \
           ${JSON.stringify(taskParams["saucelabsApiUrl"])} \
