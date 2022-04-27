@@ -229,7 +229,7 @@ module.exports = {
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
       await exec(`${shellDir}/build/initialize-dependencies-node.sh "${taskParams["languageVersion"]}" "${taskParams["buildTool"]}" "${taskParams["node-cypress-install-binary"]}"`);
-      await exec(`${shellDir}/build/compile-package-npm.sh ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]}`);
+      await exec(`${shellDir}/build/compile-package-npm.sh "${taskParams["languageVersion"]}" ${JSON.stringify(taskParams["artifactoryUrl"])} ${taskParams["artifactoryUser"]} ${taskParams["artifactoryPassword"]}`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -330,6 +330,7 @@ module.exports = {
       await exec(
         `${shellDir}/build/validate-sync-helm.sh "${taskParams["repoType"]}" "${taskParams["repoUrl"]}" "${taskParams["repoUser"]}" "${taskParams["repoPassword"]}" "${taskParams["gitRepoOwner"]}" "${taskParams["gitRepoName"]}" "${taskParams["gitCommitId"]}" "${taskParams["repoIndexBranch"]}"`
       );
+      qq;
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
