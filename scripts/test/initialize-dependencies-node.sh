@@ -2,8 +2,9 @@
 
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Build Artifact '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-BUILD_TOOL=$1
-CYPRESS_INSTALL_BINARY=$2
+LANGUAGE_VERSION=$1
+BUILD_TOOL=$2
+CYPRESS_INSTALL_BINARY=$3
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
@@ -15,6 +16,13 @@ if [ "$USE_NPM" == false ] && [ "$USE_YARN" == false ] && [ "$USE_PNPM" == false
 fi
 
 echo "Using build tool $BUILD_TOOL"
+
+if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+    echo "Running with nvm..."
+    unset npm_config_prefix
+    source ~/.nvm/nvm.sh
+    nvm use $LANGUAGE_VERSION
+fi
 
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then

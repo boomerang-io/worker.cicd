@@ -2,7 +2,16 @@
 
 # ( printf '\n'; printf '%.0s-' {1..30}; printf ' Build Artifact '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-BUILD_SCRIPT=$1
+LANGUAGE_VERSION=$1
+BUILD_SCRIPT=$2
+
+# Install configured version of Node.js via nvm if present
+if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+    echo "Running with nvm..."
+    unset npm_config_prefix
+    source ~/.nvm/nvm.sh
+    nvm use $LANGUAGE_VERSION
+fi
 
 if [ -z "$BUILD_SCRIPT" ]; then
     echo "Build script not specified, defaulting to 'build'..."
@@ -20,7 +29,7 @@ if [ "$SCRIPT" != "undefined" ]; then
         exit 89
     fi
 else
-    # exit 97
-    echo "npm script ($BUILD_SCRIPT) not defined in package.json. Skipping..."
+    # Allow Node.js components to not have a build step
+    echo "npm script ($BUILD_SCRIPT) not defined in the package.json file. Skipping..."
 fi
 

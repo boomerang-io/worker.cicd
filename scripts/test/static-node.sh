@@ -2,43 +2,45 @@
 
 #( printf '\n'; printf '%.0s-' {1..30}; printf ' Static Code Analysis '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-BUILD_TOOL=$1
-VERSION_NAME=$2
-SONAR_URL=$3
-SONAR_APIKEY=$4
+LANGUAGE_VERSION=$1
+BUILD_TOOL=$2
+VERSION_NAME=$3
+SONAR_URL=$4
+SONAR_APIKEY=$5
 SONAR_GATEID=2
-COMPONENT_ID=$5
-COMPONENT_NAME=$6
+COMPONENT_ID=$6
+COMPONENT_NAME=$7
+
+# Install configured version of Node.js via nvm if present
+# Also install JDK correctly depending on what the underlying Linux image is
+# Ubuntu or Alpine
+if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+    # Dependency for sonarscanner
+    export ENV DEBIAN_FRONTEND noninteractive
+    apt-get -y update
+    apt-get --no-install-recommends -y install openjdk-8-jdk unzip
+
+    # Set Node.js version
+    echo "Running with nvm..."
+    unset npm_config_prefix
+    source ~/.nvm/nvm.sh
+    nvm use $LANGUAGE_VERSION
+else
+    # Dependency for sonarscanner
+    apk add openjdk8
+fi
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
 [[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
 
-if [[ "$USE_NPM" == false ]] && [[ "$USE_YARN" == false ]] && [[ "$USE_PNPM" == false ]]; then
-    exit 99
+if [ "$USE_NPM" == false ] && [ "$USE_YARN" == false ] && [ "$USE_PNPM" == false ]; then
+    echo "build tool not specified, defaulting to 'npm'..."
+    BUILD_TOOL="npm"
 fi
-
-# Dependency for sonarscanner
-apk add openjdk8
 
 # Set JS heap space
 export NODE_OPTIONS="--max-old-space-size=8192"
-
-# Install typescript
-npm install -D typescript
-npm link typescript
-
-# Install eslint
-npm install -g eslint
-npm link eslint
-
-# Install prettier
-npm install -g prettier
-npm link prettier
-
-# Install clean
-npm install -g clean
-npm link clean
 
 # Check SonarQube
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
@@ -46,7 +48,7 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_U
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
 # Install sonar-scanner
-curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.0.0.1744.zip
+curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
@@ -55,23 +57,15 @@ if [ "$DEBUG" == "true" ]; then
 else
     SONAR_FLAGS=
 fi
+
+# Run linting script
+
 SCRIPT=$(node -pe "require('./package.json').scripts.lint");
-echo "SCRIPT=$SCRIPT"
-if [ "$SCRIPT" != "undefined" ]; then
+if [[ "$SCRIPT" != "undefined" ]]; then
     npm run lint
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.eslint.reportPaths=lint-report.json"
-fi
-
-ls -al lint-report.json
-echo "SONAR_FLAGS=$SONAR_FLAGS"
-
-if [[ "$USE_NPM" == true ]]; then
-    # npm clean-install
-    npm test
-elif [[ "$USE_YARN" == true ]]; then
-    yarn test
-elif [[ "$USE_PNPM" == true ]]; then
-    pnpm test
+    ls -al lint-report.json
+    echo "SONAR_FLAGS=$SONAR_FLAGS"
 fi
 
 SRC_FOLDER=
@@ -86,7 +80,7 @@ else
     SRC_FOLDER=.
 fi
 
-# Set NodeJS bin path
+# Set Node.js bin path
 NODE_PATH=$(which node)
 echo "NODE_PATH=$NODE_PATH"
 

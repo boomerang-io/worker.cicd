@@ -53,7 +53,12 @@ module.exports = {
     let dir = workingDir(taskParams["workingDir"]);
     try {
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
+      await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh \
+      "${taskParams["kubeVersion"]}" \
+      "${taskParams["kubeNamespace"]}" \
+      "${taskParams["kubeHost"]}" \
+      "${taskParams["kubeIP"]}" \
+      "${taskParams["kubeToken"]}"`);
 
       log.ci("Deploying...");
       var kubeFiles = taskParams["kubeFiles"];
@@ -81,11 +86,25 @@ module.exports = {
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
     try {
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
+      await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh \
+      "${taskParams["kubeVersion"]}" \
+      "${taskParams["kubeNamespace"]}" \
+      "${taskParams["kubeHost"]}" \
+      "${taskParams["kubeIP"]}" \
+      "${taskParams["kubeToken"]}"`);
+
       await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["helmVersion"]}"`);
 
       log.ci("Deploying../");
-      await exec(`${shellDir}/deploy/helm.sh "${taskParams["repoUrl"]}" "${taskParams["helmChart"]}" "${taskParams["helmRelease"]}" "${taskParams["helmImageTag"]}" "${version}" "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}"`);
+      await exec(`${shellDir}/deploy/helm.sh \
+      "${taskParams["repoUrl"]}" \
+      "${taskParams["helmChart"]}" \
+      "${taskParams["helmRelease"]}" \
+      "${taskParams["helmImageTag"]}" \
+      "${version}" \
+      "${taskParams["kubeVersion"]}" \
+      "${taskParams["kubeNamespace"]}" \
+      "${taskParams["kubeHost"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -108,8 +127,13 @@ module.exports = {
     // const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
     try {
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" \
-      "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
+
+      await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh \
+      "${taskParams["kubeVersion"]}" \
+      "${taskParams["kubeNamespace"]}" \
+      "${taskParams["kubeHost"]}" \
+      "${taskParams["kubeIP"]}" \
+      "${taskParams["kubeToken"]}"`);
       await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["helmVersion"]}"`);
 
       log.ci("Deploying...");
@@ -162,11 +186,20 @@ module.exports = {
               .toString()
               .replace(/[^a-zA-Z0-9\-]/g, "")
               .toLowerCase();
-      await exec(
-        `${shellDir}/deploy/containerregistry.sh "${dockerImageName}" "${taskParams["version"]}" "${dockerImagePath}" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${
-          taskParams["containerRegistryPassword"]
-        }" "${taskParams["containerRegistryPath"]}" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${taskParams["globalContainerRegistryUser"]}" "${taskParams["globalContainerRegistryPassword"]}" "${taskParams["cisoCodesignEnable"]}"`
-      );
+      await exec(`${shellDir}/deploy/containerregistry.sh \
+      "${dockerImageName}" \
+      "${taskParams["version"]}" \
+      "${dockerImagePath}" \
+      ${JSON.stringify(taskParams["containerRegistryHost"])} \
+      "${taskParams["containerRegistryPort"]}" \
+      "${taskParams["containerRegistryUser"]}" \
+      "${taskParams["containerRegistryPassword"]}" \
+      "${taskParams["containerRegistryPath"]}" \
+      ${JSON.stringify(taskParams["globalContainerRegistryHost"])} \
+      "${taskParams["globalContainerRegistryPort"]}" \
+      "${taskParams["globalContainerRegistryUser"]}" \
+      "${taskParams["globalContainerRegistryPassword"]}" \
+      "${taskParams["cisoCodesignEnable"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -192,11 +225,18 @@ module.exports = {
     shell.cd(dir + "/repository");
     await exec("ls -ltr");
     try {
-      await exec(
-        `${shellDir}/deploy/containerregistry-tar.sh "${taskParams["imageName"]}" "${taskParams["version"]}" "${taskParams["imagePath"]}" ${JSON.stringify(taskParams["globalContainerRegistryHost"])} "${taskParams["globalContainerRegistryPort"]}" "${taskParams["globalContainerRegistryUser"]}" "${
-          taskParams["globalContainerRegistryPassword"]
-        }" ${JSON.stringify(taskParams["containerRegistryHost"])} "${taskParams["containerRegistryPort"]}" "${taskParams["containerRegistryUser"]}" "${taskParams["containerRegistryPassword"]}"`
-      );
+      await exec(`${shellDir}/deploy/containerregistry-tar.sh \
+      "${taskParams["imageName"]}" \
+      "${taskParams["version"]}" \
+      "${taskParams["imagePath"]}" \
+      ${JSON.stringify(taskParams["globalContainerRegistryHost"])} \
+      "${taskParams["globalContainerRegistryPort"]}" \
+      "${taskParams["globalContainerRegistryUser"]}" \
+      "${taskParams["globalContainerRegistryPassword"]}" \
+      ${JSON.stringify(taskParams["containerRegistryHost"])} \
+      "${taskParams["containerRegistryPort"]}" \
+      "${taskParams["containerRegistryUser"]}" \
+      "${taskParams["containerRegistryPassword"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
