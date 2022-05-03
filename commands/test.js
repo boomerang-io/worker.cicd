@@ -250,7 +250,8 @@ module.exports = {
         log.debug("Commencing static tests");
         shell.cd(workdir);
         await exec(`${shellDir}/test/static-java.sh \
-        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["buildTool"]} \
+        ${version} \
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
@@ -262,7 +263,8 @@ module.exports = {
         await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
         shell.cd(workdir);
         await exec(`${shellDir}/test/unit-java.sh \
-        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["buildTool"]} \
+        ${version} \
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
@@ -348,7 +350,8 @@ module.exports = {
         log.debug("Commencing unit tests");
         await exec(`${shellDir}/test/unit-node.sh \
         ${taskParams["languageVersion"]} \
-        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["buildTool"]} \
+        ${version} \
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
@@ -358,7 +361,8 @@ module.exports = {
         log.debug("Commencing static tests");
         await exec(`${shellDir}/test/static-node.sh \
         ${taskParams["languageVersion"]} \
-        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["buildTool"]} \
+        ${version} \
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
