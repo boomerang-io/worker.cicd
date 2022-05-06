@@ -20,7 +20,7 @@ fi
 echo "Using build tool $BUILD_TOOL"
 
 # Install configured version of Node.js via nvm if present
-if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ];
 
     # Install specified version of Node.js
     echo "Using NVM with Node version: $LANGUAGE_VERSION"

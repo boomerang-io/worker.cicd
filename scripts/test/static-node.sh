@@ -14,7 +14,7 @@ COMPONENT_NAME=$7
 # Install configured version of Node.js via nvm if present
 # Also install JDK correctly depending on what the underlying Linux image is
 # Ubuntu or Alpine
-if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ]; then
     # Dependency for sonarscanner
     export ENV DEBIAN_FRONTEND noninteractive
     apt-get -y update

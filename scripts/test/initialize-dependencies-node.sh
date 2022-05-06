@@ -17,7 +17,7 @@ fi
 
 echo "Using build tool $BUILD_TOOL"
 
-if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ]; then
     echo "Running with nvm..."
     unset npm_config_prefix
     source ~/.nvm/nvm.sh

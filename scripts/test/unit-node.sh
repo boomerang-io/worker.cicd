@@ -20,7 +20,7 @@ fi
 
 # Check if using ubuntu or alpine base
 # and install the correct dependencies
-if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ]; then
     # Dependency for sonarscanner
     export ENV DEBIAN_FRONTEND noninteractive
     apt-get -y update
@@ -56,6 +56,7 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_U
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
 # Install sonar-scanner
+# TODO: should be a systems CICD property
 curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
