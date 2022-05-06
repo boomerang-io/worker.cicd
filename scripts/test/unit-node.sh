@@ -10,6 +10,9 @@ SONAR_APIKEY=$5
 SONAR_GATEID=2
 COMPONENT_ID=$6
 COMPONENT_NAME=$7
+ART_URL=$8
+ART_USER=$9
+ART_PASSWORD=${10}
 
 # Fail fast if testing script is not present
 SCRIPT=$(node -pe "require('./package.json').scripts.test");
@@ -56,8 +59,8 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_U
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
 # Install sonar-scanner
-# TODO: should be a systems CICD property
-curl --insecure -o /opt/sonarscanner.zip -u $ART_USER:$ART_PASSWORD https://tools.boomerangplatform.net/artifactory/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip
+# TODO: should be a CICD system property
+curl --insecure -o /opt/sonarscanner.zip -L -u $ART_USER:$ART_PASSWORD $ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
