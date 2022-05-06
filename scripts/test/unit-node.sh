@@ -21,23 +21,22 @@ if [[ "$SCRIPT" == "undefined" ]]; then
     exit 95
 fi
 
-# Check if using ubuntu or alpine base
-# and install the correct dependencies
-if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ]; then
-    # Dependency for sonarscanner
-    export ENV DEBIAN_FRONTEND noninteractive
-    apt-get -y update
-    apt-get --no-install-recommends -y install openjdk-8-jdk unzip
+# Dependency for sonarscanner
+export ENV DEBIAN_FRONTEND noninteractive
+apt-get -y update
+apt-get --no-install-recommends -y install openjdk-8-jdk unzip
 
+echo "Running with nvm..."
+unset npm_config_prefix
+source ~/.nvm/nvm.sh
+
+# Install configured version of Node.js via nvm if present
+if [ "$LANGUAGE_VERSION" == "undefined" ] || [ "$LANGUAGE_VERSION" == "" ]; then
     # Set Node.js version
-    echo "Running with nvm..."
-    unset npm_config_prefix
-    source ~/.nvm/nvm.sh
-    nvm use $LANGUAGE_VERSION
-else
-    # Dependency for sonarscanner
-    apk add openjdk8
+    LANGUAGE_VERSION=12
 fi
+
+nvm use $LANGUAGE_VERSION
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
@@ -60,8 +59,14 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qu
 
 # Install sonar-scanner
 # TODO: should be a CICD system property
+# Install sonar-scanner
+echo "Installing sonar-scanner"
+echo "$ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip"
 curl --insecure -o /opt/sonarscanner.zip -L -u $ART_USER:$ART_PASSWORD $ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip
+echo "Post sonar-scanner cURL"
+ls -al /opt
 unzip -o /opt/sonarscanner.zip -d /opt
+ls -alR /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
 if [ "$DEBUG" == "true" ]; then
@@ -69,6 +74,9 @@ if [ "$DEBUG" == "true" ]; then
 else
     SONAR_FLAGS=
 fi
+echo "Echoing SONAR_FOLDER and SONAR_HOME"
+echo $SONAR_FOLDER
+echo $SONAR_HOME
 
 if [[ -d "./node_modules/jest" ]]; then
     TEST_REPORTER="jest-sonar-reporter"

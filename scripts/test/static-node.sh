@@ -14,24 +14,22 @@ ART_URL=$8
 ART_USER=$9
 ART_PASSWORD=${10}
 
-# Install configured version of Node.js via nvm if present
-# Also install JDK correctly depending on what the underlying Linux image is
-# Ubuntu or Alpine
-if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ]; then
-    # Dependency for sonarscanner
-    export ENV DEBIAN_FRONTEND noninteractive
-    apt-get -y update
-    apt-get --no-install-recommends -y install openjdk-8-jdk unzip
+# Dependency for sonarscanner
+export ENV DEBIAN_FRONTEND noninteractive
+apt-get -y update
+apt-get --no-install-recommends -y install openjdk-8-jdk unzip
 
+echo "Running with nvm..."
+unset npm_config_prefix
+source ~/.nvm/nvm.sh
+
+# Install configured version of Node.js via nvm if present
+if [ "$LANGUAGE_VERSION" == "undefined" ] || [ "$LANGUAGE_VERSION" == "" ]; then
     # Set Node.js version
-    echo "Running with nvm..."
-    unset npm_config_prefix
-    source ~/.nvm/nvm.sh
-    nvm use $LANGUAGE_VERSION
-else
-    # Dependency for sonarscanner
-    apk add openjdk8
+    LANGUAGE_VERSION=12
 fi
+
+nvm use $LANGUAGE_VERSION
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false

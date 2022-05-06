@@ -6,6 +6,19 @@ LANGUAGE_VERSION=$1
 BUILD_TOOL=$2
 CYPRESS_INSTALL_BINARY=$3
 
+
+# Install specified version of Node.js
+echo "Using NVM with Node version: $LANGUAGE_VERSION"
+unset npm_config_prefix
+source ~/.nvm/nvm.sh
+
+if [ "$LANGUAGE_VERSION" == "undefined" ] || [ "$LANGUAGE_VERSION" == "" ]; then
+    LANGUAGE_VERSION=12
+fi
+
+nvm install $LANGUAGE_VERSION
+nvm use $LANGUAGE_VERSION
+
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
 [[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false

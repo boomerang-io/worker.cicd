@@ -110,7 +110,8 @@ module.exports = {
         log.debug("Commencing static tests");
         shell.cd(workdir);
         await exec(`${shellDir}/test/static-java.sh \
-        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["buildTool"]} \
+        ${version} \
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
@@ -126,7 +127,8 @@ module.exports = {
         await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
         shell.cd(workdir);
         await exec(`${shellDir}/test/unit-java.sh \
-        ${taskParams["buildTool"]} ${version} \
+        ${taskParams["buildTool"]} \
+        ${version} \
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
@@ -363,7 +365,10 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]}`);
+        ${taskParams["systemComponentName"]} \\
+        ${JSON.stringify(taskParams["artifactoryUrl"])} \
+        ${taskParams["artifactoryUser"]} \
+        ${taskParams["artifactoryPassword"]}`);
       }
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
@@ -374,7 +379,10 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]}`);
+        ${taskParams["systemComponentName"]} \
+        ${JSON.stringify(taskParams["artifactoryUrl"])} \
+        ${taskParams["artifactoryUser"]} \
+        ${taskParams["artifactoryPassword"]}`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
