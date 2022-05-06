@@ -10,6 +10,9 @@ SONAR_APIKEY=$5
 SONAR_GATEID=2
 COMPONENT_ID=$6
 COMPONENT_NAME=$7
+ART_URL=$8
+ART_USER=$9
+ART_PASSWORD=${10}
 
 # Install configured version of Node.js via nvm if present
 # Also install JDK correctly depending on what the underlying Linux image is
@@ -48,7 +51,7 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_U
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
 # Install sonar-scanner
-curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747.zip
+curl --insecure -o /opt/sonarscanner.zip -u $ART_USER:$ART_PASSWORD $ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER

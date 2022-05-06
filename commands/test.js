@@ -115,7 +115,11 @@ module.exports = {
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
-        ${taskParams["sonarExclusions"]}`);
+        ${taskParams["sonarExclusions"]} \
+        ${JSON.stringify(taskParams["artifactoryUrl"])} \
+        ${taskParams["artifactoryUser"]} \
+        ${taskParams["artifactoryPassword"]} \
+        `);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
@@ -126,7 +130,11 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]}`);
+        ${taskParams["systemComponentName"]} \       
+        ${JSON.stringify(taskParams["artifactoryUrl"])} \
+        ${taskParams["artifactoryUser"]} \
+        ${taskParams["artifactoryPassword"]} \
+        `);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");

@@ -57,7 +57,7 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qu
 
 # Install sonar-scanner
 # TODO: should be a systems CICD property
-curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747.zip
+curl --insecure -o /opt/sonarscanner.zip -u $ART_USER:$ART_PASSWORD https://tools.boomerangplatform.net/artifactory/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
