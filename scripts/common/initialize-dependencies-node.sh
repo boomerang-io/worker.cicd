@@ -20,7 +20,7 @@ fi
 echo "Using build tool $BUILD_TOOL"
 
 # Install configured version of Node.js via nvm if present
-if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ]; then
 
     # Install specified version of Node.js
     echo "Using NVM with Node version: $LANGUAGE_VERSION"
@@ -42,7 +42,18 @@ fi
 
 # Install pnpm if set as the build tool
 if [ "$USE_PNPM" == true ]; then
-    npm install --global pnpm
+    # check the version of Node.js that is running to determine what version of pnpm to install
+    # pnpm 7 does not support Node.js v12
+    version_pattern="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
+    node_version=$(node -v)
+    if [[ $node_version =~ $pattern ]]; then
+        major_version=${BASH_REMATCH[1]}
+        if [[ major_version -gt 12 ]]; then
+            npm install --global pnpm@7
+        else
+            npm install --global pnpm@6
+        fi
+    fi
 fi
 
 curl -k -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/boomerang -o ~/.npmrc

@@ -17,7 +17,7 @@ if [[ $SCOPE != @* ]]; then
 fi
 
 # Install configured version of Node.js via nvm if present
-if [ "$LANGUAGE_VERSION" != "undefined" ]; then
+if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ]; then
     echo "Running with nvm..."
     unset npm_config_prefix
     source ~/.nvm/nvm.sh
