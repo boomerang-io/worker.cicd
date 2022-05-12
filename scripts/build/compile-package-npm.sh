@@ -30,6 +30,9 @@ if [ "$DEBUG" == "true" ]; then
     DEBUG_OPTS+="--verbose"
 fi
 
+# Set JS heap space
+export NODE_OPTIONS="--max-old-space-size=8192"
+
 curl -k -v -u $ART_USER:$ART_PASSWORD $ART_URL/api/npm/boomeranglib-npm/auth/"${SCOPE:1}" -o .npmrc
 npm publish --registry $ART_URL/api/npm/boomeranglib-npm/ $DEBUG_OPTS
 RESULT=$?
