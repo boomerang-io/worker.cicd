@@ -20,6 +20,9 @@ else
     echo "Setting build script to $BUILD_SCRIPT..."
 fi
 
+# Set JS heap space
+export NODE_OPTIONS="--max-old-space-size=8192"
+
 # This needs to be checking for undefined as thats whats returned by the node command
 SCRIPT=$(node -pe "require('./package.json').scripts.$BUILD_SCRIPT");
 if [ "$SCRIPT" != "undefined" ]; then
@@ -32,4 +35,3 @@ else
     # Allow Node.js components to not have a build step
     echo "npm script ($BUILD_SCRIPT) not defined in the package.json file. Skipping..."
 fi
-
