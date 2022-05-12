@@ -52,10 +52,7 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qu
 echo "Installing sonar-scanner"
 echo "$ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip"
 curl --insecure -o /opt/sonarscanner.zip -L -u $ART_USER:$ART_PASSWORD $ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip
-echo "Post sonar-scanner cURL"
-ls -al /opt
 unzip -o /opt/sonarscanner.zip -d /opt
-ls -alR /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
 if [ "$DEBUG" == "true" ]; then
@@ -63,12 +60,8 @@ if [ "$DEBUG" == "true" ]; then
 else
     SONAR_FLAGS=
 fi
-echo "Echoing SONAR_FOLDER and SONAR_HOME"
-echo $SONAR_FOLDER
-echo $SONAR_HOME
 
 # Run linting script
-
 SCRIPT=$(node -pe "require('./package.json').scripts.lint");
 if [[ "$SCRIPT" != "undefined" ]]; then
     npm run lint
