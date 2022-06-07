@@ -23,13 +23,20 @@ EOL
 
 if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 	python -m pip install --user --upgrade setuptools wheel
-	
+
 	python setup.py sdist bdist_wheel
 	python setup.py bdist_wheel upload -r local
-	
+
 else
-	python3 -m pip install --user --upgrade setuptools wheel
-	
-	python3 setup.py sdist bdist_wheel
-	python3 setup.py bdist_wheel upload -r local		
+	apk add py3-twine
+
+	python3 setup.py sdist
+	pip3 wheel . -w dist
+
+	twine upload --repository local dist/*
+
+	# python3 -m pip install --user --upgrade setuptools wheel
+	#
+	# python3 setup.py sdist bdist_wheel
+	# python3 setup.py bdist_wheel upload -r local
 fi

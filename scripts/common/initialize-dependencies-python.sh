@@ -14,10 +14,10 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
     apk add python python-dev py-pip
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3 ..."
-    apk add python3 python3-dev
+    apk add python3 python3-dev py3-pip
 else
     echo "Defaulting to and installing Python 3 ..."
-    apk add python3 python3-dev
+    apk add python3 python3-dev py3-pip
 fi
 
 apk add gcc g++
