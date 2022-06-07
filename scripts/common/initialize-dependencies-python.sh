@@ -12,12 +12,18 @@ fi
 if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
     echo "Installing Python 2 ..."
     apk add python python-dev py-pip
+
+    pip install --upgrade pip
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3 ..."
     apk add python3 python3-dev py3-pip
+
+    pip3 install --upgrade pip
 else
     echo "Defaulting to and installing Python 3 ..."
     apk add python3 python3-dev py3-pip
+
+    pip3 install --upgrade pip
 fi
 
 apk add gcc g++

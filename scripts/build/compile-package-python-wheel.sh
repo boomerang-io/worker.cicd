@@ -28,14 +28,14 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 	python setup.py bdist_wheel upload -r local
 
 else
-	echo "Installing twine ..."
-	pip3 install twine
+	echo "Installing tools ..."
+	pip3 install setuptools wheel twine
 
 	echo "Compiling app ..."
-	python3 setup.py sdist
+	python3 setup.py sdist bdist_wheel
 
 	echo "Packaging wheel ..."
-	pip3 wheel . -w dist
+	pip3 wheel . -w bdist_wheel
 
 	echo "Pushing wheel to pypi repository ..."
 	twine upload --repository local dist/*
