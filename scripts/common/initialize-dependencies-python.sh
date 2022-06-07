@@ -26,4 +26,5 @@ else
     pip3 install --upgrade pip
 fi
 
-apk add gcc g++
+echo "Installing additional tools & libraries ..."
+apk add gcc g++ libffi libffi-dev
