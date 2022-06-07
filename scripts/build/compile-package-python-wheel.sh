@@ -8,8 +8,8 @@ ART_URL=$3
 ART_REPO_ID=$4
 ART_REPO_USER=$5
 ART_REPO_PASSWORD=$6
-ART_REPO_HOME=~/.pypirc
 
+ART_REPO_HOME=~/.pypirc
 cat >> $ART_REPO_HOME <<EOL
 [distutils]
 index-servers = local
@@ -18,6 +18,9 @@ repository: $ART_URL/$ART_REPO_ID
 username: $ART_REPO_USER
 password: $ART_REPO_PASSWORD
 EOL
+
+echo "Echoing $ART_REPO_HOME ..."
+cat $ART_REPO_HOME
 
 # TODO Determine if we need to override `version` in setup.py using $VERSION_NAME
 
@@ -38,5 +41,5 @@ else
 	pip3 wheel . -w bdist_wheel
 
 	echo "Pushing wheel to pypi repository ..."
-	twine upload --repository local dist/*
+	twine upload --repository local bdist_wheel/*
 fi
