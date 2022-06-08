@@ -19,9 +19,6 @@ username: $ART_REPO_USER
 password: $ART_REPO_PASSWORD
 EOL
 
-echo "Echoing $ART_REPO_HOME ..."
-cat $ART_REPO_HOME
-
 # TODO Determine if we need to override `version` in setup.py using $VERSION_NAME
 
 if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
@@ -31,15 +28,8 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 	python setup.py bdist_wheel upload -r local
 
 else
-	echo "Installing setuptools, wheel, and twine ..."
 	pip3 install setuptools wheel twine
-
-	echo "Compiling ..."
 	python3 setup.py sdist bdist_wheel
-
-	echo "Packaging wheel ..."
 	pip3 wheel . -w bdist_wheel
-
-	echo "Pushing wheel to pypi repository ..."
 	twine upload --repository local bdist_wheel/*
 fi
