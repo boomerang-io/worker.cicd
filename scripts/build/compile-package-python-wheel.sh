@@ -22,11 +22,12 @@ EOL
 # TODO Determine if we need to override `version` in setup.py using $VERSION_NAME
 
 if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
-	python -m pip install --user --upgrade setuptools wheel
-
-	python setup.py sdist bdist_wheel
-	python setup.py bdist_wheel upload -r local
-
+	# python -m pip install --user --upgrade setuptools wheel
+	#
+	# python setup.py sdist bdist_wheel
+	# python setup.py bdist_wheel upload -r local
+	echo "Python 2 no longer supported ..."
+	exit 89
 else
 	pip3 install setuptools wheel twine
 	python3 setup.py sdist bdist_wheel

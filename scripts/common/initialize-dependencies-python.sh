@@ -10,10 +10,12 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
-    echo "Installing Python 2 ..."
-    apk add python python-dev py-pip
-
-    pip install --upgrade pip
+    # echo "Installing Python 2 ..."
+    # apk add python python-dev py-pip
+    #
+    # pip install --upgrade pip
+    echo "Python 2 no longer supported ..."
+    exit 89
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3 ..."
     apk add python3 python3-dev py3-pip
