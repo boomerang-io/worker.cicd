@@ -13,7 +13,7 @@ GIT_COMMIT_ID=$5
 GIT_LFS=false
 if [ "$6" != "" ]; then
     GIT_LFS=$6
-fi 
+fi
 
 if [ "$DEBUG" == "true" ]; then
     echo "REPO_FOLDER=$REPO_FOLDER"
@@ -75,15 +75,28 @@ if [ "$GIT_CLONE_URL" == "undefined" ]; then
     echo "Repository URL is undefined."
     exit 1
 fi
-# git clone --depth 1 --progress $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
+
 git clone --progress $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
+
+GIT_RC=$?
+if [ $GIT_RC != 0 ]; then
+    echo "Git clone repository failed"
+    exit 1
+fi
 
 if  [ -d "$REPO_FOLDER" ]; then
     cd $REPO_FOLDER
     if [ "$DEBUG" == "true" ]; then
         ls -ltr
     fi
+
     git checkout --progress --recurse-submodules $GIT_COMMIT_ID
+
+    GIT_RC=$?
+    if [ $GIT_RC != 0 ]; then
+        echo "Git checkout failed"
+        exit 1
+    fi
 else
     echo "Git repository folder does not exist"
     exit 1
