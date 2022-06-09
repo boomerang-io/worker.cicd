@@ -8,8 +8,8 @@ ART_URL=$3
 ART_REPO_ID=$4
 ART_REPO_USER=$5
 ART_REPO_PASSWORD=$6
-ART_REPO_HOME=~/.pypirc
 
+ART_REPO_HOME=~/.pypirc
 cat >> $ART_REPO_HOME <<EOL
 [distutils]
 index-servers = local
@@ -22,14 +22,11 @@ EOL
 # TODO Determine if we need to override `version` in setup.py using $VERSION_NAME
 
 if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
-	python -m pip install --user --upgrade setuptools wheel
-	
-	python setup.py sdist bdist_wheel
-	python setup.py bdist_wheel upload -r local
-	
+	echo "Python 2 no longer supported..."
+	exit 89
 else
-	python3 -m pip install --user --upgrade setuptools wheel
-	
+	pip3 install setuptools wheel twine
 	python3 setup.py sdist bdist_wheel
-	python3 setup.py bdist_wheel upload -r local		
+	pip3 wheel . -w bdist_wheel
+	twine upload --repository local bdist_wheel/*
 fi
