@@ -93,17 +93,17 @@ if [ "$HTTP_PROXY" != "" ]; then
     fi
 fi
 
-if [ -d "/cache" ]; then
+if [ -d "/workflow/cache/modules" ]; then
+    # echo "Check .pnpm-store folder exists..."
+    # mkdir -p /workflow/cache/modules/.pnpm-store
     echo "Setting cache..."
-    mkdir -p /cache/modules
-    ls -ltr /cache
     if [ "$USE_NPM" == true ]; then
-        npm config set cache /cache/modules
+        npm config set cache /workflow/cache/modules
     fi
     if [ "$USE_YARN" == true ]; then
-        yarn config set cache-folder /cache/modules
+        yarn config set cache-folder /workflow/cache/modules
     fi
     if [ "$USE_PNPM" == true ]; then
-        pnpm config set cache /cache/modules
+        pnpm config set store-dir /workflow/cache/modules
     fi
 fi
