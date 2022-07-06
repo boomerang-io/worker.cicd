@@ -50,9 +50,10 @@ export NODE_OPTIONS="--max-old-space-size=8192"
 
 if [ -z "$CYPRESS_INSTALL_BINARY" ]; then
     echo "Defaulting Cypress install binary to 0..."
-    CYPRESS_INSTALL_BINARY=0
+    export CYPRESS_INSTALL_BINARY=0
 else
     echo "Setting Cypress install binary to $CYPRESS_INSTALL_BINARY..."
+    export CYPRESS_INSTALL_BINARY=$CYPRESS_INSTALL_BINARY
 fi
 
 # Determine how to install dependencies based on package manager and lockfile
