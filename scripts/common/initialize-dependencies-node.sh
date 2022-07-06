@@ -7,6 +7,7 @@ BUILD_TOOL=$2
 ART_URL=$3
 ART_USER=$4
 ART_PASSWORD=$5
+CACHE_ENABLED=$6
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
@@ -93,17 +94,28 @@ if [ "$HTTP_PROXY" != "" ]; then
     fi
 fi
 
-if [ -d "/workflow/cache/modules" ]; then
-    # echo "Check .pnpm-store folder exists..."
-    # mkdir -p /workflow/cache/modules/.pnpm-store
-    echo "Setting cache..."
-    if [ "$USE_NPM" == true ]; then
-        npm config set cache /workflow/cache/modules
-    fi
-    if [ "$USE_YARN" == true ]; then
-        yarn config set cache-folder /workflow/cache/modules
-    fi
-    if [ "$USE_PNPM" == true ]; then
-        pnpm config set store-dir /workflow/cache/modules
-    fi
+[[ "$CACHE_ENABLED" == "true" ]] && USE_CACHE=true || USE_CACHE=false
+echo "Cache enabled: $USE_CACHE"
+
+if [ "$USE_CACHE" == true ]; then
+  echo "Checking cache folder..."
+  if [ ! -d "/workflow/cache/modules" ]; then
+    echo "Creating cache folder..."
+    mkdir -p /workflow/cache/modules
+  fi
+
+  if [ -d "/workflow/cache/modules" ]; then
+      # echo "Check .pnpm-store folder exists..."
+      # mkdir -p /workflow/cache/modules/.pnpm-store
+      echo "Setting cache..."
+      if [ "$USE_NPM" == true ]; then
+          npm config set cache /workflow/cache/modules
+      fi
+      if [ "$USE_YARN" == true ]; then
+          yarn config set cache-folder /workflow/cache/modules
+      fi
+      if [ "$USE_PNPM" == true ]; then
+          pnpm config set store-dir /workflow/cache/modules
+      fi
+  fi
 fi

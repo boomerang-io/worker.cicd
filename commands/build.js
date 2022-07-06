@@ -223,7 +223,8 @@ module.exports = {
       "${taskParams["buildTool"]}" \
       ${JSON.stringify(taskParams["repoUrl"])} \
       ${taskParams["repoUser"]} \
-      "${taskParams["repoPassword"]}"`);
+      "${taskParams["repoPassword"]}" \
+      "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
@@ -265,7 +266,8 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-node.sh \
       "${taskParams["languageVersion"]}" \
       "${taskParams["buildTool"]}" ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoUser"]} \
-      "${taskParams["repoPassword"]}"`);
+      "${taskParams["repoPassword"]}" \
+      "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");

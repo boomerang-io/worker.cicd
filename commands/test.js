@@ -132,7 +132,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \       
+        ${taskParams["systemComponentName"]} \
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
@@ -347,7 +347,8 @@ module.exports = {
       ${taskParams["buildTool"]} \
       ${JSON.stringify(taskParams["artifactoryUrl"])} \
       ${taskParams["artifactoryUser"]} \
-      ${taskParams["artifactoryPassword"]}`);
+      ${taskParams["artifactoryPassword"]} \
+      "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Test Artifacts");
       shell.cd(workdir);
@@ -469,7 +470,8 @@ module.exports = {
       ${taskParams["buildTool"]} \
       ${JSON.stringify(taskParams["artifactoryUrl"])} \
       ${taskParams["artifactoryUser"]} \
-      ${taskParams["artifactoryPassword"]}`);
+      ${taskParams["artifactoryPassword"]} \
+      "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Test Artifacts");
       shell.cd(workdir);
