@@ -231,7 +231,7 @@ module.exports = {
       await exec(`${shellDir}/build/initialize-dependencies-node.sh \
       "${taskParams["languageVersion"]}" \
       "${taskParams["buildTool"]}" \
-      "${taskParams["nodeCypressInstallBinary"]}"`);
+      "${taskParams["cypressInstallBinary"]}"`);
 
       await exec(`${shellDir}/build/compile-node.sh \
       "${taskParams["languageVersion"]}" \
@@ -274,7 +274,7 @@ module.exports = {
       await exec(`${shellDir}/build/initialize-dependencies-node.sh \
       "${taskParams["languageVersion"]}" \
       "${taskParams["buildTool"]}" \
-      "${taskParams["nodeCypressInstallBinary"]}"`);
+      "${taskParams["cypressInstallBinary"]}"`);
 
       await exec(`${shellDir}/build/compile-package-npm.sh \
       "${taskParams["languageVersion"]}" \

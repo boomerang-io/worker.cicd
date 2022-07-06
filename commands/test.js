@@ -355,7 +355,7 @@ module.exports = {
       await exec(`${shellDir}/test/initialize-dependencies-node.sh \
       ${taskParams["languageVersion"]} \
       ${taskParams["buildTool"]} \
-      ${taskParams["nodeCypressInstallBinary"]}`);
+      ${taskParams["cypressInstallBinary"]}`);
 
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
@@ -478,7 +478,7 @@ module.exports = {
       await exec(`${shellDir}/test/initialize-dependencies-node.sh \
       ${taskParams["languageVersion"]} \
       ${taskParams["buildTool"]} \
-      ${taskParams["nodeCypressInstallBinary"]}`);
+      ${taskParams["cypressInstallBinary"]}`);
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
