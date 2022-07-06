@@ -48,7 +48,7 @@ if [ "$USE_PNPM" == true ]; then
     version_pattern="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
     node_version=$(node -v)
     echo "Node version=$node_version"
-    if [[ $node_version =~ $pattern ]]; then
+    if [[ $node_version =~ $version_pattern ]]; then
         major_version=${BASH_REMATCH[1]}
         echo "Node major version=$major_version"
         if [[ $major_version -gt 12 ]]; then
