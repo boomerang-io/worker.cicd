@@ -47,11 +47,15 @@ if [ "$USE_PNPM" == true ]; then
     # pnpm 7 does not support Node.js v12
     version_pattern="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
     node_version=$(node -v)
+    echo "Node version=$node_version"
     if [[ $node_version =~ $pattern ]]; then
         major_version=${BASH_REMATCH[1]}
+        echo "Node major version=$major_version"
         if [[ $major_version -gt 12 ]]; then
+            echo "Installing pnpm v7"
             npm install --global pnpm@7
         else
+            echo "Installing pnpm v6"
             npm install --global pnpm@6
         fi
     fi
@@ -103,6 +107,9 @@ if [ "$USE_CACHE" == true ]; then
     echo "Creating cache folder..."
     mkdir -p /workflow/cache/modules
   fi
+
+  echo "Retrieving cache size..."
+  df -h | grep "workflow"
 
   if [ -d "/workflow/cache/modules" ]; then
       # echo "Check .pnpm-store folder exists..."
