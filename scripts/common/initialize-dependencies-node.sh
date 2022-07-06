@@ -108,8 +108,8 @@ if [ "$USE_CACHE" == true ]; then
     mkdir -p /workflow/cache/modules
   fi
 
-  echo "Retrieving cache size..."
-  df -h | grep "workflow"
+  echo "Checking cache size..."
+  du -h --max-depth=1 /workflow/cache/modules
 
   if [ -d "/workflow/cache/modules" ]; then
       # echo "Check .pnpm-store folder exists..."
