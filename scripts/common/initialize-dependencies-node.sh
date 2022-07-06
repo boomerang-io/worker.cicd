@@ -49,7 +49,7 @@ if [ "$USE_PNPM" == true ]; then
     node_version=$(node -v)
     if [[ $node_version =~ $pattern ]]; then
         major_version=${BASH_REMATCH[1]}
-        if [[ major_version -gt 12 ]]; then
+        if [[ $major_version -gt 12 ]]; then
             npm install --global pnpm@7
         else
             npm install --global pnpm@6
