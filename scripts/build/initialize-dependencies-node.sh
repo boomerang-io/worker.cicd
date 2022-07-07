@@ -4,7 +4,6 @@
 
 LANGUAGE_VERSION=$1
 BUILD_TOOL=$2
-CYPRESS_INSTALL_BINARY=$3
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
@@ -28,7 +27,6 @@ if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
     echo "LANGUAGE_VERSION=$LANGUAGE_VERSION"
     echo "BUILD_SCRIPT=$BUILD_SCRIPT"
-    echo "CYPRESS_INSTALL_BINARY=$CYPRESS_INSTALL_BINARY"
 fi
 
 # Install configured version of Node.js via nvm if present
@@ -46,15 +44,16 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 # Set JS heap space
+echo "Set JS heap space to 8192..."
 export NODE_OPTIONS="--max-old-space-size=8192"
 
-if [ -z "$CYPRESS_INSTALL_BINARY" ]; then
-    echo "Defaulting Cypress install binary to 0..."
-    export CYPRESS_INSTALL_BINARY=0
-else
-    echo "Setting Cypress install binary to $CYPRESS_INSTALL_BINARY..."
-    export CYPRESS_INSTALL_BINARY=$CYPRESS_INSTALL_BINARY
-fi
+# Set Cypress Install Binary flag
+echo "Disabling Cypress Install Binary..."
+export CYPRESS_INSTALL_BINARY=0
+
+# Set Husky hook flag
+echo "Disabling Husky hooks..."
+export HUSKY=0
 
 # Determine how to install dependencies based on package manager and lockfile
 if  [ "$USE_NPM" == true ]; then

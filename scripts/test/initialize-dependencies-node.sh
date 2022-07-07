@@ -50,6 +50,10 @@ else
     echo "Setting Cypress Install Binary to $CYPRESS_INSTALL_BINARY..."
 fi
 
+# Set Husky hook flag
+echo "Disabling Husky hooks..."
+export HUSKY=0
+
 # Determine how to install dependencies based on package manager and lockfile
 if  [ "$USE_NPM" == true ]; then
     if [ -e 'package-lock.json' ]; then
@@ -83,5 +87,3 @@ if [ "$USE_PNPM" == true ]; then
     echo "Running pnpm install..."
     pnpm install $DEBUG_OPTS
 fi
-
-
