@@ -2,3 +2,7 @@
 .vscode/
 .project
 .settings
+.DS_Store
+*.log
+
+
