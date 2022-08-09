@@ -70,6 +70,9 @@ module.exports = {
     shell.mkdir("-p", testdir);
     log.debug("Test Directory: ", testdir);
 
+    let buildTool = taskParams["buildTool"];
+    log.debug("Build Tool: ", buildTool);
+
     // log.debug("Copy source code from shared drive to container");
     // shell.mkdir("-p", workdir);
     // shell.cp("-R", dir + "/repository/*", testdir);
@@ -83,26 +86,28 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
-      log.debug("Checking Maven Configuration");
-      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<plugins>", undefined, false)) {
-        log.debug("No Maven plugins found, adding...");
-        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
-        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-      }
-      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
-        log.debug("...adding jacoco-maven-plugin.");
-        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
-        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-      }
-      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
-        log.debug("...adding sonar-maven-plugin.");
-        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
-        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-      }
-      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
-        log.debug("...adding maven-surefire-report-plugin.");
-        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
-        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+      if (buildTool === "maven") {
+        log.debug("Checking Maven Configuration");
+        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<plugins>", undefined, false)) {
+          log.debug("No Maven plugins found, adding...");
+          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
+          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        }
+        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
+          log.debug("...adding jacoco-maven-plugin.");
+          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
+          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        }
+        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
+          log.debug("...adding sonar-maven-plugin.");
+          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
+          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        }
+        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
+          log.debug("...adding maven-surefire-report-plugin.");
+          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
+          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        }
       }
 
       log.debug("Testing artifacts");
@@ -219,6 +224,9 @@ module.exports = {
     shell.mkdir("-p", testdir);
     log.debug("Test Directory: ", testdir);
 
+    let buildTool = taskParams["buildTool"];
+    log.debug("Build Tool: ", buildTool);
+
     // log.debug("Copy source code from shared drive to container");
     // shell.mkdir("-p", workdir);
     // shell.cp("-R", dir + "/repository/*", testdir);
@@ -232,26 +240,28 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
-      log.debug("Checking Maven Configuration");
-      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<plugins>", undefined, false)) {
-        log.debug("No Maven plugins found, adding...");
-        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
-        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-      }
-      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
-        log.debug("...adding jacoco-maven-plugin.");
-        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
-        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-      }
-      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
-        log.debug("...adding sonar-maven-plugin.");
-        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
-        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-      }
-      if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
-        log.debug("...adding maven-surefire-report-plugin.");
-        const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
-        common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+      if (buildTool === "maven") {
+        log.debug("Checking Maven Configuration");
+        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<plugins>", undefined, false)) {
+          log.debug("No Maven plugins found, adding...");
+          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
+          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        }
+        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
+          log.debug("...adding jacoco-maven-plugin.");
+          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
+          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        }
+        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
+          log.debug("...adding sonar-maven-plugin.");
+          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
+          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        }
+        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
+          log.debug("...adding maven-surefire-report-plugin.");
+          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
+          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
+        }
       }
 
       log.ci("Testing artifacts");

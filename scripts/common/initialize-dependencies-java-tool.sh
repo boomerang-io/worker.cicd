@@ -18,5 +18,3 @@ elif [ "$BUILD_TOOL" == "gradle" ]; then
 else
     exit 99
 fi
-
-ls -alR /workspace/activity
