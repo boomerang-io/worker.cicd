@@ -9,11 +9,13 @@ if [ "$BUILD_TOOL" == "maven" ]; then
     # TODO update to use build tool if specified
 elif [ "$BUILD_TOOL" == "gradle" ]; then
     echo "Installing gradle ..."
-    wget https://services.gradle.org/distributions/gradle-$BUILD_TOOL_VERSION-bin.zip
+    wget https://services.gradle.org/distributions/gradle-$BUILD_TOOL_VERSION-bin.zip -P /data
     mkdir -p /opt/gradle
-    unzip -d /opt/gradle gradle-$BUILD_TOOL_VERSION-bin.zip
+    unzip -d /opt/gradle /data/gradle-$BUILD_TOOL_VERSION-bin.zip
     export PATH=$PATH:/opt/gradle/gradle-$BUILD_TOOL_VERSION/bin
     gradle -v
 else
     exit 99
 fi
+
+ls -alR /workspace/activity

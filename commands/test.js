@@ -132,7 +132,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \       
+        ${taskParams["systemComponentName"]} \
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
@@ -230,10 +230,9 @@ module.exports = {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
-      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh \
-      ${taskParams["buildTool"]} \
-      ${taskParams["buildToolVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
+      log.debug("Checking Maven Configuration");
       if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<plugins>", undefined, false)) {
         log.debug("No Maven plugins found, adding...");
         const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
