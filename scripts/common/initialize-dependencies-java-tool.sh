@@ -10,11 +10,6 @@ if [ "$BUILD_TOOL" == "maven" ]; then
 elif [ "$BUILD_TOOL" == "gradle" ]; then
     echo "Installing gradle ..."
     apk add gradle
-    # wget https://services.gradle.org/distributions/gradle-$BUILD_TOOL_VERSION-bin.zip -P /data
-    # mkdir -p /opt/gradle
-    # unzip -d /opt/gradle /data/gradle-$BUILD_TOOL_VERSION-bin.zip
-    # export PATH=$PATH:/opt/gradle/gradle-$BUILD_TOOL_VERSION/bin
-    # gradle -v
 else
     exit 99
 fi
