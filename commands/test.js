@@ -203,6 +203,7 @@ module.exports = {
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
+        ${taskParams["version"]} \
         ${version} \
         "${taskParams["teamName"]}" \
         ${taskParams["whitesourceApiKey"]} \
@@ -336,6 +337,7 @@ module.exports = {
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
+        ${taskParams["version"]} \
         ${version} \
         "${taskParams["teamName"]}" \
         ${taskParams["whitesourceApiKey"]} \
@@ -474,6 +476,7 @@ module.exports = {
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
+        ${taskParams["version"]} \
         ${version} \
         "${taskParams["teamName"]}" \
         ${taskParams["whitesourceApiKey"]} \
@@ -589,6 +592,7 @@ module.exports = {
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
+        ${taskParams["version"]} \
         ${version} \
         "${taskParams["teamName"]}" \
         ${taskParams["whitesourceApiKey"]} \
@@ -693,6 +697,7 @@ module.exports = {
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
+        ${taskParams["version"]} \
         ${version} \
         "${taskParams["teamName"]}" \
         ${taskParams["whitesourceApiKey"]} \
