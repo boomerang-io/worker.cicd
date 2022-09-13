@@ -203,12 +203,12 @@ module.exports = {
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} ${version} \
-        ${taskParams["teamName"]}" \
-        ${taskParams["whitesourceApiKey"]}" \
-        ${taskParams["whitesourceUserKey"]}" \
-        ${taskParams["whitesourceProductName"]}" \
-        ${taskParams["whitesourceProductToken"]}" \
-        ${taskParams["whitesourceWssUrl"]}" \
+        "${taskParams["teamName"]}" \
+        ${taskParams["whitesourceApiKey"]} \
+        ${taskParams["whitesourceUserKey"]} \
+        ${taskParams["whitesourceProductName"]} \
+        ${taskParams["whitesourceProductToken"]} \
+        ${taskParams["whitesourceWssUrl"]} \
         `);
       }
     } catch (e) {
