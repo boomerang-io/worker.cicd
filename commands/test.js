@@ -199,10 +199,11 @@ module.exports = {
       if (testTypes.includes(TestType.WhiteSource)) {
         log.debug("Commencing WhiteSource scan");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${taskParams["whitesourceAgentDownloadUrl"]}`);
+        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} ${version} \
+        ${taskParams["systemComponentName"]} \
+        ${version} \
         "${taskParams["teamName"]}" \
         ${taskParams["whitesourceApiKey"]} \
         ${taskParams["whitesourceUserKey"]} \
@@ -331,16 +332,17 @@ module.exports = {
       if (testTypes.includes(TestType.WhiteSource)) {
         log.debug("Commencing WhiteSource scan");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${taskParams["whitesourceAgentDownloadUrl"]}`);
+        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} ${version} \
-        ${taskParams["teamName"]}" \
-        ${taskParams["whitesourceApiKey"]}" \
-        ${taskParams["whitesourceUserKey"]}" \
-        ${taskParams["whitesourceProductName"]}" \
-        ${taskParams["whitesourceProductToken"]}" \
-        ${taskParams["whitesourceWssUrl"]}" \
+        ${taskParams["systemComponentName"]} \
+        ${version} \
+        "${taskParams["teamName"]}" \
+        ${taskParams["whitesourceApiKey"]} \
+        ${taskParams["whitesourceUserKey"]} \
+        ${taskParams["whitesourceProductName"]} \
+        ${taskParams["whitesourceProductToken"]} \
+        ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
         `);
       }
     } catch (e) {
@@ -468,16 +470,17 @@ module.exports = {
       if (testTypes.includes(TestType.WhiteSource)) {
         log.debug("Commencing WhiteSource scan");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${taskParams["whitesourceAgentDownloadUrl"]}`);
+        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} ${version} \
-        ${taskParams["teamName"]}" \
-        ${taskParams["whitesourceApiKey"]}" \
-        ${taskParams["whitesourceUserKey"]}" \
-        ${taskParams["whitesourceProductName"]}" \
-        ${taskParams["whitesourceProductToken"]}" \
-        ${taskParams["whitesourceWssUrl"]}" \
+        ${taskParams["systemComponentName"]} \
+        ${version} \
+        "${taskParams["teamName"]}" \
+        ${taskParams["whitesourceApiKey"]} \
+        ${taskParams["whitesourceUserKey"]} \
+        ${taskParams["whitesourceProductName"]} \
+        ${taskParams["whitesourceProductToken"]} \
+        ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
         `);
       }
     } catch (e) {
@@ -582,16 +585,17 @@ module.exports = {
       if (testTypes.includes(TestType.WhiteSource)) {
         log.debug("Commencing WhiteSource scan");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${taskParams["whitesourceAgentDownloadUrl"]}`);
+        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} ${version} \
-        ${taskParams["teamName"]}" \
-        ${taskParams["whitesourceApiKey"]}" \
-        ${taskParams["whitesourceUserKey"]}" \
-        ${taskParams["whitesourceProductName"]}" \
-        ${taskParams["whitesourceProductToken"]}" \
-        ${taskParams["whitesourceWssUrl"]}" \
+        ${taskParams["systemComponentName"]} \
+        ${version} \
+        "${taskParams["teamName"]}" \
+        ${taskParams["whitesourceApiKey"]} \
+        ${taskParams["whitesourceUserKey"]} \
+        ${taskParams["whitesourceProductName"]} \
+        ${taskParams["whitesourceProductToken"]} \
+        ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
         `);
       }
     } catch (e) {
@@ -685,16 +689,17 @@ module.exports = {
       if (testTypes.includes(TestType.WhiteSource)) {
         log.debug("Commencing WhiteSource scan");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${taskParams["whitesourceAgentDownloadUrl"]}`);
+        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} ${version} \
-        ${taskParams["teamName"]}" \
-        ${taskParams["whitesourceApiKey"]}" \
-        ${taskParams["whitesourceUserKey"]}" \
-        ${taskParams["whitesourceProductName"]}" \
-        ${taskParams["whitesourceProductToken"]}" \
-        ${taskParams["whitesourceWssUrl"]}" \
+        ${taskParams["systemComponentName"]} \
+        ${version} \
+        "${taskParams["teamName"]}" \
+        ${taskParams["whitesourceApiKey"]} \
+        ${taskParams["whitesourceUserKey"]} \
+        ${taskParams["whitesourceProductName"]} \
+        ${taskParams["whitesourceProductToken"]} \
+        ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
         `);
       }
     } catch (e) {
