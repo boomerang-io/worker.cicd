@@ -208,7 +208,7 @@ module.exports = {
         ${taskParams["whitesourceUserKey"]} \
         ${taskParams["whitesourceProductName"]} \
         ${taskParams["whitesourceProductToken"]} \
-        ${taskParams["whitesourceWssUrl"]} \
+        ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
         `);
       }
     } catch (e) {
