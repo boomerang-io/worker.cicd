@@ -38,7 +38,6 @@ ls -lh whitesource
 if [ -f "whitesource/scan_report.json" ]; then
   echo "Whitesource Scan Report (scan_report.json) is generated."
   echo "Uploading Scan Report to SocreCard Ingest Service"
-  # TODO
   SCORECARD_INGEST_URL="http://bmrg-cicd-services-ingestion/ingestion/whitesource?ciComponentId=$COMPONENT_ID&versionName=$COMPONENT_VERSION"
   curl -X POST $SCORECARD_INGEST_URL \
     --header 'Accept: application/json' \
