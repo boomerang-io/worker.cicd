@@ -25,10 +25,10 @@ export WS_GENERATESCANREPORT="true"
 export WS_SCANREPORTFILENAMEFORMAT="static"
 export WS_COMMANDTIMEOUT=3600
 
-echo "Whitesource API Key: $WS_APIKEY"
-echo "Whitesource User Key: $WS_USERKEY"
+echo "Whitesource API Key: *************"
+echo "Whitesource User Key: *************"
 echo "Whitesource Product Name: $WS_PRODUCTNAME"
-echo "Whitesource Product Token: $WS_PRODUCTTOKEN"
+echo "Whitesource Product Token: *************"
 echo "Whitesource Project Name: $WS_PROJECTNAME"
 echo "Whitesource WSS URL: $WS_WSS_URL"
 
