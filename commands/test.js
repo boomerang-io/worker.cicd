@@ -7,7 +7,8 @@ const TestType = {
   Static: "static",
   Security: "security",
   SeleniumNative: "seleniumNative",
-  SeleniumCustom: "seleniumCustom"
+  SeleniumCustom: "seleniumCustom",
+  Library: "library"
 };
 
 Object.freeze(TestType);
@@ -195,6 +196,23 @@ module.exports = {
         ${shellDir} \
         ${testdir}`);
       }
+      if (testTypes.includes(TestType.Library)) {
+        log.debug("Commencing WhiteSource scan");
+        shell.cd(workdir);
+        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
+        await exec(`${shellDir}/test/whitesource.sh \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]} \
+        ${taskParams["version"]} \
+        ${version} \
+        "${taskParams["teamName"]}" \
+        ${taskParams["whitesourceApiKey"]} \
+        ${taskParams["whitesourceUserKey"]} \
+        ${taskParams["whitesourceProductName"]} \
+        ${taskParams["whitesourceProductToken"]} \
+        ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
+        `);
+      }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -311,6 +329,23 @@ module.exports = {
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Custom Selenium testing type not supported for Jar");
+      }
+      if (testTypes.includes(TestType.Library)) {
+        log.debug("Commencing WhiteSource scan");
+        shell.cd(workdir);
+        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
+        await exec(`${shellDir}/test/whitesource.sh \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]} \
+        ${taskParams["version"]} \
+        ${version} \
+        "${taskParams["teamName"]}" \
+        ${taskParams["whitesourceApiKey"]} \
+        ${taskParams["whitesourceUserKey"]} \
+        ${taskParams["whitesourceProductName"]} \
+        ${taskParams["whitesourceProductToken"]} \
+        ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
+        `);
       }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
@@ -434,6 +469,23 @@ module.exports = {
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Custom Selenium testing type not supported for Node.js");
       }
+      if (testTypes.includes(TestType.Library)) {
+        log.debug("Commencing WhiteSource scan");
+        shell.cd(workdir);
+        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
+        await exec(`${shellDir}/test/whitesource.sh \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]} \
+        ${taskParams["version"]} \
+        ${version} \
+        "${taskParams["teamName"]}" \
+        ${taskParams["whitesourceApiKey"]} \
+        ${taskParams["whitesourceUserKey"]} \
+        ${taskParams["whitesourceProductName"]} \
+        ${taskParams["whitesourceProductToken"]} \
+        ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
+        `);
+      }
     } catch (e) {
       log.err("Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -533,6 +585,23 @@ module.exports = {
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Custom Selenium testing type not supported for npm packages");
       }
+      if (testTypes.includes(TestType.Library)) {
+        log.debug("Commencing WhiteSource scan");
+        shell.cd(workdir);
+        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
+        await exec(`${shellDir}/test/whitesource.sh \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]} \
+        ${taskParams["version"]} \
+        ${version} \
+        "${taskParams["teamName"]}" \
+        ${taskParams["whitesourceApiKey"]} \
+        ${taskParams["whitesourceUserKey"]} \
+        ${taskParams["whitesourceProductName"]} \
+        ${taskParams["whitesourceProductToken"]} \
+        ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
+        `);
+      }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -620,6 +689,23 @@ module.exports = {
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Custom Selenium testing type not supported for Python");
+      }
+      if (testTypes.includes(TestType.Library)) {
+        log.debug("Commencing WhiteSource scan");
+        shell.cd(workdir);
+        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
+        await exec(`${shellDir}/test/whitesource.sh \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]} \
+        ${taskParams["version"]} \
+        ${version} \
+        "${taskParams["teamName"]}" \
+        ${taskParams["whitesourceApiKey"]} \
+        ${taskParams["whitesourceUserKey"]} \
+        ${taskParams["whitesourceProductName"]} \
+        ${taskParams["whitesourceProductToken"]} \
+        ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
+        `);
       }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
