@@ -99,22 +99,22 @@ if [ "$HTTP_PROXY" != "" ]; then
 fi
 
 [[ "$CACHE_ENABLED" == "true" ]] && USE_CACHE=true || USE_CACHE=false
-echo "Cache enabled: $USE_CACHE"
+echo "Package Cache enabled: $USE_CACHE"
 
 if [ "$USE_CACHE" == true ]; then
-  echo "Checking cache folder..."
+  echo "Checking package cache folder..."
   if [ ! -d "/workspace/workflow/cache/modules" ]; then
-    echo "Creating cache folder..."
+    echo "Creating package cache folder..."
     mkdir -p /workspace/workflow/cache/modules
   fi
 
-  echo "Checking cache size..."
+  echo "Checking package cache size..."
   du -h --max-depth=1 /workspace/workflow/cache/modules
 
   if [ -d "/workspace/workflow/cache/modules" ]; then
       # echo "Check .pnpm-store folder exists..."
       # mkdir -p /workspace/workflow/cache/modules/.pnpm-store
-      echo "Setting cache..."
+      echo "Setting package cache..."
       if [ "$USE_NPM" == true ]; then
           npm config set cache /workspace/workflow/cache/modules
       fi
