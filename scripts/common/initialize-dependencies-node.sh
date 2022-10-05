@@ -103,26 +103,26 @@ echo "Cache enabled: $USE_CACHE"
 
 if [ "$USE_CACHE" == true ]; then
   echo "Checking cache folder..."
-  if [ ! -d "/workflow/cache/modules" ]; then
+  if [ ! -d "/workspace/workflow/cache/modules" ]; then
     echo "Creating cache folder..."
-    mkdir -p /workflow/cache/modules
+    mkdir -p /workspace/workflow/cache/modules
   fi
 
   echo "Checking cache size..."
-  du -h --max-depth=1 /workflow/cache/modules
+  du -h --max-depth=1 /workspace/workflow/cache/modules
 
-  if [ -d "/workflow/cache/modules" ]; then
+  if [ -d "/workspace/workflow/cache/modules" ]; then
       # echo "Check .pnpm-store folder exists..."
-      # mkdir -p /workflow/cache/modules/.pnpm-store
+      # mkdir -p /workspace/workflow/cache/modules/.pnpm-store
       echo "Setting cache..."
       if [ "$USE_NPM" == true ]; then
-          npm config set cache /workflow/cache/modules
+          npm config set cache /workspace/workflow/cache/modules
       fi
       if [ "$USE_YARN" == true ]; then
-          yarn config set cache-folder /workflow/cache/modules
+          yarn config set cache-folder /workspace/workflow/cache/modules
       fi
       if [ "$USE_PNPM" == true ]; then
-          pnpm config set store-dir /workflow/cache/modules
+          pnpm config set store-dir /workspace/workflow/cache/modules
       fi
   fi
 fi
