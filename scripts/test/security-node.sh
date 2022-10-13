@@ -16,7 +16,7 @@ SHELL_DIR=${11}
 TEST_DIR=${12}
 
 # Install unzip 
-apt-get -y update && apt-get --no-install-recommends -y install
+apt-get -y update && apt-get --no-install-recommends -y install unzip
 
 # Download ASOC CLI
 echo "SAClientUtil File: $ART_URL/$ASOC_CLIENT_CLI"
