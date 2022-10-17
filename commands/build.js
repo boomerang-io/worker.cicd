@@ -223,14 +223,14 @@ module.exports = {
       "${taskParams["buildTool"]}" \
       ${JSON.stringify(taskParams["repoUrl"])} \
       ${taskParams["repoUser"]} \
-      "${taskParams["repoPassword"]}"`);
+      "${taskParams["repoPassword"]}" \
+      "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
       await exec(`${shellDir}/build/initialize-dependencies-node.sh \
       "${taskParams["languageVersion"]}" \
-      "${taskParams["buildTool"]}" \
-      "${taskParams["nodeCypressInstallBinary"]}"`);
+      "${taskParams["buildTool"]}"`);
 
       await exec(`${shellDir}/build/compile-node.sh \
       "${taskParams["languageVersion"]}" \
@@ -265,14 +265,14 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-node.sh \
       "${taskParams["languageVersion"]}" \
       "${taskParams["buildTool"]}" ${JSON.stringify(taskParams["repoUrl"])} ${taskParams["repoUser"]} \
-      "${taskParams["repoPassword"]}"`);
+      "${taskParams["repoPassword"]}" \
+      "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
       await exec(`${shellDir}/build/initialize-dependencies-node.sh \
       "${taskParams["languageVersion"]}" \
-      "${taskParams["buildTool"]}" \
-      "${taskParams["nodeCypressInstallBinary"]}"`);
+      "${taskParams["buildTool"]}"`);
 
       await exec(`${shellDir}/build/compile-package-npm.sh \
       "${taskParams["languageVersion"]}" \

@@ -391,14 +391,15 @@ module.exports = {
       ${taskParams["buildTool"]} \
       ${JSON.stringify(taskParams["artifactoryUrl"])} \
       ${taskParams["artifactoryUser"]} \
-      ${taskParams["artifactoryPassword"]}`);
+      ${taskParams["artifactoryPassword"]} \
+      "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Test Artifacts");
       shell.cd(workdir);
       await exec(`${shellDir}/test/initialize-dependencies-node.sh \
       ${taskParams["languageVersion"]} \
       ${taskParams["buildTool"]} \
-      ${taskParams["nodeCypressInstallBinary"]}`);
+      ${taskParams["cypressInstallBinary"]}`);
 
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
@@ -530,14 +531,15 @@ module.exports = {
       ${taskParams["buildTool"]} \
       ${JSON.stringify(taskParams["artifactoryUrl"])} \
       ${taskParams["artifactoryUser"]} \
-      ${taskParams["artifactoryPassword"]}`);
+      ${taskParams["artifactoryPassword"]} \
+      "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Test Artifacts");
       shell.cd(workdir);
       await exec(`${shellDir}/test/initialize-dependencies-node.sh \
       ${taskParams["languageVersion"]} \
       ${taskParams["buildTool"]} \
-      ${taskParams["nodeCypressInstallBinary"]}`);
+      ${taskParams["cypressInstallBinary"]}`);
 
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");

@@ -7,6 +7,7 @@ BUILD_TOOL=$2
 ART_URL=$3
 ART_USER=$4
 ART_PASSWORD=$5
+CACHE_ENABLED=$6
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
@@ -46,11 +47,15 @@ if [ "$USE_PNPM" == true ]; then
     # pnpm 7 does not support Node.js v12
     version_pattern="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
     node_version=$(node -v)
-    if [[ $node_version =~ $pattern ]]; then
+    echo "Node version=$node_version"
+    if [[ $node_version =~ $version_pattern ]]; then
         major_version=${BASH_REMATCH[1]}
-        if [[ major_version -gt 12 ]]; then
+        echo "Node major version=$major_version"
+        if [[ $major_version -gt 12 ]]; then
+            echo "Installing pnpm v7"
             npm install --global pnpm@7
         else
+            echo "Installing pnpm v6"
             npm install --global pnpm@6
         fi
     fi
@@ -93,17 +98,31 @@ if [ "$HTTP_PROXY" != "" ]; then
     fi
 fi
 
-if [ -d "/cache" ]; then
-    echo "Setting cache..."
-    mkdir -p /cache/modules
-    ls -ltr /cache
-    if [ "$USE_NPM" == true ]; then
-        npm config set cache /cache/modules
-    fi
-    if [ "$USE_YARN" == true ]; then
-        yarn config set cache-folder /cache/modules
-    fi
-    if [ "$USE_PNPM" == true ]; then
-        pnpm config set cache /cache/modules
-    fi
+[[ "$CACHE_ENABLED" == "true" ]] && USE_CACHE=true || USE_CACHE=false
+echo "Package Cache enabled: $USE_CACHE"
+
+if [ "$USE_CACHE" == true ]; then
+  echo "Checking package cache folder..."
+  if [ ! -d "/workspace/workflow/cache/modules" ]; then
+    echo "Creating package cache folder..."
+    mkdir -p /workspace/workflow/cache/modules
+  fi
+
+  echo "Checking package cache size..."
+  du -h --max-depth=1 /workspace/workflow/cache/modules
+
+  if [ -d "/workspace/workflow/cache/modules" ]; then
+      # echo "Check .pnpm-store folder exists..."
+      # mkdir -p /workspace/workflow/cache/modules/.pnpm-store
+      echo "Setting package cache..."
+      if [ "$USE_NPM" == true ]; then
+          npm config set cache /workspace/workflow/cache/modules
+      fi
+      if [ "$USE_YARN" == true ]; then
+          yarn config set cache-folder /workspace/workflow/cache/modules
+      fi
+      if [ "$USE_PNPM" == true ]; then
+          pnpm config set store-dir /workspace/workflow/cache/modules
+      fi
+  fi
 fi
