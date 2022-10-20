@@ -13,6 +13,7 @@ COMPONENT_NAME=$7
 ART_URL=$8
 ART_USER=$9
 ART_PASSWORD=${10}
+#$USER_EXCLUSIONS=${11}
 
 # Dependency for sonarscanner
 export ENV DEBIAN_FRONTEND noninteractive
@@ -69,6 +70,12 @@ if [[ "$SCRIPT" != "undefined" ]]; then
 fi
 echo "SONAR_FLAGS=$SONAR_FLAGS"
 
+# Set SonarQube scanning exclusions
+SONAR_EXCLUSIONS=-Dsonar.exclusions=**/node_modules/**
+# Place setter for new IF statement to handle user specified exclusions
+# SONAR_EXCLUSIONS="$SONAR_EXCLUSIONS,$USER_EXCLUSIONS"
+echo "SONAR_EXCLUSIONS=$SONAR_EXCLUSIONS"
+
 SRC_FOLDER=
 if [ -d "dist" ]; then
     echo "Source folder 'dist' exists."
@@ -79,13 +86,13 @@ elif [ -d "src" ]; then
 else
     echo "Source folder 'src' does not exist - defaulting to root folder of project and will scan all sub-folders."
     SRC_FOLDER=.
+
+    # Using root location as src folder means we will have a clash with worker.cicd folders so let's exclude those too
+    echo "Append worker.cicd sub-folders to exclusions so they are not scanned by SonarQube."
+    SONAR_EXCLUSIONS="$SONAR_EXCLUSIONS,/commands/**,/scripts/**"
+    echo "SONAR_EXCLUSIONS=$SONAR_EXCLUSIONS"
 fi
 echo "SRC_FOLDER=$SRC_FOLDER"
-
-SONAR_EXCLUSIONS=
-# Place setter for new IF statement to handle user specified exclusions
-SONAR_EXCLUSIONS="$SONAR_EXCLUSIONS -Dsonar.exclusions=**/node_modules/**,/commands/**,/scripts/**"
-echo "SONAR_EXCLUSIONS=$SONAR_EXCLUSIONS"
 
 # Set Node.js bin path
 NODE_PATH=$(which node)
