@@ -84,7 +84,7 @@ echo "SRC_FOLDER=$SRC_FOLDER"
 
 SONAR_EXCLUSIONS=
 # Place setter for new IF statement to handle user specified exclusions
-SONAR_EXCLUSIONS="$SONAR_EXCLUSIONS -Dsonar.exclusions=/node_modules/**,/commands/**,/scripts/**"
+SONAR_EXCLUSIONS="$SONAR_EXCLUSIONS -Dsonar.exclusions=**/node_modules/**,/commands/**,/scripts/**"
 echo "SONAR_EXCLUSIONS=$SONAR_EXCLUSIONS"
 
 # Set Node.js bin path
