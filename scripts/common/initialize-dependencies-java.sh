@@ -8,7 +8,7 @@ BUILD_LANGUAGE_VERSION=$1
 
 if [ "$BUILD_LANGUAGE_VERSION" == "17" ]; then
     echo "Language version specified. Installing Java 17..."
-    export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+    echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk" >> ~/.profile
     echo "export PATH=$JAVA_HOME/bin:$PATH" >> ~/.profile
 elif [ "$BUILD_LANGUAGE_VERSION" == "11" ]; then
     echo "Language version specified. Installing Java 11..."
