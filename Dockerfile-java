@@ -16,7 +16,7 @@ RUN apk add --no-cache bash sed grep curl coreutils nodejs npm ca-certificates m
     apk --no-cache add curl-dev wget openjdk8 maven gradle && apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 
 #Install OpenJDK 17
-RUN wget -O openjdk17.tgz https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz \
+RUN wget -O openjdk17.tgz https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz && \
     mkdir -p /usr/lib/jvm/java-17-openjdk && tar --extract --file openjdk17.tgz --directory /usr/lib/jvm/java-17-openjdk --strip-components 1 && rm openjdk17.tgz*
 
 WORKDIR /cli
