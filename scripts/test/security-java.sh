@@ -2,7 +2,6 @@
 
 #( printf '\n'; printf '%.0s-' {1..30}; printf ' Security Test - Java '; printf '%.0s-' {1..30}; printf '\n\n' )
 
-# ./security-java.sh 
 COMPONENT_NAME=${1}
 VERSION_NAME=${2}
 ART_URL=${3}
@@ -30,6 +29,7 @@ mv $SAC_DIR $TEST_DIR/SAClientUtil
 
 # Set ASOC CLI path
 export ASOC_PATH=$TEST_DIR/SAClientUtil
+# export ASOC_PATH=$TEST_DIR/data/SAClientUtil
 export PATH="${ASOC_PATH}:${ASOC_PATH}/bin:${PATH}"
 echo "PATH=$PATH"
 
@@ -53,6 +53,11 @@ mvn -q clean install dependency:copy-dependencies -DskipTests=true -Dmaven.wagon
 # find target -name "*.jar" -type f -delete
 find target -name "*.war" -type f -delete
 
+# Set Java version
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+export PATH="/usr/lib/jvm/java-11-openjdk/bin:${PATH}"
+java --version
+
 # Add ASOC required glibc and zlib packages
 export LANG='en_US.UTF-8'
 export LANGUAGE='en_US:en'
@@ -60,7 +65,7 @@ export LC_ALL='en_US.UTF-8'
 
 apk add --no-cache --virtual .build-deps curl binutils
 apk update
-apk add zip tar jq gawk xmlstarlet bash curl xz
+apk add zip tar jq gawk xmlstarlet bash curl
 
 export GLIBC_VER="2.30-r0"
 export ALPINE_GLIBC_REPO="https://github.com/sgerrand/alpine-pkg-glibc/releases/download"
@@ -78,8 +83,7 @@ curl -LfsS ${ALPINE_GLIBC_REPO}/${GLIBC_VER}/glibc-bin-${GLIBC_VER}.apk > /tmp/g
 apk add --no-cache /tmp/glibc-bin-${GLIBC_VER}.apk
 curl -Ls ${ALPINE_GLIBC_REPO}/${GLIBC_VER}/glibc-i18n-${GLIBC_VER}.apk > /tmp/glibc-i18n-${GLIBC_VER}.apk
 apk add --no-cache /tmp/glibc-i18n-${GLIBC_VER}.apk
-#/usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 "$LANG" || true
-/usr/glibc-compat/bin/localedef -i en_US -f UTF-8 en_US.UTF-8
+/usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 "$LANG" || true
 echo "export LANG=$LANG" > /etc/profile.d/locale.sh
 curl -LfsS ${GCC_LIBS_URL} -o /tmp/gcc-libs.tar.xz
 echo "${GCC_LIBS_SHA256} */tmp/gcc-libs.tar.xz" | sha256sum -c -
@@ -94,6 +98,9 @@ tar -xf /tmp/libz.tar.xz -C /tmp/libz
 mv /tmp/libz/usr/lib/libz.so* /usr/glibc-compat/lib
 apk del --purge .build-deps glibc-i18n
 rm -rf /tmp/*.apk /tmp/gcc /tmp/gcc-libs.tar.xz /tmp/libz /tmp/libz.tar.xz /var/cache/apk/*
+
+# Set ASOC bin path
+export PATH="${ASOC_PATH}/bin:${PATH}"
 
 # Set ASOC project path
 export PROJECT_PATH=`pwd`
