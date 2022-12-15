@@ -9,6 +9,9 @@ SONAR_APIKEY=$4
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
 
+echo "JAVA_HOME: $JAVA_HOME"
+echo "PATH: $PATH"
+
 if [ "$BUILD_TOOL" == "maven" ]; then
     echo "Testing with Maven"
     if [ "$HTTP_PROXY" != "" ]; then
