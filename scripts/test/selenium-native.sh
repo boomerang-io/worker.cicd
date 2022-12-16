@@ -19,6 +19,11 @@ TEST_DIR=${14}
 
 # cd $TEST_DIR
 
+# make java environment varaibles set by initialize-dependencies-java.sh effective.
+source ~/.profile
+echo "JAVA_HOME: $JAVA_HOME"
+echo "PATH: $PATH"
+
 touch junits.java
 
 if [ -d "$WEB_TESTS_FOLDER" ]; then

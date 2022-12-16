@@ -13,7 +13,10 @@ WORKDIR /opt/bin
 #Add Packages
 RUN apk add --no-cache bash sed grep curl coreutils nodejs npm ca-certificates make openssh-client git socat skopeo openssl jq && \
     curl -fSL "https://github.com/genuinetools/img/releases/download/v0.5.11/img-linux-amd64" -o "/opt/bin/img" && chmod a+x "/opt/bin/img" && \
-    apk --no-cache add curl-dev wget openjdk8 maven gradle && apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+    apk --no-cache add curl-dev wget openjdk8 maven gradle && apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community && \
+    wget -O /tmp/openjdk17.tar.gz https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jdk_x64_alpine-linux_hotspot_17.0.5_8.tar.gz && \
+    mkdir -p /usr/lib/jvm/java-17-openjdk && tar --extract --file /tmp/openjdk17.tar.gz --directory /usr/lib/jvm/java-17-openjdk --strip-components 1 --no-same-owner && \
+    rm /tmp/openjdk17.tar.gz
 
 WORKDIR /cli
 ADD ./package.json ./package-lock.json ./.npmrc ./
