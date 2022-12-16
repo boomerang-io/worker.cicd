@@ -9,6 +9,8 @@ SONAR_APIKEY=$4
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
 
+# make java environment varaibles set by initialize-dependencies-java.sh effective.
+source ~/.profile
 echo "JAVA_HOME: $JAVA_HOME"
 echo "PATH: $PATH"
 

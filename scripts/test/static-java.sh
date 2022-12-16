@@ -11,6 +11,11 @@ COMPONENT_ID=$5
 COMPONENT_NAME=$6
 SONAR_EXCLUSIONS=
 
+# make java environment varaibles set by initialize-dependencies-java.sh effective.
+source ~/.profile
+echo "JAVA_HOME: $JAVA_HOME"
+echo "PATH: $PATH"
+
 export SONAR_SCANNER_EXCLUSIONS
 if [ "$7" != "" ]; then
     echo "Setting Sonar Exclusions to: $7"

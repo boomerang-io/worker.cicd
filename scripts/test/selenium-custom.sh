@@ -15,6 +15,11 @@ ART_PASSWORD=${10}
 SHELL_DIR=${11}
 TEST_DIR=${12}
 
+# make java environment varaibles set by initialize-dependencies-java.sh effective.
+source ~/.profile
+echo "JAVA_HOME: $JAVA_HOME"
+echo "PATH: $PATH"
+
 urlencode() {
     # urlencode <string>
     old_lc_collate=$LC_COLLATE
