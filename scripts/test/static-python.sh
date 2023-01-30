@@ -36,9 +36,12 @@ echo "========== pylint-report.txt =========="
 cat pylint-report.txt
 echo "==========END pylint-report.txt =========="
 
-ls *.py | xargs coverage run
+echo "========== coverage =========="
+# ls *.py | xargs coverage run
+find . -iname "*.py" -print | xargs coverage run
 coverage xml
 nosetests -sv --with-xunit --xunit-file=nosetests.xml --with-xcoverage --xcoverage-file=coverage.xml
+echo "==========END coverage =========="
 
 echo "========== coverage.xml =========="
 cat coverage.xml
