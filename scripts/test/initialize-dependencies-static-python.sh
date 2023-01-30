@@ -22,6 +22,8 @@ export PIP_CONFIG_FILE=$PIP_CONF
 
 if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 	pip install --upgrade pip
+	pip install --upgrade setuptools
+	pip install --upgrade wheel
 	RESULT=$?
 	if [ $RESULT -ne 0 ] ; then
 		exit 89
@@ -39,6 +41,8 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
   pip install pylint nose coverage nosexcover
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
   pip3 install --upgrade pip
+	pip3 install --upgrade setuptools
+	pip3 install --upgrade wheel
 	RESULT=$?
 	if [ $RESULT -ne 0 ] ; then
 		exit 89
