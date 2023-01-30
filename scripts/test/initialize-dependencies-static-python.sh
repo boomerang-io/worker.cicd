@@ -33,6 +33,8 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 		if [ $RESULT -ne 0 ] ; then
 			exit 89
 		fi
+	else
+		echo "No requirements.txt file found to install dependencies via pip"
 	fi
   pip install pylint nose coverage nosexcover
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
@@ -48,6 +50,8 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
 		if [ $RESULT -ne 0 ] ; then
 			exit 89
 		fi
+	else
+		echo "No requirements.txt file found to install dependencies via pip3"
 	fi
   pip3 install pylint nose coverage nosexcover
 else
