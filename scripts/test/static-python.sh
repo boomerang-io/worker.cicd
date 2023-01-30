@@ -32,17 +32,17 @@ fi
 pylint --generate-rcfile > .pylintrc
 pylint --rcfile=.pylintrc $(find . -iname "*.py" -print) -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > pylint-report.txt
 
-echo "pylint-report.txt ..."
+echo "========== pylint-report.txt =========="
 cat pylint-report.txt
-echo ==========END pylint-report.txt =========="
+echo "==========END pylint-report.txt =========="
 
 ls *.py | xargs coverage run
 coverage xml
 nosetests -sv --with-xunit --xunit-file=nosetests.xml --with-xcoverage --xcoverage-file=coverage.xml
 
-echo "coverage.xml ..."
+echo "========== coverage.xml =========="
 cat coverage.xml
-echo ==========END coverage.xml =========="
+echo "==========END coverage.xml =========="
 
 SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=pylint-report.txt -Dsonar.python.xunit.reportPath=nosetests.xml -Dsonar.python.coverage.reportPath=coverage.xml"
 $SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. -Dsonar.language=py $SONAR_FLAGS
