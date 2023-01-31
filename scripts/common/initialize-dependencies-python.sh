@@ -18,26 +18,36 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     # apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
 
-    pip3 install --upgrade pip
+    # pip3 install --upgrade pip
 
     # Workaround for python bug:  AttributeError: module 'collections' has no attribute 'Callable'
-    pip3 uninstall -y pyreadline
-    pip3 install pyreadline3
-    pip3 uninstall -y nose
-    pip3 install nose-py3
+    python3 -m pip uninstall -y pyreadline
+    python3 -m pip install pyreadline3
+    python3 -m pip uninstall -y nose
+    python3 -m pip install nose-py3
+
+    # pip3 uninstall -y pyreadline
+    # pip3 install pyreadline3
+    # pip3 uninstall -y nose
+    # pip3 install nose-py3
 else
     echo "Defaulting to and installing Python 3 ..."
     apt-get install -y python3.9
     # apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
 
-    pip3 install --upgrade pip
+    # pip3 install --upgrade pip
 
     # Workaround for python bug:  AttributeError: module 'collections' has no attribute 'Callable'
-    pip3 uninstall -y pyreadline
-    pip3 install pyreadline3
-    pip3 uninstall -y nose
-    pip3 install nose-py3
+    python3 -m pip uninstall -y pyreadline
+    python3 -m pip install pyreadline3
+    python3 -m pip uninstall -y nose
+    python3 -m pip install nose-py3
+
+    # pip3 uninstall -y pyreadline
+    # pip3 install pyreadline3
+    # pip3 uninstall -y nose
+    # pip3 install nose-py3
 fi
 
 echo "Installing additional tools & libraries..."

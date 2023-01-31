@@ -40,16 +40,32 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 	fi
   pip install pylint nose coverage nosexcover
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
-  pip3 install --upgrade pip
-	pip3 install --upgrade setuptools
-	pip3 install --upgrade wheel
+
+	python3 -m pip uninstall -y pyreadline
+	python3 -m pip install pyreadline3
+	python3 -m pip uninstall -y nose
+	python3 -m pip install nose-py3
+
+	# pip3 uninstall -y pyreadline
+	# pip3 install pyreadline3
+	# pip3 uninstall -y nose
+	# pip3 install nose-py3
+
+	# python3 -m pip install --upgrade pip
+	python3 -m pip install --upgrade setuptools
+	python3 -m pip install --upgrade wheel
+
+  # pip3 install --upgrade pip
+	# pip3 install --upgrade setuptools
+	# pip3 install --upgrade wheel
 	RESULT=$?
 	if [ $RESULT -ne 0 ] ; then
 		exit 89
 	fi
 	if [ -f requirements.txt ]; then
 	    echo "Using requirements.txt file found in project to install dependencies"
-	    pip3 install -r requirements.txt
+	    # pip3 install -r requirements.txt
+			python3 -m pip install -r requirements.txt
 		RESULT=$?
 		if [ $RESULT -ne 0 ] ; then
 			exit 89
@@ -57,7 +73,8 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
 	else
 		echo "No requirements.txt file found to install dependencies via pip3"
 	fi
-  pip3 install pylint nose coverage nosexcover
+  # pip3 install pylint nose coverage nosexcover
+	python3 -m pip install pylint nose coverage nosexcover
 else
 	exit 99
 fi
