@@ -20,8 +20,8 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     pip3 install --upgrade pip
 
     # Workaround for python bug:  AttributeError: module 'collections' has no attribute 'Callable'
-    pip3 uninstall -y pyreadline
-    pip3 install pyreadline3
+    pip3 uninstall -y nose
+    pip3 install -U nose --no-binary :all:
 else
     echo "Defaulting to and installing Python 3..."
     apt-get install -y python3-pip
@@ -30,8 +30,8 @@ else
     pip3 install --upgrade pip
 
     # Workaround for python bug:  AttributeError: module 'collections' has no attribute 'Callable'
-    pip3 uninstall -y pyreadline
-    pip3 install pyreadline3
+    pip3 uninstall -y nose
+    pip3 install -U nose --no-binary :all:
 fi
 
 echo "Installing additional tools & libraries..."
