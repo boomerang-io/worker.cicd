@@ -18,12 +18,20 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     # apk add python3 python3-dev py3-pip
 
     pip3 install --upgrade pip
+
+    # Workaround for python bug:  AttributeError: module 'collections' has no attribute 'Callable'
+    pip3 uninstall -y pyreadline
+    pip3 install pyreadline3
 else
     echo "Defaulting to and installing Python 3..."
     apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
 
     pip3 install --upgrade pip
+
+    # Workaround for python bug:  AttributeError: module 'collections' has no attribute 'Callable'
+    pip3 uninstall -y pyreadline
+    pip3 install pyreadline3
 fi
 
 echo "Installing additional tools & libraries..."
