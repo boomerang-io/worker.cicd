@@ -14,12 +14,17 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
     exit 89
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3..."
-    apt-get remove -y python3-pip
+    apt install software-properties-common
+    add-apt-repository ppa:deadsnakes/ppa
+    apt-cache policy python3.9
     apt-get install -y python3.9
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    python3 get-pip.py
+    # curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    # python3 get-pip.py
 
+    echo "---- Python Version ----"
     python3 --version
+    python3 -m pip --version
+    echo "---- END Python Version ----"
 
     # apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
@@ -38,13 +43,18 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     # pip3 install nose-py3
 else
     echo "Defaulting to and installing Python 3 ..."
-    apt-get remove -y python3-pip
+    apt install software-properties-common
+    add-apt-repository ppa:deadsnakes/ppa
+    apt-cache policy python3.9
     apt-get install -y python3.9
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    python3 get-pip.py
+    # curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    # python3 get-pip.py
 
+    echo "---- Python Version ----"
     python3 --version
-    
+    python3 -m pip --version
+    echo "---- END Python Version ----"
+
     # apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
 
