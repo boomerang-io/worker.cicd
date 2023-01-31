@@ -14,15 +14,18 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
     exit 89
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3..."
-    apk add python3 python3-dev py3-pip
+    apt-get install -y python3-pip
+    # apk add python3 python3-dev py3-pip
 
     pip3 install --upgrade pip
 else
     echo "Defaulting to and installing Python 3..."
-    apk add python3 python3-dev py3-pip
+    apt-get install -y python3-pip
+    # apk add python3 python3-dev py3-pip
 
     pip3 install --upgrade pip
 fi
 
 echo "Installing additional tools & libraries..."
-apk add gcc g++ libffi libffi-dev
+apt-get install -y gcc make zlib1g-dev libc-dev libffi-dev g++ libxml2 libxml2-dev libxslt-dev libcurl4-openssl-dev libssl-dev libgnutls28-dev
+# apk add gcc g++ libffi libffi-dev
