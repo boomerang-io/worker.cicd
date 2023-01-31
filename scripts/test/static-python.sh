@@ -18,6 +18,9 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qu
 apt-get install -y openjdk-8-jdk
 # apk add openjdk8
 
+# Install unzip
+apt-get install -y unzip
+
 # TODO: should be a CICD system property
 curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492.zip
 unzip -o /opt/sonarscanner.zip -d /opt
