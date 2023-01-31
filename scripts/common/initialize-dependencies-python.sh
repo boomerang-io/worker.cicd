@@ -15,6 +15,8 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3..."
     apt-get install -y python3.9
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    python3 get-pip.py
     # apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
 
@@ -33,6 +35,8 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
 else
     echo "Defaulting to and installing Python 3 ..."
     apt-get install -y python3.9
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    python3 get-pip.py
     # apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
 
