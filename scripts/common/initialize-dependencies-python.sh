@@ -14,7 +14,8 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
     exit 89
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3..."
-    apt-get install -y python3-pip
+    apt-get install -y python3.9
+    # apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
 
     pip3 install --upgrade pip
@@ -25,8 +26,9 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     pip3 uninstall -y nose
     pip3 install nose-py3
 else
-    echo "Defaulting to and installing Python 3..."
-    apt-get install -y python3-pip
+    echo "Defaulting to and installing Python 3 ..."
+    apt-get install -y python3.9
+    # apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
 
     pip3 install --upgrade pip
