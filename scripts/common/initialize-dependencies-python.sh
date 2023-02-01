@@ -16,12 +16,10 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3..."
     apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
-    apt-cache policy python3.9
-    apt-get install -y python3.9
-    python3 -m ensurepip --upgrade
-
-    # curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    # python3 get-pip.py
+    apt-cache policy python3.6
+    apt-get install -y python3.6
+    curl https://bootstrap.pypa.io/pip/3.6/get-pip.py -o get-pip.py
+    python3 get-pip.py
 
     echo "---- Python Version ----"
     python3 --version
@@ -47,10 +45,11 @@ else
     echo "Defaulting to and installing Python 3 ..."
     apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
-    apt-cache policy python3.9
-    apt-get install -y python3.9
-    python3 -m ensurepip --upgrade
-    
+    apt-cache policy python3.6
+    apt-get install -y python3.6
+    curl https://bootstrap.pypa.io/pip/3.6/get-pip.py -o get-pip.py
+    python3 get-pip.py
+
     # curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     # python3 get-pip.py
 
