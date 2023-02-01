@@ -16,15 +16,16 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3..."
     apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
-    apt-cache policy python3.6
-    apt-get install -y python3.6
-    curl https://bootstrap.pypa.io/pip/3.6/get-pip.py -o get-pip.py
-    python3 get-pip.py
-
+    apt-cache policy python3.7
+    apt-get install -y python3.7
     echo "---- Python Version ----"
     python3 --version
-    python3 -m pip --version
     echo "---- END Python Version ----"
+    curl https://bootstrap.pypa.io/pip/get-pip.py -o get-pip.py
+    python3 get-pip.py
+    echo "---- pip Version ----"
+    python3 -m pip --version
+    echo "---- END pip Version ----"
 
     # apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
@@ -45,18 +46,19 @@ else
     echo "Defaulting to and installing Python 3 ..."
     apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
-    apt-cache policy python3.6
-    apt-get install -y python3.6
-    curl https://bootstrap.pypa.io/pip/3.6/get-pip.py -o get-pip.py
+    apt-cache policy python3.7
+    apt-get install -y python3.7
+    echo "---- Python Version ----"
+    python3 --version
+    echo "---- END Python Version ----"
+    curl https://bootstrap.pypa.io/pip/get-pip.py -o get-pip.py
     python3 get-pip.py
+    echo "---- pip Version ----"
+    python3 -m pip --version
+    echo "---- END pip Version ----"
 
     # curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     # python3 get-pip.py
-
-    echo "---- Python Version ----"
-    python3 --version
-    python3 -m pip --version
-    echo "---- END Python Version ----"
 
     # apt-get install -y python3-pip
     # apk add python3 python3-dev py3-pip
