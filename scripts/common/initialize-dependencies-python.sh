@@ -17,6 +17,7 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
     apt-cache policy python3.7
+    apt-get update
     apt-get install -y python3.7
     echo "---- Python Version ----"
     python3 --version
@@ -47,6 +48,7 @@ else
     apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
     apt-cache policy python3.7
+    apt-get update
     apt-get install -y python3.7
     echo "---- Python Version ----"
     python3 --version
