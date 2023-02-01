@@ -18,6 +18,8 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     add-apt-repository ppa:deadsnakes/ppa
     apt-cache policy python3.9
     apt-get install -y python3.9
+    python3 -m ensurepip --upgrade
+
     # curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     # python3 get-pip.py
 
@@ -47,6 +49,8 @@ else
     add-apt-repository ppa:deadsnakes/ppa
     apt-cache policy python3.9
     apt-get install -y python3.9
+    python3 -m ensurepip --upgrade
+    
     # curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     # python3 get-pip.py
 
