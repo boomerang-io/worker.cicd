@@ -14,7 +14,7 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
     exit 89
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3..."
-    apt install software-properties-common
+    apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
     apt-cache policy python3.9
     apt-get install -y python3.9
@@ -43,7 +43,7 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     # pip3 install nose-py3
 else
     echo "Defaulting to and installing Python 3 ..."
-    apt install software-properties-common
+    apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
     apt-cache policy python3.9
     apt-get install -y python3.9
