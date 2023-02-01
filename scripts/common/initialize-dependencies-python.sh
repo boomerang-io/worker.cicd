@@ -15,12 +15,15 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Uninstalling default Python version ..."
     apt-get remove -y –auto-remove python3-pip
-    echo "Installing Python 3.7 ..."
+    echo "Installing Python 3.9 ..."
     apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
-    apt-cache policy python3.7
+    apt-cache policy python3.9
     apt-get update
-    apt-get install -y python3.7
+    apt-get install -y python3.9
+
+    ls -al /usr/bin/python*
+
     echo "---- Python Version ----"
     python3 --version
     echo "---- END Python Version ----"
@@ -49,12 +52,15 @@ else
     echo "Uninstalling default Python version ..."
     apt-get remove -y –auto-remove python3-pip
 
-    echo "Defaulting to and installing Python 3.7 ..."
+    echo "Defaulting to and installing Python 3.9 ..."
     apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
-    apt-cache policy python3.7
+    apt-cache policy python3.9
     apt-get update
-    apt-get install -y python3.7
+    apt-get install -y python3.9
+
+    ls -al /usr/bin/python*
+
     echo "---- Python Version ----"
     python3 --version
     echo "---- END Python Version ----"
