@@ -13,7 +13,9 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
     echo "Python 2 no longer supported ..."
     exit 89
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
-    echo "Installing Python 3..."
+    echo "Uninstalling default Python version ..."
+    apt-get remove -y –auto-remove python3-pip
+    echo "Installing Python 3.7 ..."
     apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
     apt-cache policy python3.7
@@ -44,7 +46,10 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     # pip3 uninstall -y nose
     # pip3 install nose-py3
 else
-    echo "Defaulting to and installing Python 3 ..."
+    echo "Uninstalling default Python version ..."
+    apt-get remove -y –auto-remove python3-pip
+
+    echo "Defaulting to and installing Python 3.7 ..."
     apt-get install -y software-properties-common
     add-apt-repository ppa:deadsnakes/ppa
     apt-cache policy python3.7
