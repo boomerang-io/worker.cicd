@@ -20,7 +20,7 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     add-apt-repository ppa:deadsnakes/ppa
     apt-cache policy python3.9
     apt-get update
-    apt-get install -y python3.9
+    apt-get install -y python3.9 python3.9-distutils
 
     ls -al /usr/bin/python*
 
@@ -47,7 +47,7 @@ else
     add-apt-repository ppa:deadsnakes/ppa
     apt-cache policy python3.9
     apt-get update
-    apt-get install -y python3.9
+    apt-get install -y python3.9 python3.9-distutils
 
     ls -al /usr/bin/python*
 
