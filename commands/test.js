@@ -661,11 +661,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
-        ${JSON.stringify(taskParams["pypiRegistryHost"])} \
-        ${taskParams["pypiRepoId"]} \
-        ${taskParams["pypiRepoUser"]} \
-        ${taskParams["pypiRepoPassword"]}`);
+        ${taskParams["systemComponentName"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Python");
