@@ -68,7 +68,7 @@ cat $REPORT_HOME/pylintrp.txt
 echo "----------------------------------------------------------------------------------------------"
 
 echo "coverage:"
-find . -iname "*.py" -print | xargs coverage run --data-file=$REPORT_HOME/coverage.data
+find . -iname "*.py" -print | xargs coverage run --omit /usr/lib/python3.9/* --data-file=$REPORT_HOME/coverage.data
 coverage xml --data-file=$REPORT_HOME/coverage.data -o $REPORT_HOME/coverage.xml
 nosetests -sv --with-xunit --xunit-file=$REPORT_HOME/nosetests.xml --with-xcoverage --xcoverage-file=$REPORT_HOME/coverage.xml
 echo "----------------------------------------------------------------------------------------------"
