@@ -73,7 +73,7 @@ else
 fi
 
 # Check that jest exists and that it is being used in the script, either directly or through CRA
-if [[ -d "./node_modules/jest" && ("$SCRIPT" == *react-scripts* || "$SCRIPT" == *jest*) ]]; then
+if [[ -d "./node_modules/jest" && "$SCRIPT" == *react-scripts* || "$SCRIPT" == *jest* ]]; then
     TEST_REPORTER="jest-sonar-reporter"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
