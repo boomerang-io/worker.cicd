@@ -648,7 +648,6 @@ module.exports = {
 
       if (testTypes.includes(TestType.Static)) {
         log.ci("Commencing static tests");
-        shell.cd(workdir);
         await exec(`${shellDir}/test/initialize-dependencies-static-python.sh \
         ${taskParams["languageVersion"]} \
         ${JSON.stringify(taskParams["pypiRegistryHost"])} \
@@ -662,7 +661,11 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]}`);
+        ${taskParams["systemComponentName"]} \
+        ${JSON.stringify(taskParams["pypiRegistryHost"])} \
+        ${taskParams["pypiRepoId"]} \
+        ${taskParams["pypiRepoUser"]} \
+        ${taskParams["pypiRepoPassword"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Python");

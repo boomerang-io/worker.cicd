@@ -9,6 +9,10 @@ SONAR_APIKEY=$4
 SONAR_GATEID=2
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
+ART_REGISTRY_HOST=$7
+ART_REPO_ID=$8
+ART_REPO_USER=$9
+ART_REPO_PASSWORD=${10}
 
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
@@ -19,6 +23,33 @@ if [ "$DEBUG" == "true" ]; then
     echo "SONAR_GATEID=$SONAR_GATEID"
     echo "COMPONENT_ID=$COMPONENT_ID"
     echo "COMPONENT_NAME=$COMPONENT_NAME"
+    echo "ART_REGISTRY_HOST=$ART_REGISTRY_HOST"
+    echo "ART_REPO_ID=$ART_REPO_ID"
+    echo "ART_REPO_USER=$ART_REPO_USER"
+    echo "ART_REPO_PASSWORD=*****"
+fi
+
+# Create Artifactory references for library download
+PIP_CONF=~/.pip.conf
+cat >> $PIP_CONF <<EOL
+[global]
+extra-index-url=https://$ART_REPO_USER:$ART_REPO_PASSWORD@$ART_REGISTRY_HOST/artifactory/api/pypi/$ART_REPO_ID/simple
+[install]
+extra-index-url=https://$ART_REPO_USER:$ART_REPO_PASSWORD@$ART_REGISTRY_HOST/artifactory/api/pypi/$ART_REPO_ID/simple
+EOL
+
+# Export pip config home
+export PIP_CONFIG_FILE=$PIP_CONF
+
+if [ -f requirements.txt ]; then
+  echo "Using requirements.txt file found in project to install dependencies"
+  python3.9 -m pip install -r requirements.txt
+  RESULT=$?
+  if [ $RESULT -ne 0 ] ; then
+    exit 89
+  fi
+else
+  echo "No requirements.txt file found to install dependencies via pip"
 fi
 
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
@@ -48,15 +79,18 @@ fi
 REPORT_HOME=..
 
 pylint --generate-rcfile > .pylintrc
-pylint --rcfile=.pylintrc $(find . -iname "*.py" -print) -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > $REPORT_HOME/pylint-report.txt
+pylint --rcfile=.pylintrc $(find . -iname "*.py" -print) -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > $REPORT_HOME/pylintrp.txt
 
-echo "pylint-report.txt:"
-cat $REPORT_HOME/pylint-report.txt
+echo "pylintrp.txt:"
+cat $REPORT_HOME/pylintrp.txt
 echo "----------------------------------------------------------------------------------------------"
 
 echo "coverage:"
 find . -iname "*.py" -print | xargs coverage run
 coverage xml
+echo "==== XML ===="
+ls -al *.xml
+echo "==== XML ===="
 nosetests -sv --with-xunit --xunit-file=$REPORT_HOME/nosetests.xml --with-xcoverage --xcoverage-file=$REPORT_HOME/coverage.xml
 echo "----------------------------------------------------------------------------------------------"
 
@@ -68,5 +102,5 @@ echo "coverage.xml:"
 cat $REPORT_HOME/coverage.xml
 echo "----------------------------------------------------------------------------------------------"
 
-SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylint-report.txt -Dsonar.python.xunit.reportPath=$REPORT_HOME/nosetests.xml -Dsonar.python.coverage.reportPath=$REPORT_HOME/coverage.xml"
+SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylintrp.txt -Dsonar.python.xunit.reportPath=$REPORT_HOME/nosetests.xml -Dsonar.python.coverage.reportPath=$REPORT_HOME/coverage.xml -Dsonar.exclusions=**/bin/**,**/pylintrp.txt,**/coverage.xml,**/nosetests.xml"
 $SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. -Dsonar.language=py $SONAR_FLAGS
