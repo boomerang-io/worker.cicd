@@ -44,22 +44,29 @@ else
     SONAR_FLAGS=
 fi
 
+# Set report home folder
+REPORT_HOME=..
+
 pylint --generate-rcfile > .pylintrc
-pylint --rcfile=.pylintrc $(find . -iname "*.py" -print) -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > pylint-report.txt
+pylint --rcfile=.pylintrc $(find . -iname "*.py" -print) -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > $REPORT_HOME/pylint-report.txt
 
 echo "pylint-report.txt:"
-cat pylint-report.txt
+cat $REPORT_HOME/pylint-report.txt
 echo "----------------------------------------------------------------------------------------------"
 
 echo "coverage:"
 find . -iname "*.py" -print | xargs coverage run
 coverage xml
-nosetests -sv --with-xunit --xunit-file=nosetests.xml --with-xcoverage --xcoverage-file=coverage.xml
+nosetests -sv --with-xunit --xunit-file=$REPORT_HOME/nosetests.xml --with-xcoverage --xcoverage-file=$REPORT_HOME/coverage.xml
+echo "----------------------------------------------------------------------------------------------"
+
+echo "nosetests.xml:"
+cat $REPORT_HOME/nosetests.xml
 echo "----------------------------------------------------------------------------------------------"
 
 echo "coverage.xml:"
-cat coverage.xml
+cat $REPORT_HOME/coverage.xml
 echo "----------------------------------------------------------------------------------------------"
 
-SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=pylint-report.txt -Dsonar.python.xunit.reportPath=nosetests.xml -Dsonar.python.coverage.reportPath=coverage.xml"
+SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylint-report.txt -Dsonar.python.xunit.reportPath=$REPORT_HOME/nosetests.xml -Dsonar.python.coverage.reportPath=$REPORT_HOME/coverage.xml"
 $SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. -Dsonar.language=py $SONAR_FLAGS
