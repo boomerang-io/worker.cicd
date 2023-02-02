@@ -29,17 +29,17 @@ if [ "$DEBUG" == "true" ]; then
     echo "ART_REPO_PASSWORD=*****"
 fi
 
-# Create Artifactory references for library download
-PIP_CONF=~/.pip.conf
-cat >> $PIP_CONF <<EOL
-[global]
-extra-index-url=https://$ART_REPO_USER:$ART_REPO_PASSWORD@$ART_REGISTRY_HOST/artifactory/api/pypi/$ART_REPO_ID/simple
-[install]
-extra-index-url=https://$ART_REPO_USER:$ART_REPO_PASSWORD@$ART_REGISTRY_HOST/artifactory/api/pypi/$ART_REPO_ID/simple
-EOL
+# # Create Artifactory references for library download
+# PIP_CONF=~/.pip.conf
+# cat >> $PIP_CONF <<EOL
+# [global]
+# extra-index-url=https://$ART_REPO_USER:$ART_REPO_PASSWORD@$ART_REGISTRY_HOST/artifactory/api/pypi/$ART_REPO_ID/simple
+# [install]
+# extra-index-url=https://$ART_REPO_USER:$ART_REPO_PASSWORD@$ART_REGISTRY_HOST/artifactory/api/pypi/$ART_REPO_ID/simple
+# EOL
 
 # Export pip config home
-export PIP_CONFIG_FILE=$PIP_CONF
+# export PIP_CONFIG_FILE=$PIP_CONF
 
 if [ -f requirements.txt ]; then
   echo "Using requirements.txt file found in project to install dependencies"
