@@ -39,7 +39,8 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_U
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
 # Dependency for sonarscanner
-apt-get install -y openjdk-8-jdk
+apt-get install -y openjdk-11-jdk
+# apt-get install -y openjdk-8-jdk
 
 # Install unzip
 apt-get install -y unzip
