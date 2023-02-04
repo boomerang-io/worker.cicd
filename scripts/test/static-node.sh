@@ -18,7 +18,8 @@ ART_PASSWORD=${10}
 # Dependency for sonarscanner
 export ENV DEBIAN_FRONTEND noninteractive
 apt-get -y update
-apt-get --no-install-recommends -y install openjdk-8-jdk unzip
+apt-get install -y openjdk-11-jdk
+# apt-get --no-install-recommends -y install openjdk-8-jdk unzip
 
 echo "Running with nvm..."
 unset npm_config_prefix
