@@ -90,12 +90,6 @@ echo "- Destination: $DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/
 echo ""
 skopeo --insecure-policy $SKOPEO_OPTS copy --src-tls-verify=false --dest-tls-verify=false $GLOBAL_REGISTRY_CREDS $DESTINATION_REGISTRY_CREDS docker://$GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION docker://$DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION
 
-echo ""
-echo "Skopeo Copying Container Image from Origin to Destination..."
-echo "- Origin: $GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
-echo "- Destination: $DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
-echo ""
-
 if [ "$CISO_CODESIGN_ENABLE" == "true" ]; then
     echo "Installing Cosign Client..."
     apk add cosign --allow-untrusted --repository=https://dl-cdn.alpinelinux.org/alpine/v3.17/community
