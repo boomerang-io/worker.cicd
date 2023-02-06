@@ -647,9 +647,11 @@ module.exports = {
       ${taskParams["languageVersion"]}`);
 
       if (testTypes.includes(TestType.Static)) {
-        log.debug("Commencing static tests");
+        log.ci("Commencing static tests");
+        shell.cd(workdir);
         await exec(`${shellDir}/test/initialize-dependencies-static-python.sh \
-        ${taskParams["languageVersion"]} ${JSON.stringify(taskParams["pypiRegistryHost"])} \
+        ${taskParams["languageVersion"]} \
+        ${JSON.stringify(taskParams["pypiRegistryHost"])} \
         ${taskParams["pypiRepoId"]} \
         ${taskParams["pypiRepoUser"]} \
         ${taskParams["pypiRepoPassword"]}`);

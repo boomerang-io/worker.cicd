@@ -10,15 +10,30 @@ SONAR_GATEID=2
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
 
+if [ "$DEBUG" == "true" ]; then
+    echo "DEBUG - Script input variables..."
+    echo "BUILD_TOOL=$BUILD_TOOL"
+    echo "VERSION_NAME=$VERSION_NAME"
+    echo "SONAR_URL=$SONAR_URL"
+    echo "SONAR_APIKEY=*****"
+    echo "SONAR_GATEID=$SONAR_GATEID"
+    echo "COMPONENT_ID=$COMPONENT_ID"
+    echo "COMPONENT_NAME=$COMPONENT_NAME"
+fi
+
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
 # Dependency for sonarscanner
-apk add openjdk8
+apt-get install -y openjdk-8-jdk
+
+# Install unzip
+apt-get install -y unzip
 
 # TODO: should be a CICD system property
-curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492.zip
+curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856.zip
+# curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
@@ -29,12 +44,29 @@ else
     SONAR_FLAGS=
 fi
 
+# Set report home folder
+REPORT_HOME=..
+
 pylint --generate-rcfile > .pylintrc
-pylint --rcfile=.pylintrc $(find . -iname "*.py" -print) -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > pylint-report.txt
+pylint --rcfile=.pylintrc $(find . -iname "*.py" -print) -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > $REPORT_HOME/pylint-report.txt
 
-ls *.py | xargs coverage run
+echo "pylint-report.txt:"
+cat $REPORT_HOME/pylint-report.txt
+echo "----------------------------------------------------------------------------------------------"
+
+echo "coverage:"
+find . -iname "*.py" -print | xargs coverage run
 coverage xml
-nosetests -sv --with-xunit --xunit-file=nosetests.xml --with-xcoverage --xcoverage-file=coverage.xml
+nosetests -sv --with-xunit --xunit-file=$REPORT_HOME/nosetests.xml --with-xcoverage --xcoverage-file=$REPORT_HOME/coverage.xml
+echo "----------------------------------------------------------------------------------------------"
 
-SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPath=pylint-report.txt -Dsonar.python.xunit.reportPath=nosetests.xml -Dsonar.python.coverage.reportPath=coverage.xml"
+echo "nosetests.xml:"
+cat $REPORT_HOME/nosetests.xml
+echo "----------------------------------------------------------------------------------------------"
+
+echo "coverage.xml:"
+cat $REPORT_HOME/coverage.xml
+echo "----------------------------------------------------------------------------------------------"
+
+SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylint-report.txt -Dsonar.python.xunit.reportPath=$REPORT_HOME/nosetests.xml -Dsonar.python.coverage.reportPath=$REPORT_HOME/coverage.xml"
 $SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. -Dsonar.language=py $SONAR_FLAGS
