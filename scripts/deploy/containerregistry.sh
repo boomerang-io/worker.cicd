@@ -83,24 +83,31 @@ fi
 
 sleep 10
 
-SUPPORTED_SIGNED_REGISTRY=$( echo "${DESTINATION_REGISTRY_HOST}" |grep icr.io )
-if [ ! -z "$SUPPORTED_SIGNED_REGISTRY" ] && [ "$CISO_CODESIGN_ENABLE" == "true" ]; then
-    echo "Updating skopeo configuration..."
-    mkdir codesign
-    cat > codesign/default.yaml << EOF
-docker:
-  tools.boomerangplatform.net:8500:
-    sigstore: https://$GLOBAL_REGISTRY_HOST/artifactory/boomeranglib-docker
-    sigstore-staging: file:///var/lib/atomic/sigstore
-EOF
-    SKOPEO_OPTS+="--registries.d codesign/"
-fi
 echo ""
-echo "Copying from Origin to Destination..."
+echo "Skopeo Copying Container Image from Origin to Destination..."
 echo "- Origin: $GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
 echo "- Destination: $DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION"
 echo ""
 skopeo --insecure-policy $SKOPEO_OPTS copy --src-tls-verify=false --dest-tls-verify=false $GLOBAL_REGISTRY_CREDS $DESTINATION_REGISTRY_CREDS docker://$GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION docker://$DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION
+
+if [ "$CISO_CODESIGN_ENABLE" == "true" ]; then
+    echo "Installing Cosign Client..."
+    apk add cosign --allow-untrusted --repository=https://dl-cdn.alpinelinux.org/alpine/v3.17/community
+    
+    echo "Cosign - login origin container registry..."
+    if [ ! -z "$GLOBAL_REGISTRY_USER" ] || [ ! -z "$GLOBAL_REGISTRY_PASSWORD" ]; then
+        cosign login "$GLOBAL_DOCKER_SERVER" -u $GLOBAL_REGISTRY_USER -p $GLOBAL_REGISTRY_PASSWORD
+    fi
+    
+    echo "Cosign - login destination container registry..."
+    if [ ! -z "$DESTINATION_REGISTRY_USER" ] || [ ! -z "$DESTINATION_REGISTRY_PASSWORD" ]; then
+        cosign login "$DESTINATION_DOCKER_SERVER" -u $DESTINATION_REGISTRY_USER -p $DESTINATION_REGISTRY_PASSWORD
+    fi
+    
+    echo "Cosign - copy container image signature..."
+    cosign copy --sig-only $GLOBAL_DOCKER_SERVER/$IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION $DESTINATION_DOCKER_SERVER$DESTINATION_REGISTRY_IMAGE_PATH/$IMAGE_NAME:$IMAGE_VERSION
+fi
+
 RESULT=$?
 if [ $RESULT -ne 0 ] ; then
     exit 88
