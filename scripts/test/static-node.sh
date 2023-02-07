@@ -19,7 +19,6 @@ ART_PASSWORD=${10}
 export ENV DEBIAN_FRONTEND noninteractive
 apt-get -y update
 apt-get install -y openjdk-11-jdk
-# apt-get --no-install-recommends -y install openjdk-8-jdk unzip
 
 echo "Running with nvm..."
 unset npm_config_prefix
@@ -52,9 +51,8 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qu
 
 # Install sonar-scanner
 echo "Installing sonar-scanner"
-echo "$ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip"
+echo "$ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.8.0.2856.zip"
 curl --insecure -o /opt/sonarscanner.zip -L -u $ART_USER:$ART_PASSWORD $ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.8.0.2856.zip
-# curl --insecure -o /opt/sonarscanner.zip -L -u $ART_USER:$ART_PASSWORD $ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
