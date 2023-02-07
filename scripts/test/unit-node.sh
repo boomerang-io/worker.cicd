@@ -24,7 +24,7 @@ fi
 # Dependency for sonarscanner
 export ENV DEBIAN_FRONTEND noninteractive
 apt-get -y update
-apt-get --no-install-recommends -y install openjdk-8-jdk unzip
+apt-get install -y openjdk-11-jdk
 
 echo "Running with nvm..."
 unset npm_config_prefix
@@ -61,8 +61,8 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qu
 # TODO: should be a CICD system property
 # Install sonar-scanner
 echo "Installing sonar-scanner"
-echo "$ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip"
-curl --insecure -o /opt/sonarscanner.zip -L -u $ART_USER:$ART_PASSWORD $ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.7.0.2747-linux.zip
+echo "$ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.8.0.2856.zip"
+curl --insecure -o /opt/sonarscanner.zip -L -u $ART_USER:$ART_PASSWORD $ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.8.0.2856.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
@@ -72,7 +72,8 @@ else
     SONAR_FLAGS=
 fi
 
-if [[ -d "./node_modules/jest" ]]; then
+# Check that jest exists and that it is being used in the script, either directly or through CRA
+if [[ -d "./node_modules/jest" && "$SCRIPT" == *react-scripts* || "$SCRIPT" == *jest* ]]; then
     TEST_REPORTER="jest-sonar-reporter"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
@@ -91,6 +92,36 @@ if [[ -d "./node_modules/jest" ]]; then
         echo "Installing $TEST_REPORTER"
         COMMAND_ARGS="-- --testResultsProcessor $TEST_REPORTER"
         pnpm i -D $TEST_REPORTER
+    fi
+fi
+
+# Check that vitest exists and that it is being used in the script
+if [[ -d "./node_modules/vitest" && "$SCRIPT" == *vitest* ]]; then
+    TEST_REPORTER="vitest-sonar-reporter"
+    TEST_REPORTER_PATH="nodes_modules/vitest-sonar-reporter"
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
+
+    # Support Typscript and other common naming standards
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
+    if [[ "$USE_NPM" == true ]]; then
+        COMMAND_ARGS="-- --reporter $TEST_REPORTER_PATH --outputFile test-report.xml"
+        if [[ -d "./node_modules/vitest-sonar-reporter" ]]; then
+            echo "Installing $TEST_REPORTER"
+            npm i -D $TEST_REPORTER
+        fi
+    elif [[ "$USE_YARN" == true ]]; then
+        COMMAND_ARGS="--reporter $TEST_REPORTER_PATH --outputFile test-report.xml"
+        if [[ -d "./node_modules/vitest-sonar-reporter" ]]; then
+            echo "Installing $TEST_REPORTER"
+            yarn add -D $TEST_REPORTER
+        fi
+    elif [[ "$USE_PNPM" == true ]]; then
+        COMMAND_ARGS="-- --reporter $TEST_REPORTER_PATH --outputFile test-report.xml"
+        if [[ -d "./node_modules/vitest-sonar-reporter" ]]; then
+            echo "Installing $TEST_REPORTER"
+            pnpm i -D $TEST_REPORTER
+        fi
     fi
 fi
 
