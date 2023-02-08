@@ -21,19 +21,31 @@ if [ "$DEBUG" == "true" ]; then
     echo "COMPONENT_NAME=$COMPONENT_NAME"
 fi
 
+# Install python dependencies
+if [ -f requirements.txt ]; then
+  echo "Using requirements.txt file found in project to install dependencies"
+  python3.9 -m pip install -r requirements.txt
+  RESULT=$?
+  if [ $RESULT -ne 0 ] ; then
+    exit 89
+  fi
+else
+  echo "No requirements.txt file found to install dependencies via pip"
+fi
+
+# Retrieve Sonarqube project and current gate
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
 # Dependency for sonarscanner
-apt-get install -y openjdk-8-jdk
+apt-get install -y openjdk-17-jdk
 
 # Install unzip
 apt-get install -y unzip
 
 # TODO: should be a CICD system property
 curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856.zip
-# curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492.zip
 unzip -o /opt/sonarscanner.zip -d /opt
 SONAR_FOLDER=`ls /opt | grep sonar-scanner`
 SONAR_HOME=/opt/$SONAR_FOLDER
@@ -48,15 +60,15 @@ fi
 REPORT_HOME=..
 
 pylint --generate-rcfile > .pylintrc
-pylint --rcfile=.pylintrc $(find . -iname "*.py" -print) -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > $REPORT_HOME/pylint-report.txt
+pylint --rcfile=.pylintrc $(find . -iname "*.py" -print) -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > $REPORT_HOME/pylintrp.txt
 
-echo "pylint-report.txt:"
-cat $REPORT_HOME/pylint-report.txt
+echo "pylintrp.txt:"
+cat $REPORT_HOME/pylintrp.txt
 echo "----------------------------------------------------------------------------------------------"
 
 echo "coverage:"
-find . -iname "*.py" -print | xargs coverage run
-coverage xml
+find . -iname "*.py" -print | xargs coverage run --omit */usr/lib/python3.9/*
+coverage xml -o $REPORT_HOME/coverage.xml
 nosetests -sv --with-xunit --xunit-file=$REPORT_HOME/nosetests.xml --with-xcoverage --xcoverage-file=$REPORT_HOME/coverage.xml
 echo "----------------------------------------------------------------------------------------------"
 
@@ -68,5 +80,5 @@ echo "coverage.xml:"
 cat $REPORT_HOME/coverage.xml
 echo "----------------------------------------------------------------------------------------------"
 
-SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylint-report.txt -Dsonar.python.xunit.reportPath=$REPORT_HOME/nosetests.xml -Dsonar.python.coverage.reportPath=$REPORT_HOME/coverage.xml"
+SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylintrp.txt -Dsonar.python.xunit.reportPath=$REPORT_HOME/nosetests.xml -Dsonar.python.coverage.reportPath=$REPORT_HOME/coverage.xml -Dsonar.exclusions=**/bin/**"
 $SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. -Dsonar.language=py $SONAR_FLAGS

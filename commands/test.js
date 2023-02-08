@@ -648,7 +648,6 @@ module.exports = {
 
       if (testTypes.includes(TestType.Static)) {
         log.ci("Commencing static tests");
-        shell.cd(workdir);
         await exec(`${shellDir}/test/initialize-dependencies-static-python.sh \
         ${taskParams["languageVersion"]} \
         ${JSON.stringify(taskParams["pypiRegistryHost"])} \

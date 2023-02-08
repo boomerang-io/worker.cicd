@@ -40,16 +40,6 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
 	if [ $RESULT -ne 0 ] ; then
 		exit 89
 	fi
-	if [ -f requirements.txt ]; then
-	  echo "Using requirements.txt file found in project to install dependencies"
-		python3.9 -m pip install -r requirements.txt
-		RESULT=$?
-		if [ $RESULT -ne 0 ] ; then
-			exit 89
-		fi
-	else
-		echo "No requirements.txt file found to install dependencies via pip"
-	fi
 	python3.9 -m pip install pylint nose coverage nosexcover
 else
 	echo "Python version not supported ..."
