@@ -24,7 +24,7 @@ fi
 # Dependency for sonarscanner
 export ENV DEBIAN_FRONTEND noninteractive
 apt-get -y update
-apt-get install -y openjdk-11-jdk
+apt-get install -y openjdk-17-jdk
 
 echo "Running with nvm..."
 unset npm_config_prefix
