@@ -20,6 +20,9 @@ export ENV DEBIAN_FRONTEND noninteractive
 apt-get -y update
 apt-get install -y openjdk-17-jdk
 
+# Install unzip
+apt-get install -y unzip
+
 echo "Running with nvm..."
 unset npm_config_prefix
 source ~/.nvm/nvm.sh
