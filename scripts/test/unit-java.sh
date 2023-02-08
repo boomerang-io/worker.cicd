@@ -9,6 +9,11 @@ SONAR_APIKEY=$4
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
 
+# Default to Java 17 for Sonarqube support
+echo "Default to Java 17 for Sonarqube support ..."
+echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk" >> ~/.profile
+echo "export PATH=/usr/lib/jvm/java-17-openjdk/bin:$PATH" >> ~/.profile
+
 # make java environment varaibles set by initialize-dependencies-java.sh effective.
 source ~/.profile
 echo "JAVA_HOME: $JAVA_HOME"
