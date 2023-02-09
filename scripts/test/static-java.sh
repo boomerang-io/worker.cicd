@@ -36,7 +36,27 @@ if [ "$BUILD_TOOL" == "maven" ]; then
     MAVEN_PROXY_IGNORE=`echo "$NO_PROXY" | sed -e 's/ //g' -e 's/\"\,\"/\|/g' -e 's/\,\"/\|/g' -e 's/\"$//' -e 's/\,/\|/g'`
     export MAVEN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts='$MAVEN_PROXY_IGNORE' -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT -Dhttps.nonProxyHosts='$MAVEN_PROXY_IGNORE'"
     export SONAR_SCANNER_OPTS="-Xmx1024m"
-    mvn clean compile sonar:sonar -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Dsonar.login=$SONAR_APIKEY -Dsonar.host.url=$SONAR_URL -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true $SONAR_SCANNER_EXCLUSIONS
+
+    # Set java environment varaibles as per initialize-dependencies-java.sh
+    source ~/.profile
+    echo "JAVA_HOME (compile): $JAVA_HOME"
+    echo "PATH (compile): $PATH"
+
+    # Compile source
+    mvn clean compile -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+
+    # Set to Java 17 for Sonarqube
+    echo "Set to Java 17 for Sonarqube..."
+    echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk" >> ~/.profile
+    echo "export PATH=/usr/lib/jvm/java-17-openjdk/bin:$PATH" >> ~/.profile
+
+    source ~/.profile
+    echo "JAVA_HOME (sonar): $JAVA_HOME"
+    echo "PATH (sonar): $PATH"
+
+    # Run Sonarqube
+    mvn sonar:sonar -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Dsonar.login=$SONAR_APIKEY -Dsonar.host.url=$SONAR_URL -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true $SONAR_SCANNER_EXCLUSIONS
+
 elif [ "$BUILD_TOOL" == "gradle" ]; then
     echo "ERROR: Gradle not implemented yet."
     exit 1
