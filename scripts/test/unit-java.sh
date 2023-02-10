@@ -9,16 +9,6 @@ SONAR_APIKEY=$4
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
 
-# Default to Java 17 for Sonarqube support
-echo "Default to Java 17 for Sonarqube support ..."
-echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk" >> ~/.profile
-echo "export PATH=/usr/lib/jvm/java-17-openjdk/bin:$PATH" >> ~/.profile
-
-# make java environment varaibles set by initialize-dependencies-java.sh effective.
-source ~/.profile
-echo "JAVA_HOME: $JAVA_HOME"
-echo "PATH: $PATH"
-
 if [ "$BUILD_TOOL" == "maven" ]; then
     echo "Testing with Maven"
     if [ "$HTTP_PROXY" != "" ]; then
@@ -32,7 +22,27 @@ if [ "$BUILD_TOOL" == "maven" ]; then
         echo "Enabling debug logging..."
         DEBUG_OPTS+="--debug -Dsonar.verbose=true"
     fi
-    mvn clean test sonar:sonar -Dversion.name=$VERSION_NAME -Dsonar.login=$SONAR_APIKEY -Dsonar.host.url="$SONAR_URL" -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.scm.disabled=true -Dsonar.junit.reportPaths=target/surefire-reports -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml $DEBUG_OPTS $MAVEN_OPTS
+
+    # Set java environment varaibles as per initialize-dependencies-java.sh
+    source ~/.profile
+    echo "JAVA_HOME (compile): $JAVA_HOME"
+    echo "PATH (compile): $PATH"
+
+    # Compile source
+    mvn clean test -Dversion.name=$VERSION_NAME $DEBUG_OPTS $MAVEN_OPTS
+
+    # Set to Java 17 for Sonarqube
+    echo "Set to Java 17 for Sonarqube..."
+    echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk" >> ~/.profile
+    echo "export PATH=/usr/lib/jvm/java-17-openjdk/bin:$PATH" >> ~/.profile
+
+    source ~/.profile
+    echo "JAVA_HOME (sonar): $JAVA_HOME"
+    echo "PATH (sonar): $PATH"
+
+    # Run Sonarqube
+    mvn sonar:sonar -Dversion.name=$VERSION_NAME -Dsonar.login=$SONAR_APIKEY -Dsonar.host.url="$SONAR_URL" -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.scm.disabled=true -Dsonar.junit.reportPaths=target/surefire-reports -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml $DEBUG_OPTS $MAVEN_OPTS
+
 elif [ "$BUILD_TOOL" == "gradle" ]; then
     echo "ERROR: Gradle not implemented yet."
     exit 1
