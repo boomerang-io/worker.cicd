@@ -16,7 +16,7 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3 ..."
 
     apt-get --purge -y autoremove python3-pip
-    apt-get install -y python3-pip upgrade
+    apt-get install -y python3-pip
     apt-get install -y python3-distutils
 
     curl https://bootstrap.pypa.io/pip/get-pip.py -o get-pip.py
