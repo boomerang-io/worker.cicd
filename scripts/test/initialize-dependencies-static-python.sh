@@ -33,14 +33,14 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 	echo "Python 2 no longer supported ..."
 	exit 89
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
-	python3.9 -m pip install --upgrade setuptools
-	python3.9 -m pip install --upgrade wheel
+	pip3 install --upgrade setuptools
+	pip3 install --upgrade wheel
 
 	RESULT=$?
 	if [ $RESULT -ne 0 ] ; then
 		exit 89
 	fi
-	python3.9 -m pip install pylint nose coverage nosexcover
+	pip3 install pylint nose coverage nosexcover
 else
 	echo "Python version not supported ..."
 	exit 99

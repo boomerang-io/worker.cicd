@@ -24,7 +24,7 @@ fi
 # Install python dependencies
 if [ -f requirements.txt ]; then
   echo "Using requirements.txt file found in project to install dependencies"
-  python3.9 -m pip install -r requirements.txt
+  pip3 install -r requirements.txt
   RESULT=$?
   if [ $RESULT -ne 0 ] ; then
     exit 89
@@ -67,7 +67,7 @@ cat $REPORT_HOME/pylintrp.txt
 echo "----------------------------------------------------------------------------------------------"
 
 echo "coverage:"
-find . -iname "*.py" -print | xargs coverage run --omit */usr/lib/python3.9/*
+find . -iname "*.py" -print | xargs coverage run --omit */usr/lib/python*/*
 coverage xml -o $REPORT_HOME/coverage.xml
 nosetests -sv --with-xunit --xunit-file=$REPORT_HOME/nosetests.xml --with-xcoverage --xcoverage-file=$REPORT_HOME/coverage.xml
 echo "----------------------------------------------------------------------------------------------"
