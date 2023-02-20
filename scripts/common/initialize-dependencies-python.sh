@@ -15,6 +15,7 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3 ..."
 
+    apt-get --purge -y autoremove python3-pip
     apt-get install -y python3-pip upgrade
 
     # apt-get install -y software-properties-common
@@ -27,7 +28,7 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
 
     if [ "$DEBUG" == "true" ]; then
       echo "Python: $(python3 --version)"
-      echo "Pip: $(python3 -m pip --version)"
+      echo "Pip: $(pip3 --version)"
     fi
 
     echo "Installing additional tools & libraries..."
