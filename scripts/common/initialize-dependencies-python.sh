@@ -34,7 +34,7 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     python3 -m pip uninstall -y pyreadline
     python3 -m pip install pyreadline3
     python3 -m pip uninstall -y nose
-    python3 -m pip install nose-py3
+    python3 -m pip install -U nose-py3 --no-binary :all:
 else
     echo "Python version not supported ..."
   	exit 99
