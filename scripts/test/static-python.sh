@@ -24,7 +24,7 @@ fi
 # Install python dependencies
 if [ -f requirements.txt ]; then
   echo "Using requirements.txt file found in project to install dependencies"
-  pip3 install -r requirements.txt
+  python3 -m pip install -r requirements.txt
   RESULT=$?
   if [ $RESULT -ne 0 ] ; then
     exit 89
