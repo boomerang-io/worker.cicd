@@ -69,16 +69,20 @@ echo "--------------------------------------------------------------------------
 echo "coverage:"
 find . -iname "*.py" -print | xargs coverage run --omit */usr/lib/python*/*
 coverage xml -o $REPORT_HOME/coverage.xml
-nosetests -sv --with-xunit --xunit-file=$REPORT_HOME/nosetests.xml --with-xcoverage --xcoverage-file=$REPORT_HOME/coverage.xml
+# nosetests -sv --with-xunit --xunit-file=$REPORT_HOME/nosetests.xml --with-xcoverage --xcoverage-file=$REPORT_HOME/coverage.xml
+pytest tests/unit --cov --cov-config=$REPORT_HOME/coverage.xml --cov-report xml --junitxml $REPORT_HOME/pytests.xml
 echo "----------------------------------------------------------------------------------------------"
 
-echo "nosetests.xml:"
-cat $REPORT_HOME/nosetests.xml
+echo "pytests.xml:"
+cat $REPORT_HOME/pytests.xml
+# echo "nosetests.xml:"
+# cat $REPORT_HOME/nosetests.xml
 echo "----------------------------------------------------------------------------------------------"
 
 echo "coverage.xml:"
 cat $REPORT_HOME/coverage.xml
 echo "----------------------------------------------------------------------------------------------"
 
-SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylintrp.txt -Dsonar.python.xunit.reportPath=$REPORT_HOME/nosetests.xml -Dsonar.python.coverage.reportPath=$REPORT_HOME/coverage.xml -Dsonar.exclusions=**/bin/**"
+SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylintrp.txt -Dsonar.python.xunit.reportPath=$REPORT_HOME/pytests.xml -Dsonar.python.coverage.reportPath=$REPORT_HOME/coverage.xml -Dsonar.exclusions=**/bin/**"
+# SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylintrp.txt -Dsonar.python.xunit.reportPath=$REPORT_HOME/nosetests.xml -Dsonar.python.coverage.reportPath=$REPORT_HOME/coverage.xml -Dsonar.exclusions=**/bin/**"
 $SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. -Dsonar.language=py $SONAR_FLAGS

@@ -33,8 +33,11 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     # Workaround for python bug:  AttributeError: module 'collections' has no attribute 'Callable'
     python3 -m pip uninstall -y pyreadline
     python3 -m pip install pyreadline3
-    python3 -m pip uninstall -y nose
-    python3 -m pip install -y nose-py3
+
+    python3 -m pip install -y pytest
+
+    # python3 -m pip uninstall -y nose
+    # python3 -m pip install -y nose-py3
 else
     echo "Python version not supported ..."
   	exit 99
