@@ -66,11 +66,13 @@ echo "pylintrp.txt:"
 cat $REPORT_HOME/pylintrp.txt
 echo "----------------------------------------------------------------------------------------------"
 
-echo "coverage:"
-find . -iname "*.py" -print | xargs coverage run --omit */usr/lib/python*/*
-coverage xml -o $REPORT_HOME/coverage.xml
+echo "pytest:"
+python3 -m pytest 
+pytest --cov=. --cov-report=xml:$REPORT_HOME/coverage.xml --junit-xml=$REPORT_HOME/pytests.xml
+
+# find . -iname "*.py" -print | xargs coverage run
+# coverage xml -o $REPORT_HOME/coverage.xml
 # nosetests -sv --with-xunit --xunit-file=$REPORT_HOME/nosetests.xml --with-xcoverage --xcoverage-file=$REPORT_HOME/coverage.xml
-pytest tests/unit --cov --cov-config=$REPORT_HOME/coverage.xml --cov-report xml --junitxml $REPORT_HOME/pytests.xml
 echo "----------------------------------------------------------------------------------------------"
 
 echo "pytests.xml:"
