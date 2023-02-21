@@ -29,16 +29,6 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
 
     echo "Installing additional tools & libraries..."
     apt-get install -y gcc make zlib1g-dev libc-dev libffi-dev g++ libxml2 libxml2-dev libxslt-dev libcurl4-openssl-dev libssl-dev libgnutls28-dev
-
-    # # Workaround for python bug:  AttributeError: module 'collections' has no attribute 'Callable'
-    # python3 -m pip uninstall -y pyreadline
-    # python3 -m pip install pyreadline3
-
-    python3 -m pip install pytest
-    python3 -m pip install pytest-cov
-
-    # python3 -m pip uninstall -y nose
-    # python3 -m pip install nose-py3
 else
     echo "Python version not supported ..."
   	exit 99

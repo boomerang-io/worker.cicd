@@ -35,12 +35,18 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
 	python3 -m pip install --upgrade setuptools
 	python3 -m pip install --upgrade wheel
+    python3 -m pip install --upgrade pytest
+    python3 -m pip install --upgrade pytest-cov
+	python3 -m pip install --upgrade pylint
+	python3 -m pip install --upgrade nose
+	python3 -m pip install --upgrade coverage
+	python3 -m pip install --upgrade nosexcover
 
 	RESULT=$?
 	if [ $RESULT -ne 0 ] ; then
 		exit 89
 	fi
-	python3 -m pip install pylint nose coverage nosexcover
+	
 else
 	echo "Python version not supported ..."
 	exit 99
