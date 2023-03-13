@@ -111,23 +111,6 @@ module.exports = {
       }
 
       log.debug("Testing artifacts");
-      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
-      if (testTypes.includes(TestType.Unit)) {
-        log.debug("Commencing unit tests");
-        await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
-        shell.cd(workdir);
-        await exec(`${shellDir}/test/unit-java.sh \
-        ${taskParams["buildTool"]} \
-        ${version} \
-        ${taskParams["sonarUrl"]} \
-        ${taskParams["sonarApiKey"]} \
-        ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
-        ${JSON.stringify(taskParams["artifactoryUrl"])} \
-        ${taskParams["artifactoryUser"]} \
-        ${taskParams["artifactoryPassword"]} \
-        `);
-      }
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);  
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
@@ -140,6 +123,23 @@ module.exports = {
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
         ${taskParams["sonarExclusions"]} \
+        ${JSON.stringify(taskParams["artifactoryUrl"])} \
+        ${taskParams["artifactoryUser"]} \
+        ${taskParams["artifactoryPassword"]} \
+        `);
+      }      
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
+      if (testTypes.includes(TestType.Unit)) {
+        log.debug("Commencing unit tests");
+        await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
+        shell.cd(workdir);
+        await exec(`${shellDir}/test/unit-java.sh \
+        ${taskParams["buildTool"]} \
+        ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]} \
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
