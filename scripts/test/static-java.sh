@@ -37,13 +37,22 @@ if [ "$BUILD_TOOL" == "maven" ]; then
     export MAVEN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts='$MAVEN_PROXY_IGNORE' -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT -Dhttps.nonProxyHosts='$MAVEN_PROXY_IGNORE'"
     export SONAR_SCANNER_OPTS="-Xmx1024m"
 
+    DEBUG_OPTS=
+    if [ "$DEBUG" == "true" ]; then
+        echo "Enabling debug logging..."
+        DEBUG_OPTS+="--debug -Dsonar.verbose=true"
+    fi
+
     # Set java environment varaibles as per initialize-dependencies-java.sh
     source ~/.profile
     echo "JAVA_HOME (compile): $JAVA_HOME"
     echo "PATH (compile): $PATH"
 
     # Compile source
-    mvn clean compile -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+    mvn clean compile -Dversion.name=$VERSION_NAME $DEBUG_OPTS $MAVEN_OPTS -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+
+    # Test source
+    mvn clean test -Dversion.name=$VERSION_NAME $DEBUG_OPTS $MAVEN_OPTS
 
     # Set to Java 17 for Sonarqube
     echo "Set to Java 17 for Sonarqube..."
@@ -55,7 +64,8 @@ if [ "$BUILD_TOOL" == "maven" ]; then
     echo "PATH (sonar): $PATH"
 
     # Run Sonarqube
-    mvn sonar:sonar -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Dsonar.login=$SONAR_APIKEY -Dsonar.host.url=$SONAR_URL -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true $SONAR_SCANNER_EXCLUSIONS
+    mvn sonar:sonar -Dversion.name=$VERSION_NAME -Dsonar.login=$SONAR_APIKEY -Dsonar.host.url="$SONAR_URL" -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.scm.disabled=true -Dsonar.junit.reportPaths=target/surefire-reports -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true $SONAR_SCANNER_EXCLUSIONS $DEBUG_OPTS $MAVEN_OPTS
+    # mvn sonar:sonar -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Dsonar.login=$SONAR_APIKEY -Dsonar.host.url=$SONAR_URL -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true $SONAR_SCANNER_EXCLUSIONS
 
 elif [ "$BUILD_TOOL" == "gradle" ]; then
     echo "ERROR: Gradle not implemented yet."
