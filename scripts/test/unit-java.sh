@@ -22,6 +22,7 @@ if [ "$BUILD_TOOL" == "maven" ]; then
         echo "Enabling debug logging..."
         DEBUG_OPTS+="--debug -Dsonar.verbose=true"
     fi
+    echo "DEBUG_OPTS=$DEBUG_OPTS"
 
     # Set java environment varaibles as per initialize-dependencies-java.sh
     source ~/.profile
