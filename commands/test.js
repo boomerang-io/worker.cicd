@@ -83,7 +83,7 @@ module.exports = {
 
     try {
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/common/initialize.sh`);      
+      await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {
@@ -111,7 +111,7 @@ module.exports = {
       }
 
       log.debug("Testing artifacts");
-      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);  
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
         shell.cd(workdir);
@@ -127,7 +127,7 @@ module.exports = {
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
         `);
-      }      
+      }
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
@@ -403,20 +403,6 @@ module.exports = {
       ${taskParams["buildTool"]} \
       ${taskParams["cypressInstallBinary"]}`);
 
-      if (testTypes.includes(TestType.Unit)) {
-        log.debug("Commencing unit tests");
-        await exec(`${shellDir}/test/unit-node.sh \
-        ${taskParams["languageVersion"]} \
-        ${taskParams["buildTool"]} \
-        ${version} \
-        ${taskParams["sonarUrl"]} \
-        ${taskParams["sonarApiKey"]} \
-        ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \\
-        ${JSON.stringify(taskParams["artifactoryUrl"])} \
-        ${taskParams["artifactoryUser"]} \
-        ${taskParams["artifactoryPassword"]}`);
-      }
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
         await exec(`${shellDir}/test/static-node.sh \
@@ -427,6 +413,21 @@ module.exports = {
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
+        ${JSON.stringify(taskParams["artifactoryUrl"])} \
+        ${taskParams["artifactoryUser"]} \
+        ${taskParams["artifactoryPassword"]}`);
+      }
+
+      if (testTypes.includes(TestType.Unit)) {
+        log.debug("Commencing unit tests");
+        await exec(`${shellDir}/test/unit-node.sh \
+        ${taskParams["languageVersion"]} \
+        ${taskParams["buildTool"]} \
+        ${version} \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]} \\
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]}`);

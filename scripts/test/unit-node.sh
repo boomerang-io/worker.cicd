@@ -108,19 +108,19 @@ if [[ -d "./node_modules/vitest" && "$SCRIPT" == *vitest* ]]; then
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
     if [[ "$USE_NPM" == true ]]; then
         COMMAND_ARGS="-- --reporter $TEST_REPORTER --outputFile test-report.xml"
-        if [[ -d "./node_modules/vitest-sonar-reporter" ]]; then
+        if [[ ! -d "./node_modules/vitest-sonar-reporter" ]]; then
             echo "Installing $TEST_REPORTER"
             npm i -D $TEST_REPORTER
         fi
     elif [[ "$USE_YARN" == true ]]; then
         COMMAND_ARGS="--reporter $TEST_REPORTER --outputFile test-report.xml"
-        if [[ -d "./node_modules/vitest-sonar-reporter" ]]; then
+        if [[ ! -d "./node_modules/vitest-sonar-reporter" ]]; then
             echo "Installing $TEST_REPORTER"
             yarn add -D $TEST_REPORTER
         fi
     elif [[ "$USE_PNPM" == true ]]; then
         COMMAND_ARGS="-- --reporter $TEST_REPORTER --outputFile test-report.xml"
-        if [[ -d "./node_modules/vitest-sonar-reporter" ]]; then
+        if [[ ! -d "./node_modules/vitest-sonar-reporter" ]]; then
             echo "Installing $TEST_REPORTER"
             pnpm i -D $TEST_REPORTER
         fi
