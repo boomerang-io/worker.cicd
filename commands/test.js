@@ -417,7 +417,6 @@ module.exports = {
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]}`);
       }
-
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
         await exec(`${shellDir}/test/unit-node.sh \
