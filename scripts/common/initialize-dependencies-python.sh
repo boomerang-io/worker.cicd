@@ -15,6 +15,7 @@ if [ "$BUILD_LANGUAGE_VERSION" == "2" ]; then
 elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     echo "Installing Python 3 ..."
 
+    apt-get -y update
     apt-get --purge -y autoremove python3-pip
     apt-get install -y python3-pip
     apt-get install -y python3-distutils
@@ -28,6 +29,7 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
     fi
 
     echo "Installing additional tools & libraries..."
+    apt-get -y update
     apt-get install -y gcc make zlib1g-dev libc-dev libffi-dev g++ libxml2 libxml2-dev libxslt-dev libcurl4-openssl-dev libssl-dev libgnutls28-dev
 else
     echo "Python version not supported ..."
