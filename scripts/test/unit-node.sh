@@ -101,8 +101,9 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
 
     # Check that vitest exists and that it is being used in the script
     if [[ -d "./node_modules/vitest" && "$TEST_SCRIPT" == *vitest* ]]; then
-        TEST_REPORTER="vitest-sonar-reporter"
         COVERAGE_PROVIDER="c8"
+        COVERAGE_REPORTER="lcov"
+        TEST_REPORTER="vitest-sonar-reporter"
         COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER"
         if [[ ! -d "./node_modules/$TEST_REPORTER" ]]; then
             if [[ "$USE_NPM" == true ]]; then
