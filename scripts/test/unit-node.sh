@@ -78,6 +78,7 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
+    COVERAGE_REPORTER="lcov"
     UNIT_TEST_REPORT_NAME="test-report.xml"
     
     # Check that jest exists and that it is being used in the script, either directly or through CRA
@@ -100,7 +101,7 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     # Check that vitest exists and that it is being used in the script
     if [[ -d "./node_modules/vitest" && "$TEST_SCRIPT" == *vitest* ]]; then
         TEST_REPORTER="vitest-sonar-reporter"
-        if [[ ! -d "./node_modules/vitest-sonar-reporter" ]]; then
+        if [[ ! -d "./node_modules/$TEST_REPORTER" ]]; then
             if [[ "$USE_NPM" == true ]]; then
                 echo "Installing $TEST_REPORTER"
                 npm i -D $TEST_REPORTER
@@ -112,9 +113,23 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
                 pnpm i -D $TEST_REPORTER
             fi
         fi
+
+        COVERAGE_REPORTER_DEP="@vitest/coverage-c8"
+        if [[ ! -d "./node_modules/$COVERAGE_REPORTER_DEP" ]]; then
+            if [[ "$USE_NPM" == true ]]; then
+                echo "Installing $COVERAGE_REPORTER_DEP"
+                npm i -D $COVERAGE_REPORTER_DEP
+            elif [[ "$USE_YARN" == true ]]; then
+                echo "Installing $COVERAGE_REPORTER_DEP"
+                yarn add -D $COVERAGE_REPORTER_DEP
+            elif [[ "$USE_PNPM" == true ]]; then
+                echo "Installing $COVERAGE_REPORTER_DEP"
+                pnpm i -D $COVERAGE_REPORTER_DEP
+            fi
+        fi
     fi
 
-    COMMAND_ARGS="-- --reporter $TEST_REPORTER --outputFile $UNIT_TEST_REPORT_NAME --coverage"
+    COMMAND_ARGS="-- --reporter $TEST_REPORTER --outputFile $UNIT_TEST_REPORT_NAME --coverage --coverage.reporter $COVERAGE_REPORTER"
     npm test $COMMAND_ARGS
 
 fi
