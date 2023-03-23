@@ -74,7 +74,7 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 # Run 'test'
-if [[ "$TEST_SCRIPT" != "undefined"]]; then
+if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     # Check that jest exists and that it is being used in the script, either directly or through CRA
     if [[ -d "./node_modules/jest" && "$SCRIPT" == *react-scripts* || "$SCRIPT" == *jest* ]]; then
         TEST_REPORTER="jest-sonar-reporter"
@@ -138,7 +138,7 @@ if [[ "$TEST_SCRIPT" != "undefined"]]; then
 fi
 
 # Run 'lint'
-if [[ "$LINT_SCRIPT" != "undefined"]]; then
+if [[ "$LINT_SCRIPT" != "undefined" ]]; then
     SCRIPT=$(node -pe "require('./package.json').scripts.lint");
     ESLINT_DEP=$(node -pe "require('./package.json').dependencies.eslint");
     ESLINT_DEV_DEP=$(node -pe "require('./package.json').devDependencies.eslint");

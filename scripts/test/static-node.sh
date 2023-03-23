@@ -93,7 +93,7 @@ elif [ -d "src" ]; then
     echo "Source folder 'src' exists."
     SRC_FOLDER=src
 else
-    echo "Source folder 'src' does not exist - defaulting to the current folder and will scan all sub-folders."
+    echo "Source folder 'src' does not exist - defaulting to the current folder and will scan all sub-folders." 
     SRC_FOLDER=.
 
     # Using root location as src folder means we will have a clash with worker.cicd folders so let's exclude those too
