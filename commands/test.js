@@ -403,7 +403,7 @@ module.exports = {
       ${taskParams["buildTool"]} \
       ${taskParams["cypressInstallBinary"]}`);
 
-      if (testTypes.includes(TestType.Static)) {
+      if (testTypes.includes(TestType.Static) && !testTypes.includes(TestType.Unit)) {
         log.debug("Commencing static tests");
         await exec(`${shellDir}/test/static-node.sh \
         ${taskParams["languageVersion"]} \
@@ -543,7 +543,7 @@ module.exports = {
       ${taskParams["buildTool"]} \
       ${taskParams["cypressInstallBinary"]}`);
 
-      if (testTypes.includes(TestType.Static)) {
+      if (testTypes.includes(TestType.Static) && !testTypes.includes(TestType.Unit)) {
         log.debug("Commencing static tests");
         await exec(`${shellDir}/test/static-node.sh \
         ${taskParams["languageVersion"]} \
