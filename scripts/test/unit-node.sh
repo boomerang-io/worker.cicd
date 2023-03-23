@@ -75,74 +75,55 @@ fi
 
 # Run 'test'
 if [[ "$TEST_SCRIPT" != "undefined" ]]; then
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
+    UNIT_TEST_REPORT_NAME="test-report.xml"
+    
     # Check that jest exists and that it is being used in the script, either directly or through CRA
-    if [[ -d "./node_modules/jest" && "$SCRIPT" == *react-scripts* || "$SCRIPT" == *jest* ]]; then
+    if [[ -d "./node_modules/jest" && "$TEST_SCRIPT" == *react-scripts* || "$TEST_SCRIPT" == *jest* ]]; then
         TEST_REPORTER="jest-sonar-reporter"
-        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
-        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
-
-        # Support Typscript and other common naming standards
-        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
-        if [[ "$USE_NPM" == true ]]; then
-            echo "Installing $TEST_REPORTER"
-            COMMAND_ARGS="-- --testResultsProcessor $TEST_REPORTER --coverage"
-            npm i -D $TEST_REPORTER
-        elif [[ "$USE_YARN" == true ]]; then
-            echo "Installing $TEST_REPORTER"
-            COMMAND_ARGS="--testResultsProcessor $TEST_REPORTER --coverage"
-            yarn add -D $TEST_REPORTER
-        elif [[ "$USE_PNPM" == true ]]; then
-            echo "Installing $TEST_REPORTER"
-            COMMAND_ARGS="-- --testResultsProcessor $TEST_REPORTER --coverage"
-            pnpm i -D $TEST_REPORTER
-        fi
-    fi
-
-    # Check that vitest exists and that it is being used in the script
-    if [[ -d "./node_modules/vitest" && "$SCRIPT" == *vitest* ]]; then
-        TEST_REPORTER="vitest-sonar-reporter"
-        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
-        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
-
-        # Support Typscript and other common naming standards
-        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
-        if [[ "$USE_NPM" == true ]]; then
-            COMMAND_ARGS="-- --reporter $TEST_REPORTER --outputFile test-report.xml --coverage"
-            if [[ ! -d "./node_modules/vitest-sonar-reporter" ]]; then
+        if [[ ! -d "./node_modules/jest-sonar-reporter" ]]; then
+            if [[ "$USE_NPM" == true ]]; then
                 echo "Installing $TEST_REPORTER"
                 npm i -D $TEST_REPORTER
-            fi
-        elif [[ "$USE_YARN" == true ]]; then
-            COMMAND_ARGS="--reporter $TEST_REPORTER --outputFile test-report.xml --coverage"
-            if [[ ! -d "./node_modules/vitest-sonar-reporter" ]]; then
+            elif [[ "$USE_YARN" == true ]]; then
                 echo "Installing $TEST_REPORTER"
                 yarn add -D $TEST_REPORTER
-            fi
-        elif [[ "$USE_PNPM" == true ]]; then
-            COMMAND_ARGS="-- --reporter $TEST_REPORTER --outputFile test-report.xml --coverage"
-            if [[ ! -d "./node_modules/vitest-sonar-reporter" ]]; then
+            elif [[ "$USE_PNPM" == true ]]; then
                 echo "Installing $TEST_REPORTER"
                 pnpm i -D $TEST_REPORTER
             fi
         fi
     fi
 
-    if [[ "$USE_NPM" == true ]]; then
-        # npm clean-install
-        npm test $COMMAND_ARGS
-    elif [[ "$USE_YARN" == true ]]; then
-        yarn test $COMMAND_ARGS
-    elif [[ "$USE_PNPM" == true ]]; then
-        pnpm test $COMMAND_ARGS
+    # Check that vitest exists and that it is being used in the script
+    if [[ -d "./node_modules/vitest" && "$TEST_SCRIPT" == *vitest* ]]; then
+        TEST_REPORTER="vitest-sonar-reporter"
+        if [[ ! -d "./node_modules/vitest-sonar-reporter" ]]; then
+            if [[ "$USE_NPM" == true ]]; then
+                echo "Installing $TEST_REPORTER"
+                npm i -D $TEST_REPORTER
+            elif [[ "$USE_YARN" == true ]]; then
+                echo "Installing $TEST_REPORTER"
+                yarn add -D $TEST_REPORTER
+            elif [[ "$USE_PNPM" == true ]]; then
+                echo "Installing $TEST_REPORTER"
+                pnpm i -D $TEST_REPORTER
+            fi
+        fi
     fi
+
+    COMMAND_ARGS="-- --reporter $TEST_REPORTER --outputFile $UNIT_TEST_REPORT_NAME --coverage"
+    npm test $COMMAND_ARGS
+
 fi
 
 # Run 'lint'
 if [[ "$LINT_SCRIPT" != "undefined" ]]; then
-    SCRIPT=$(node -pe "require('./package.json').scripts.lint");
     ESLINT_DEP=$(node -pe "require('./package.json').dependencies.eslint");
     ESLINT_DEV_DEP=$(node -pe "require('./package.json').devDependencies.eslint");
-    if [ "$SCRIPT" != "undefined" ] && [[ "$ESLINT_DEP" != "undefined" || "$ESLINT_DEV_DEP" != "undefined" ]]; then
+    if [[ "$ESLINT_DEP" != "undefined" ]] || [[ "$ESLINT_DEV_DEP" != "undefined" ]]; then
         LINT_REPORT=lint-report.json
         COVERAGE_REPORT=coverage/lcov.info
         npm run lint -- -f json -o $LINT_REPORT
