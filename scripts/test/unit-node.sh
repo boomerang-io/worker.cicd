@@ -78,12 +78,13 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
-    COVERAGE_REPORTER="lcov"
     UNIT_TEST_REPORT_NAME="test-report.xml"
+    COMMAND_ARGS=""
     
     # Check that jest exists and that it is being used in the script, either directly or through CRA
     if [[ -d "./node_modules/jest" && "$TEST_SCRIPT" == *react-scripts* || "$TEST_SCRIPT" == *jest* ]]; then
         TEST_REPORTER="jest-sonar-reporter"
+        COMMAND_ARGS="-- --coverage --testResultsProcessor $TEST_REPORTER"
         if [[ ! -d "./node_modules/jest-sonar-reporter" ]]; then
             if [[ "$USE_NPM" == true ]]; then
                 echo "Installing $TEST_REPORTER"
@@ -101,6 +102,8 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     # Check that vitest exists and that it is being used in the script
     if [[ -d "./node_modules/vitest" && "$TEST_SCRIPT" == *vitest* ]]; then
         TEST_REPORTER="vitest-sonar-reporter"
+        COVERAGE_PROVIDER="c8"
+        COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER"
         if [[ ! -d "./node_modules/$TEST_REPORTER" ]]; then
             if [[ "$USE_NPM" == true ]]; then
                 echo "Installing $TEST_REPORTER"
@@ -114,22 +117,21 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
             fi
         fi
 
-        COVERAGE_REPORTER_DEP="@vitest/coverage-c8"
-        if [[ ! -d "./node_modules/$COVERAGE_REPORTER_DEP" ]]; then
+        COVERAGE_PROVIDER_DEP="@vitest/coverage-c8"
+        if [[ ! -d "./node_modules/$COVERAGE_PROVIDER_DEP" ]]; then
             if [[ "$USE_NPM" == true ]]; then
-                echo "Installing $COVERAGE_REPORTER_DEP"
-                npm i -D $COVERAGE_REPORTER_DEP
+                echo "Installing $COVERAGE_PROVIDER_DEP"
+                npm i -D $COVERAGE_PROVIDER_DEP
             elif [[ "$USE_YARN" == true ]]; then
-                echo "Installing $COVERAGE_REPORTER_DEP"
-                yarn add -D $COVERAGE_REPORTER_DEP
+                echo "Installing $COVERAGE_PROVIDER_DEP"
+                yarn add -D $COVERAGE_PROVIDER_DEP
             elif [[ "$USE_PNPM" == true ]]; then
-                echo "Installing $COVERAGE_REPORTER_DEP"
-                pnpm i -D $COVERAGE_REPORTER_DEP
+                echo "Installing $COVERAGE_PROVIDER_DEP"
+                pnpm i -D $COVERAGE_PROVIDER_DEP
             fi
         fi
     fi
 
-    COMMAND_ARGS="-- --reporter $TEST_REPORTER --outputFile $UNIT_TEST_REPORT_NAME --coverage --coverage.reporter $COVERAGE_REPORTER"
     npm test $COMMAND_ARGS
 
 fi
