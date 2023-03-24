@@ -105,15 +105,19 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     if [[ -d "./node_modules/vitest" && "$TEST_SCRIPT" == *vitest* ]]; then
         COVERAGE_PROVIDER="c8"
         COVERAGE_REPORTER="lcov"
+        echo "USER_INCLUSIONS=$USER_INCLUSIONS"
         COVERAGE_INCLUDE=
         if [ "$USER_INCLUSIONS" != "undefined" ]; then
             COVERAGE_INCLUDE=$USER_INCLUSIONS
         else
-            COVERAGE_INCLUDE="src"
+            COVERAGE_INCLUDE="**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"
         fi
+        echo "USER_EXCLUSIONS=$USER_EXCLUSIONS"
         COVERAGE_EXCLUDE=
         if [ "$USER_EXCLUSIONS" != "undefined" ]; then
             COVERAGE_EXCLUDE=$USER_EXCLUSIONS
+        else
+            COVERAGE_EXCLUDE="**/node_modules/**,**/dist/**,**/cypress/**,**/.{idea,git,cache,output,temp}/**,**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*"
         fi
         TEST_REPORTER="vitest-sonar-reporter"
         COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER --coverage.include=$COVERAGE_INCLUDE --coverage.exclude=$COVERAGE_EXCLUDE --coverage.all=true"

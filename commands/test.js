@@ -426,7 +426,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \\
+        ${taskParams["systemComponentName"]} \
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \        
@@ -565,7 +565,12 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]}`);
+        ${taskParams["systemComponentName"]} \
+        ${JSON.stringify(taskParams["artifactoryUrl"])} \
+        ${taskParams["artifactoryUser"]} \
+        ${taskParams["artifactoryPassword"]} \        
+        ${taskParams["userInclusions"]} \
+        ${taskParams["userExclusions"]}`);        
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
