@@ -429,7 +429,9 @@ module.exports = {
         ${taskParams["systemComponentName"]} \\
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
-        ${taskParams["artifactoryPassword"]}`);
+        ${taskParams["artifactoryPassword"]} \        
+        ${taskParams["userInclusions"]} \
+        ${taskParams["userExclusions"]}`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");

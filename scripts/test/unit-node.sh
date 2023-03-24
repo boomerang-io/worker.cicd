@@ -13,6 +13,8 @@ COMPONENT_NAME=$7
 ART_URL=$8
 ART_USER=$9
 ART_PASSWORD=${10}
+USER_INCLUSIONS=${11}
+USER_EXCLUSIONS=${12}
 
 # Fail fast if both test and lint scripts are not present
 TEST_SCRIPT=$(node -pe "require('./package.json').scripts.test");
@@ -103,9 +105,18 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     if [[ -d "./node_modules/vitest" && "$TEST_SCRIPT" == *vitest* ]]; then
         COVERAGE_PROVIDER="c8"
         COVERAGE_REPORTER="lcov"
-        COVERAGE_INCLUDE="src"
+        COVERAGE_INCLUDE=
+        if [ "$USER_INCLUSIONS" != "undefined" ]; then
+            COVERAGE_INCLUDE=$USER_INCLUSIONS
+        else
+            COVERAGE_INCLUDE="src"
+        fi
+        COVERAGE_EXCLUDE=
+        if [ "$USER_EXCLUSIONS" != "undefined" ]; then
+            COVERAGE_EXCLUDE=$USER_EXCLUSIONS
+        fi
         TEST_REPORTER="vitest-sonar-reporter"
-        COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER --coverage.include=$COVERAGE_INCLUDE"
+        COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER --coverage.include=$COVERAGE_INCLUDE --coverage.exclude=$COVERAGE_EXCLUDE --coverage.all=true"
 
         if [[ ! -d "./node_modules/$TEST_REPORTER" ]]; then
             if [[ "$USE_NPM" == true ]]; then
@@ -141,7 +152,6 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     COVERAGE_REPORT=coverage/lcov.info
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=$COVERAGE_REPORT"
     ls -al $COVERAGE_REPORT
-    cat $COVERAGE_REPORT
     echo "SONAR_FLAGS=$SONAR_FLAGS"
 fi
 
