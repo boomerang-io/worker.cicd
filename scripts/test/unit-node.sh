@@ -105,6 +105,8 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
         COVERAGE_REPORTER="lcov"
         TEST_REPORTER="vitest-sonar-reporter"
         COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER"
+
+
         if [[ ! -d "./node_modules/$TEST_REPORTER" ]]; then
             if [[ "$USE_NPM" == true ]]; then
                 echo "Installing $TEST_REPORTER"
@@ -135,6 +137,12 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     fi
 
     npm test $COMMAND_ARGS
+
+    COVERAGE_REPORT=coverage/lcov.info
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=$COVERAGE_REPORT"
+    ls -al $COVERAGE_REPORT
+    cat $COVERAGE_REPORT
+    echo "SONAR_FLAGS=$SONAR_FLAGS"
 fi
 
 # Run 'lint'
@@ -143,9 +151,8 @@ if [[ "$LINT_SCRIPT" != "undefined" ]]; then
     ESLINT_DEV_DEP=$(node -pe "require('./package.json').devDependencies.eslint");
     if [[ "$ESLINT_DEP" != "undefined" ]] || [[ "$ESLINT_DEV_DEP" != "undefined" ]]; then
         LINT_REPORT=lint-report.json
-        COVERAGE_REPORT=coverage/lcov.info
         npm run lint -- -f json -o $LINT_REPORT
-        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.eslint.reportPaths=$LINT_REPORT -Dsonar.javascript.lcov.reportPaths=$COVERAGE_REPORT"
+        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.eslint.reportPaths=$LINT_REPORT"
         ls -al $LINT_REPORT
     fi
     echo "SONAR_FLAGS=$SONAR_FLAGS"
