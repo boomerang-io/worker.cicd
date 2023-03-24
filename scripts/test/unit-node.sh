@@ -103,6 +103,7 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
 
     # Check that vitest exists and that it is being used in the script
     if [[ -d "./node_modules/vitest" && "$TEST_SCRIPT" == *vitest* ]]; then
+        TEST_REPORTER="vitest-sonar-reporter"
         COVERAGE_PROVIDER="c8"
         COVERAGE_REPORTER="lcov"
         COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER --coverage.all=true"
@@ -116,8 +117,7 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
         if [[ "$USER_EXCLUSIONS" != "undefined" && "$USER_EXCLUSIONS" != "" ]]; then
             COMMAND_ARGS="$COMMAND_ARGS --coverage.exclude=$USER_EXCLUSIONS"
         fi
-
-        TEST_REPORTER="vitest-sonar-reporter"      
+        
         if [[ ! -d "./node_modules/$TEST_REPORTER" ]]; then
             if [[ "$USE_NPM" == true ]]; then
                 echo "Installing $TEST_REPORTER"
