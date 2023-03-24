@@ -103,8 +103,9 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     if [[ -d "./node_modules/vitest" && "$TEST_SCRIPT" == *vitest* ]]; then
         COVERAGE_PROVIDER="c8"
         COVERAGE_REPORTER="lcov"
+        COVERAGE_INCLUDE="src"
         TEST_REPORTER="vitest-sonar-reporter"
-        COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER"
+        COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER --coverage.include=$COVERAGE_INCLUDE"
 
         if [[ ! -d "./node_modules/$TEST_REPORTER" ]]; then
             if [[ "$USE_NPM" == true ]]; then
