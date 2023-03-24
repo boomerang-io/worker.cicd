@@ -118,7 +118,8 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
             fi
         fi
 
-        COVERAGE_PROVIDER_DEP="@vitest/coverage-c8"
+        VITEST_VERSION=$(node -pe "require('./package.json').devDependencies.vitest");
+        COVERAGE_PROVIDER_DEP="@vitest/coverage-c8@$VITEST_VERSION"
         if [[ ! -d "./node_modules/$COVERAGE_PROVIDER_DEP" ]]; then
             if [[ "$USE_NPM" == true ]]; then
                 echo "Installing $COVERAGE_PROVIDER_DEP"
@@ -134,7 +135,6 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     fi
 
     npm test $COMMAND_ARGS
-
 fi
 
 # Run 'lint'
