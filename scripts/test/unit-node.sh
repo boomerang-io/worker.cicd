@@ -109,13 +109,21 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
         COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER --coverage.all=true"
         echo "USER_INCLUSIONS=[$USER_INCLUSIONS]"
         if [[ "$USER_INCLUSIONS" != "undefined" && "$USER_INCLUSIONS" != "" ]]; then
-            COMMAND_ARGS="$COMMAND_ARGS --coverage.include=$USER_INCLUSIONS"
+            IFS=',' read -ra USER_INCLUSIONS_LIST <<< "$USER_INCLUSIONS"
+            for USER_INCLUSION in "${USER_INCLUSIONS_LIST[@]}"
+            do
+                COMMAND_ARGS="$COMMAND_ARGS --coverage.include=$USER_INCLUSION"
+            done   
         else
             COMMAND_ARGS="$COMMAND_ARGS --coverage.include=src"
         fi
         echo "USER_EXCLUSIONS=[$USER_EXCLUSIONS]"
         if [[ "$USER_EXCLUSIONS" != "undefined" && "$USER_EXCLUSIONS" != "" ]]; then
-            COMMAND_ARGS="$COMMAND_ARGS --coverage.exclude=$USER_EXCLUSIONS"
+            IFS=',' read -ra USER_EXCLUSIONS_LIST <<< "$USER_EXCLUSIONS"
+            for USER_EXCLUSION in "${USER_EXCLUSIONS_LIST[@]}"
+            do
+                COMMAND_ARGS="$COMMAND_ARGS --coverage.exclude=$USER_EXCLUSION"
+            done           
         fi
         
         if [[ ! -d "./node_modules/$TEST_REPORTER" ]]; then
