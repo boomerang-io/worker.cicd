@@ -40,9 +40,11 @@ nvm use $LANGUAGE_VERSION
 [[ "$BUILD_TOOL" == "pnpm" ]] && USE_PNPM=true || USE_PNPM=false
 
 if [ "$USE_NPM" == false ] && [ "$USE_YARN" == false ] && [ "$USE_PNPM" == false ]; then
-    echo "build tool not specified, defaulting to 'npm'..."
+    echo "Build tool not specified, defaulting to 'npm'..."
     BUILD_TOOL="npm"
 fi
+
+echo "Using build tool $BUILD_TOOL"
 
 # Set JS heap space
 export NODE_OPTIONS="--max-old-space-size=8192"
@@ -53,6 +55,7 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_U
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
 # Install sonar-scanner
+# TODO: should be a CICD system property
 echo "Installing sonar-scanner"
 echo "$ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.8.0.2856.zip"
 curl --insecure -o /opt/sonarscanner.zip -L -u $ART_USER:$ART_PASSWORD $ART_URL/boomerang/software/sonarqube/sonar-scanner-cli-4.8.0.2856.zip
@@ -66,10 +69,13 @@ fi
 
 # Run linting script
 SCRIPT=$(node -pe "require('./package.json').scripts.lint");
-if [[ "$SCRIPT" != "undefined" ]]; then
-    npm run lint
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.eslint.reportPaths=lint-report.json"
-    ls -al lint-report.json
+ESLINT_DEP=$(node -pe "require('./package.json').dependencies.eslint");
+ESLINT_DEV_DEP=$(node -pe "require('./package.json').devDependencies.eslint");
+if [ "$SCRIPT" != "undefined" ] && [[ "$ESLINT_DEP" != "undefined" || "$ESLINT_DEV_DEP" != "undefined" ]]; then
+    LINT_REPORT=lint-report.json
+    npm run lint -- -f json -o $LINT_REPORT
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.eslint.reportPaths=$LINT_REPORT"
+    ls -al $LINT_REPORT
 fi
 echo "SONAR_FLAGS=$SONAR_FLAGS"
 
@@ -87,7 +93,7 @@ elif [ -d "src" ]; then
     echo "Source folder 'src' exists."
     SRC_FOLDER=src
 else
-    echo "Source folder 'src' does not exist - defaulting to root folder of project and will scan all sub-folders."
+    echo "Source folder 'src' does not exist - defaulting to the current folder and will scan all sub-folders." 
     SRC_FOLDER=.
 
     # Using root location as src folder means we will have a clash with worker.cicd folders so let's exclude those too
