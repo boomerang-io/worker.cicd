@@ -430,9 +430,9 @@ module.exports = {
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
-        ${taskParams["codeCovInclusions"]} \
-        ${taskParams["codeCovExclusions"]} \
-        ${taskParams["codeCovIncludeAll"]}`);
+        "${taskParams["codeCovInclusions"]}" \
+        "${taskParams["codeCovExclusions"]}" \
+        "${taskParams["codeCovIncludeAll"]}"`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
@@ -570,9 +570,9 @@ module.exports = {
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
-        ${taskParams["codeCovInclusions"]} \
-        ${taskParams["codeCovExclusions"]} \
-        ${taskParams["codeCovIncludeAll"]}`);
+        "${taskParams["codeCovInclusions"]}" \
+        "${taskParams["codeCovExclusions"]}" \
+        "${taskParams["codeCovIncludeAll"]}"`);
       }
       if (testTypes.includes(TestType.Security)) {
         log.debug("Commencing security tests");
