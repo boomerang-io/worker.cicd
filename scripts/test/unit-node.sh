@@ -13,8 +13,9 @@ COMPONENT_NAME=$7
 ART_URL=$8
 ART_USER=$9
 ART_PASSWORD=${10}
-USER_INCLUSIONS=${11}
-USER_EXCLUSIONS=${12}
+CODE_COV_INCLUSIONS=${11}
+CODE_COV_EXCLUSIONS=${12}
+CODE_COV_INCLUDE_ALL=${13}
 
 # Fail fast if both test and lint scripts are not present
 TEST_SCRIPT=$(node -pe "require('./package.json').scripts.test");
@@ -106,23 +107,28 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
         TEST_REPORTER="vitest-sonar-reporter"      
         COVERAGE_PROVIDER="c8"
         COVERAGE_REPORTER="lcov"
-        COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER --coverage.all=true"
-        echo "USER_INCLUSIONS=[$USER_INCLUSIONS]"
-        if [[ "$USER_INCLUSIONS" != "undefined" && "$USER_INCLUSIONS" != "" ]]; then
-            IFS=',' read -ra USER_INCLUSIONS_LIST <<< "$USER_INCLUSIONS"
-            for USER_INCLUSION in "${USER_INCLUSIONS_LIST[@]}"
+        if [[ "$CODE_COV_INCLUDE_ALL" == "undefined" || "$CODE_COV_INCLUDE_ALL" == "" ]]; then
+            CODE_COV_INCLUDE_ALL=true
+        fi
+        COMMAND_ARGS="-- --coverage.enabled --reporter=$TEST_REPORTER --outputFile=$UNIT_TEST_REPORT_NAME --coverage.reporter=$COVERAGE_REPORTER --coverage.provider=$COVERAGE_PROVIDER --coverage.all=$CODE_COV_INCLUDE_ALL"
+        echo "CODE_COV_INCLUSIONS=[$CODE_COV_INCLUSIONS]"
+        if [[ "$CODE_COV_INCLUSIONS" != "undefined" && "$CODE_COV_INCLUSIONS" != "" ]]; then
+            IFS=',' read -ra CODE_COV_INCLUSIONS_LIST <<< "$CODE_COV_INCLUSIONS"
+            for CODE_COV_INCLUSION in "${CODE_COV_INCLUSIONS_LIST[@]}"
             do
-                COMMAND_ARGS="$COMMAND_ARGS --coverage.include=$USER_INCLUSION"
+                CODE_COV_INCLUSION_TRIM=$( echo $CODE_COV_INCLUSION | awk '{$1=$1;print}' )
+                COMMAND_ARGS="$COMMAND_ARGS --coverage.include=$CODE_COV_INCLUSION_TRIM"
             done   
         else
             COMMAND_ARGS="$COMMAND_ARGS --coverage.include=src"
         fi
-        echo "USER_EXCLUSIONS=[$USER_EXCLUSIONS]"
-        if [[ "$USER_EXCLUSIONS" != "undefined" && "$USER_EXCLUSIONS" != "" ]]; then
-            IFS=',' read -ra USER_EXCLUSIONS_LIST <<< "$USER_EXCLUSIONS"
-            for USER_EXCLUSION in "${USER_EXCLUSIONS_LIST[@]}"
+        echo "CODE_COV_EXCLUSIONS=[$CODE_COV_EXCLUSIONS]"
+        if [[ "$CODE_COV_EXCLUSIONS" != "undefined" && "$CODE_COV_EXCLUSIONS" != "" ]]; then
+            IFS=',' read -ra CODE_COV_EXCLUSIONS_LIST <<< "$CODE_COV_EXCLUSIONS"
+            for CODE_COV_EXCLUSION in "${CODE_COV_EXCLUSIONS_LIST[@]}"
             do
-                COMMAND_ARGS="$COMMAND_ARGS --coverage.exclude=$USER_EXCLUSION"
+                CODE_COV_EXCLUSION_TRIM=$( echo $CODE_COV_EXCLUSION | awk '{$1=$1;print}' )
+                COMMAND_ARGS="$COMMAND_ARGS --coverage.exclude=$CODE_COV_EXCLUSION_TRIM"
             done           
         fi
         
@@ -179,7 +185,7 @@ fi
 # Set SonarQube scanning exclusions
 SONAR_EXCLUSIONS=-Dsonar.exclusions=**/node_modules/**
 # Place setter for new IF statement to handle user specified exclusions
-# SONAR_EXCLUSIONS="$SONAR_EXCLUSIONS,$USER_EXCLUSIONS"
+# SONAR_EXCLUSIONS="$SONAR_EXCLUSIONS,$CODE_COV_EXCLUSIONS"
 echo "SONAR_EXCLUSIONS=$SONAR_EXCLUSIONS"
 
 SRC_FOLDER=
@@ -205,3 +211,8 @@ NODE_PATH=$(which node)
 echo "NODE_PATH=$NODE_PATH"
 
 $SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.sources=$SRC_FOLDER -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.nodejs.executable=$NODE_PATH -Dsonar.scm.disabled=true -Dsonar.javascript.node.maxspace=8192 $SONAR_EXCLUSIONS $SONAR_FLAGS
+
+EXIT_CODE=$?
+echo "EXIT_CODE=$EXIT_CODE"
+
+exit $EXIT_CODE
