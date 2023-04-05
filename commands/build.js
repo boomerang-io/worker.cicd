@@ -425,7 +425,6 @@ module.exports = {
         "${taskParams["gitCommitId"]}" \
         "${taskParams["repoIndexBranch"]}"`
       );
-      qq;
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
