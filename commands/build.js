@@ -234,7 +234,7 @@ module.exports = {
 
       await exec(`${shellDir}/build/compile-node.sh \
       "${taskParams["languageVersion"]}" \
-      "${taskParams["packageScript"]}"`);
+      "${taskParams["buildScript"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);

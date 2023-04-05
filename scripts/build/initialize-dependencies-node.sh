@@ -16,17 +16,9 @@ fi
 
 echo "Using build tool $BUILD_TOOL"
 
-if [ -z "$BUILD_SCRIPT" ]; then
-    echo "Build script not specified, defaulting to 'build'..."
-    BUILD_SCRIPT=build
-else
-    echo "Setting build script to $BUILD_SCRIPT..."
-fi
-
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
     echo "LANGUAGE_VERSION=$LANGUAGE_VERSION"
-    echo "BUILD_SCRIPT=$BUILD_SCRIPT"
 fi
 
 # Install configured version of Node.js via nvm if present
