@@ -13,7 +13,7 @@ if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ]; then
     nvm use $LANGUAGE_VERSION
 fi
 
-if [ -z "$BUILD_SCRIPT" ]; then
+if [ "$BUILD_SCRIPT" != "undefined" ] && [ "$BUILD_SCRIPT" != "" ]; then
     echo "Build script not specified, defaulting to 'build'..."
     BUILD_SCRIPT=build
 else
