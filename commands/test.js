@@ -5,7 +5,6 @@ const fs = require("fs");
 const TestType = {
   Unit: "unit",
   Static: "static",
-  Security: "security",
   SeleniumNative: "seleniumNative",
   SeleniumCustom: "seleniumCustom",
   Library: "library"
@@ -146,25 +145,6 @@ module.exports = {
         `);
       }
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
-      if (testTypes.includes(TestType.Security)) {
-        log.debug("Commencing security tests");
-        shell.cd(workdir);
-        await exec(
-          `${shellDir}/test/security-java.sh \
-          ${taskParams["systemComponentName"]} \
-          ${version} \
-          ${JSON.stringify(taskParams["asocRepoUrl"])} \
-          ${taskParams["asocRepoUser"]} \
-          ${taskParams["asocRepoPassword"]} \
-          ${taskParams["asocAppId"]} \
-          ${taskParams["asocLoginKeyId"]} \
-          ${taskParams["asocLoginSecret"]} \
-          ${taskParams["asocClientCli"]} \
-          ${taskParams["asocJavaRuntime"]} \
-          ${shellDir} \
-          ${testdir}`
-        );
-      }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
@@ -309,23 +289,6 @@ module.exports = {
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]}`);
       }
-      if (testTypes.includes(TestType.Security)) {
-        log.debug("Commencing security tests");
-        shell.cd(workdir);
-        await exec(`${shellDir}/test/security-java.sh \
-          ${taskParams["systemComponentName"]} \
-          ${version} \
-          ${JSON.stringify(taskParams["asocRepoUrl"])} \
-          ${taskParams["asocRepoUser"]} \
-          ${taskParams["asocRepoPassword"]} \
-          ${taskParams["asocAppId"]} \
-          ${taskParams["asocLoginKeyId"]} \
-          ${taskParams["asocLoginSecret"]} \
-          ${taskParams["asocClientCli"]} \
-          ${taskParams["asocJavaRuntime"]} \
-          ${shellDir} \
-          ${testdir}`);
-      }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Native Selenium testing type not supported for Jar");
       }
@@ -433,24 +396,6 @@ module.exports = {
         "${taskParams["codeCovInclusions"]}" \
         "${taskParams["codeCovExclusions"]}" \
         "${taskParams["codeCovIncludeAll"]}"`);
-      }
-      if (testTypes.includes(TestType.Security)) {
-        log.debug("Commencing security tests");
-        await exec(
-          `${shellDir}/test/security-node.sh \
-          ${taskParams["systemComponentName"]} \
-          ${version} \
-          ${JSON.stringify(taskParams["asocRepoUrl"])} \
-          ${taskParams["asocRepoUser"]} \
-          ${taskParams["asocRepoPassword"]} \
-          ${taskParams["asocAppId"]} \
-          ${taskParams["asocLoginKeyId"]} \
-          ${taskParams["asocLoginSecret"]} \
-          ${taskParams["asocClientCli"]} \
-          ${taskParams["asocJavaRuntime"]} \
-          ${shellDir} \
-          ${testdir}`
-        );
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
@@ -574,24 +519,6 @@ module.exports = {
         "${taskParams["codeCovExclusions"]}" \
         "${taskParams["codeCovIncludeAll"]}"`);
       }
-      if (testTypes.includes(TestType.Security)) {
-        log.debug("Commencing security tests");
-        await exec(
-          `${shellDir}/test/security-node.sh \
-          ${taskParams["systemComponentName"]} \
-          ${version} \
-          ${JSON.stringify(taskParams["asocRepoUrl"])} \
-          ${taskParams["asocRepoUser"]} \
-          ${taskParams["asocRepoPassword"]} \
-          ${taskParams["asocAppId"]} \
-          ${taskParams["asocLoginKeyId"]} \
-          ${taskParams["asocLoginSecret"]} \
-          ${taskParams["asocClientCli"]} \
-          ${taskParams["asocJavaRuntime"]} \
-          ${shellDir} \
-          ${testdir}`
-        );
-      }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Native Selenium testing type not supported for npm packages");
       }
@@ -676,9 +603,6 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Python");
-      }
-      if (testTypes.includes(TestType.Security)) {
-        log.debug("Security tests not implemented for Python");
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
@@ -773,9 +697,6 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Helm");
-      }
-      if (testTypes.includes(TestType.Security)) {
-        log.debug("Security tests not implemented for Helm");
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Native Selenium testing type not supported for Helm");
