@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-  <Configuration>
-    <Targets>
-      <Target path="$PROJECT_PATH">
-        <CustomBuildInfo src_root="$PROJECT_PATH/src" />
-      </Target>
-    </Targets>
-</Configuration>
