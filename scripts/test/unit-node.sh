@@ -79,7 +79,7 @@ fi
 # Run 'test'
 if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
+    #SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
     UNIT_TEST_REPORT_NAME="test-report.xml"
     COMMAND_ARGS=""
@@ -205,6 +205,9 @@ else
     echo "SONAR_EXCLUSIONS=$SONAR_EXCLUSIONS"
 fi
 echo "SRC_FOLDER=$SRC_FOLDER"
+
+# Set sonar.tests
+SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=$SRC_FOLDER"
 
 # Set Node.js bin path
 NODE_PATH=$(which node)
