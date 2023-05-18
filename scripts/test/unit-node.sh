@@ -164,8 +164,12 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
     npm test $COMMAND_ARGS
 
     COVERAGE_REPORT=coverage/lcov.info
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=$COVERAGE_REPORT"
-    ls -al $COVERAGE_REPORT
+    if [ -f "$COVERAGE_REPORT" ]; then
+        ls -al $COVERAGE_REPORT
+        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=$COVERAGE_REPORT"
+    else
+        echo "WARNING: Coverage report not generated"
+    fi     
     echo "SONAR_FLAGS=$SONAR_FLAGS"
 fi
 
@@ -176,8 +180,12 @@ if [[ "$LINT_SCRIPT" != "undefined" ]]; then
     if [[ "$ESLINT_DEP" != "undefined" ]] || [[ "$ESLINT_DEV_DEP" != "undefined" ]]; then
         LINT_REPORT=lint-report.json
         npm run lint -- -f json -o $LINT_REPORT
-        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.eslint.reportPaths=$LINT_REPORT"
-        ls -al $LINT_REPORT
+        if [ -f "$LINT_REPORT" ]; then
+            ls -al $LINT_REPORT
+            SONAR_FLAGS="$SONAR_FLAGS -Dsonar.eslint.reportPaths=$LINT_REPORT"
+        else
+            echo "WARNING: Lint report not generated"
+        fi
     fi
     echo "SONAR_FLAGS=$SONAR_FLAGS"
 fi
