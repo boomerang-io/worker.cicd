@@ -78,9 +78,6 @@ fi
 
 # Run 'test'
 if [[ "$TEST_SCRIPT" != "undefined" ]]; then
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
-    #SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
     UNIT_TEST_REPORT_NAME="test-report.xml"
     COMMAND_ARGS=""
     
@@ -163,6 +160,13 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
 
     npm test $COMMAND_ARGS
 
+    if [ -f "$UNIT_TEST_REPORT_NAME" ]; then
+        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
+    else
+        echo "WARNING: Test report not generated"
+    fi
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
+
     COVERAGE_REPORT=coverage/lcov.info
     if [ -f "$COVERAGE_REPORT" ]; then
         ls -al $COVERAGE_REPORT
@@ -214,7 +218,7 @@ else
 fi
 echo "SRC_FOLDER=$SRC_FOLDER"
 
-# Set sonar.tests
+# Set sonar.tests to SRC_FOLDER
 SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=$SRC_FOLDER"
 
 # Set Node.js bin path
