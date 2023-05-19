@@ -395,7 +395,8 @@ module.exports = {
         ${taskParams["artifactoryPassword"]} \
         "${taskParams["codeCovInclusions"]}" \
         "${taskParams["codeCovExclusions"]}" \
-        "${taskParams["codeCovIncludeAll"]}"`);
+        "${taskParams["codeCovIncludeAll"]}" \
+        "${taskParams["srcFolder"]}"`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
@@ -517,7 +518,8 @@ module.exports = {
         ${taskParams["artifactoryPassword"]} \
         "${taskParams["codeCovInclusions"]}" \
         "${taskParams["codeCovExclusions"]}" \
-        "${taskParams["codeCovIncludeAll"]}"`);
+        "${taskParams["codeCovIncludeAll"]}" \
+        "${taskParams["srcFolder"]}"`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Native Selenium testing type not supported for npm packages");
