@@ -34,9 +34,14 @@ nvm install $LANGUAGE_VERSION
 nvm use $LANGUAGE_VERSION
 
 # Install dependencies
-echo "Install dependencies: make build-essential python-is-python"
+echo "Install dependencies: make build-essential libx11-dev libxtst-dev python-is-python node-pre-gyp node-gyp"
 apt-get update
-apt-get install -y make build-essential python-is-python3
+apt-get install -y make build-essential libx11-dev libxtst-dev python-is-python3
+
+# Install node-pre-gyp
+echo "Install node-pre-gyp"
+npm install --global node-pre-gyp@latest
+npm config set node_pre_gyp $(npm prefix -g)/lib/node_modules/node-pre-gyp/bin/node-pre-gyp.js
 
 # Install node-gyp
 echo "Install node-gyp"
