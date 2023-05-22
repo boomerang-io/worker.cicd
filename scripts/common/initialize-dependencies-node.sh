@@ -33,6 +33,18 @@ source ~/.nvm/nvm.sh
 nvm install $LANGUAGE_VERSION
 nvm use $LANGUAGE_VERSION
 
+# Install dependencies
+echo "Install dependencies: make build-essential python-is-python node-gyp"
+apt-get update
+apt-get install -y make build-essential python-is-python3 node-gyp
+
+# # Install node-gyp
+# echo "Install node-gyp"
+# npm install --global node-gyp
+
+# # Update PATH
+# export PATH=$PATH:/usr/share/nodejs:/usr/local/share/npm/bin
+
 # Install yarn if set as the build tool
 if [ "$USE_YARN" == true ]; then
     npm install --global yarn

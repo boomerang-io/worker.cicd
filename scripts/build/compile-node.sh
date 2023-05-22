@@ -17,12 +17,6 @@ unset npm_config_prefix
 source ~/.nvm/nvm.sh
 nvm use $LANGUAGE_VERSION
 
-# Install node-gyp
-npm install --global node-gyp
-
-# Update PATH
-export PATH=$PATH:/usr/share/nodejs:/usr/local/share/npm/bin
-
 if [ "$BUILD_SCRIPT" != "undefined" ] && [ "$BUILD_SCRIPT" != "" ]; then
     echo "Setting build script to $BUILD_SCRIPT..."
 else
