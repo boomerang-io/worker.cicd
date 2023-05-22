@@ -6,12 +6,16 @@ LANGUAGE_VERSION=$1
 BUILD_SCRIPT=$2
 
 # Install configured version of Node.js via nvm if present
-if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ]; then
-    echo "Running with nvm..."
-    unset npm_config_prefix
-    source ~/.nvm/nvm.sh
-    nvm use $LANGUAGE_VERSION
+if [ "$LANGUAGE_VERSION" == "undefined" ] || [ "$LANGUAGE_VERSION" == "" ]; then
+    # Set Node.js version
+    LANGUAGE_VERSION=12
 fi
+
+# Install configured version of Node.js via nvm if present
+echo "Running with nvm..."
+unset npm_config_prefix
+source ~/.nvm/nvm.sh
+nvm use $LANGUAGE_VERSION
 
 if [ "$BUILD_SCRIPT" != "undefined" ] && [ "$BUILD_SCRIPT" != "" ]; then
     echo "Setting build script to $BUILD_SCRIPT..."
