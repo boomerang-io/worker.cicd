@@ -33,6 +33,9 @@ source ~/.nvm/nvm.sh
 nvm install $LANGUAGE_VERSION
 nvm use $LANGUAGE_VERSION
 
+# Install node-pre-gyp
+npm install --global node-pre-gyp
+
 # Install yarn if set as the build tool
 if [ "$USE_YARN" == true ]; then
     npm install --global yarn
