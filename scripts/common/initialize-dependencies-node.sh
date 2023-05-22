@@ -40,13 +40,8 @@ apt-get install -y make build-essential python-is-python3
 
 # Install node-gyp
 echo "Install node-gyp"
-npm install --global node-gyp
-
-ls -al /usr/share/nodejs
-ls -al /usr/local/share/npm/bin
-
-# Update PATH
-export PATH=$PATH:/usr/share/nodejs:/usr/local/share/npm/bin
+npm install --global node-gyp@latest
+npm config set node_gyp $(npm prefix -g)/lib/node_modules/node-gyp/bin/node-gyp.js
 
 # Install yarn if set as the build tool
 if [ "$USE_YARN" == true ]; then
