@@ -33,20 +33,20 @@ source ~/.nvm/nvm.sh
 nvm install $LANGUAGE_VERSION
 nvm use $LANGUAGE_VERSION
 
-# Install dependencies
-echo "Install dependencies: make build-essential libx11-dev libxtst-dev python-is-python node-pre-gyp node-gyp"
-apt-get update
-apt-get install -y make build-essential libx11-dev libxtst-dev python-is-python3
+# # Install dependencies
+# echo "Install dependencies: make build-essential libx11-dev libxtst-dev python-is-python node-gyp"
+# apt-get update
+# apt-get install -y make build-essential libx11-dev libxtst-dev python-is-python3
 
-# Install node-pre-gyp
-echo "Install node-pre-gyp"
-npm install --global node-pre-gyp@latest
-npm config set node_pre_gyp $(npm prefix -g)/lib/node_modules/node-pre-gyp/bin/node-pre-gyp.js
-
-# Install node-gyp
+# Reinstall node-gyp
+echo "Uninstall node-gyp"
+npm uninstall --global node-gyp
 echo "Install node-gyp"
-npm install --global node-gyp@latest
-npm config set node_gyp $(npm prefix -g)/lib/node_modules/node-gyp/bin/node-gyp.js
+npm install --global node-gyp
+# npm config set node_gyp $(npm prefix --global)/lib/node_modules/node-gyp/bin/node-gyp.js
+
+echo "npm global prefix"
+npm prefix --global
 
 # Install yarn if set as the build tool
 if [ "$USE_YARN" == true ]; then
