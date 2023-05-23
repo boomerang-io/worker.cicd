@@ -38,29 +38,9 @@ echo "Install dependencies: make build-essential libx11-dev libxtst-dev python-i
 apt-get update
 apt-get install -y make build-essential libx11-dev libxtst-dev python-is-python3
 
-echo "npm global prefix"
+# Echo NPM Global Prefix
+echo "NPM Global Prefix:"
 npm prefix --global
-
-# Reinstall node-pre-gyp
-echo "Uninstall node-pre-gyp"
-npm uninstall --global node-pre-gyp
-echo "Install node-pre-gyp"
-npm install --global node-pre-gyp
-$(npm prefix --global)/bin/node-pre-gyp -version
-
-# Reinstall node-gyp
-echo "Uninstall node-gyp"
-npm uninstall --global node-gyp
-echo "Install node-gyp"
-npm install --global node-gyp
-$(npm prefix --global)/bin/node-gyp -version
-
-# Reinstall nopt
-echo "Uninstall nopt"
-npm uninstall --global nopt
-echo "Install nopt"
-npm install --global nopt
-$(npm prefix --global)/bin/nopt -version
 
 # Install yarn if set as the build tool
 if [ "$USE_YARN" == true ]; then
