@@ -16,6 +16,7 @@ ART_PASSWORD=${10}
 CODE_COV_INCLUSIONS=${11}
 CODE_COV_EXCLUSIONS=${12}
 CODE_COV_INCLUDE_ALL=${13}
+SRC_FOLDER=${14}
 
 # Fail fast if both test and lint scripts are not present
 TEST_SCRIPT=$(node -pe "require('./package.json').scripts.test");
@@ -76,11 +77,23 @@ if [ "$DEBUG" == "true" ]; then
     SONAR_FLAGS="-Dsonar.verbose=true"
 fi
 
+# Set source folder
+if [ "$SRC_FOLDER" == "undefined" ] || [ "$SRC_FOLDER" == "" ]; then
+    if [ -d "dist" ]; then
+        echo "Source folder 'dist' exists."
+        SRC_FOLDER=dist
+    elif [ -d "src" ]; then
+        echo "Source folder 'src' exists."
+        SRC_FOLDER=src
+    else
+        echo "Source folder 'src' does not exist - defaulting to the current folder and will scan all sub-folders."
+        SRC_FOLDER=.
+    fi
+fi
+echo "SRC_FOLDER=$SRC_FOLDER"
+
 # Run 'test'
 if [[ "$TEST_SCRIPT" != "undefined" ]]; then
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=src"
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
     UNIT_TEST_REPORT_NAME="test-report.xml"
     COMMAND_ARGS=""
     
@@ -120,7 +133,7 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
                 COMMAND_ARGS="$COMMAND_ARGS --coverage.include=$CODE_COV_INCLUSION_TRIM"
             done   
         else
-            COMMAND_ARGS="$COMMAND_ARGS --coverage.include=src"
+            COMMAND_ARGS="$COMMAND_ARGS --coverage.include=$SRC_FOLDER"
         fi
         echo "CODE_COV_EXCLUSIONS=[$CODE_COV_EXCLUSIONS]"
         if [[ "$CODE_COV_EXCLUSIONS" != "undefined" && "$CODE_COV_EXCLUSIONS" != "" ]]; then
@@ -163,9 +176,20 @@ if [[ "$TEST_SCRIPT" != "undefined" ]]; then
 
     npm test $COMMAND_ARGS
 
+    if [ -f "$UNIT_TEST_REPORT_NAME" ]; then
+        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.testExecutionReportPaths=test-report.xml"
+    else
+        echo "WARNING: Test report not generated"
+    fi
+    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.test.jsx,**/*.test.js,**/*.spec.tsx,**/*.spec.ts,**/*.spec.js,**/*.spec.tsx"
+
     COVERAGE_REPORT=coverage/lcov.info
-    SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=$COVERAGE_REPORT"
-    ls -al $COVERAGE_REPORT
+    if [ -f "$COVERAGE_REPORT" ]; then
+        ls -al $COVERAGE_REPORT
+        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.javascript.lcov.reportPaths=$COVERAGE_REPORT"
+    else
+        echo "WARNING: Coverage report not generated"
+    fi     
     echo "SONAR_FLAGS=$SONAR_FLAGS"
 fi
 
@@ -176,8 +200,12 @@ if [[ "$LINT_SCRIPT" != "undefined" ]]; then
     if [[ "$ESLINT_DEP" != "undefined" ]] || [[ "$ESLINT_DEV_DEP" != "undefined" ]]; then
         LINT_REPORT=lint-report.json
         npm run lint -- -f json -o $LINT_REPORT
-        SONAR_FLAGS="$SONAR_FLAGS -Dsonar.eslint.reportPaths=$LINT_REPORT"
-        ls -al $LINT_REPORT
+        if [ -f "$LINT_REPORT" ]; then
+            ls -al $LINT_REPORT
+            SONAR_FLAGS="$SONAR_FLAGS -Dsonar.eslint.reportPaths=$LINT_REPORT"
+        else
+            echo "WARNING: Lint report not generated"
+        fi
     fi
     echo "SONAR_FLAGS=$SONAR_FLAGS"
 fi
@@ -188,23 +216,15 @@ SONAR_EXCLUSIONS=-Dsonar.exclusions=**/node_modules/**
 # SONAR_EXCLUSIONS="$SONAR_EXCLUSIONS,$CODE_COV_EXCLUSIONS"
 echo "SONAR_EXCLUSIONS=$SONAR_EXCLUSIONS"
 
-SRC_FOLDER=
-if [ -d "dist" ]; then
-    echo "Source folder 'dist' exists."
-    SRC_FOLDER=dist
-elif [ -d "src" ]; then
-    echo "Source folder 'src' exists."
-    SRC_FOLDER=src
-else
-    echo "Source folder 'src' does not exist - defaulting to the current folder and will scan all sub-folders."
-    SRC_FOLDER=.
-
+if [ "$SRC_FOLDER" == "." ]; then
      # Using root location as src folder means we will have a clash with worker.cicd folders so let's exclude those too
     echo "Append worker.cicd sub-folders to exclusions so they are not scanned by SonarQube."
     SONAR_EXCLUSIONS="$SONAR_EXCLUSIONS,/commands/**,/scripts/**"
     echo "SONAR_EXCLUSIONS=$SONAR_EXCLUSIONS"
 fi
-echo "SRC_FOLDER=$SRC_FOLDER"
+
+# Set sonar.tests to SRC_FOLDER
+SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=$SRC_FOLDER"
 
 # Set Node.js bin path
 NODE_PATH=$(which node)

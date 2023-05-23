@@ -21,20 +21,26 @@ fi
 echo "Using build tool $BUILD_TOOL"
 
 # Install configured version of Node.js via nvm if present
-if [ "$LANGUAGE_VERSION" != "undefined" ] && [ "$LANGUAGE_VERSION" != "" ]; then
-
-    # Install specified version of Node.js
-    echo "Using NVM with Node version: $LANGUAGE_VERSION"
-    unset npm_config_prefix
-    source ~/.nvm/nvm.sh
-    nvm install $LANGUAGE_VERSION
-    nvm use $LANGUAGE_VERSION
-
-else
-    # TODO: Move these into the base node builder image
-    # Cannot run if using NVM as thats on Ubuntu
-    apk add --no-cache gcc g++ make libc6-compat libc-dev lcms2-dev libpng-dev automake autoconf libtool python && apk add --no-cache fftw-dev build-base --repository http://dl-3.alpinelinux.org/alpine/edge/testing --repository http://dl-3.alpinelinux.org/alpine/edge/main && apk add --no-cache nodejs nodejs-npm --repository http://dl-3.alpinelinux.org/alpine/edge/main
+if [ "$LANGUAGE_VERSION" == "undefined" ] || [ "$LANGUAGE_VERSION" == "" ]; then
+    # Set Node.js version
+    LANGUAGE_VERSION=12
 fi
+
+# Install Node.js
+echo "Using NVM with Node version: $LANGUAGE_VERSION"
+unset npm_config_prefix
+source ~/.nvm/nvm.sh
+nvm install $LANGUAGE_VERSION
+nvm use $LANGUAGE_VERSION
+
+# Install dependencies
+echo "Install dependencies: make build-essential libx11-dev libxtst-dev python-is-python node-gyp"
+apt-get update
+apt-get install -y make build-essential libx11-dev libxtst-dev python-is-python3
+
+# Echo NPM Global Prefix
+echo "NPM Global Prefix:"
+npm prefix --global
 
 # Install yarn if set as the build tool
 if [ "$USE_YARN" == true ]; then
