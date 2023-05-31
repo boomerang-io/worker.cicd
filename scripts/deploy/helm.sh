@@ -83,6 +83,28 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
     fi
     if [ ! -z "$CHART_RELEASE" ] && [ ! -z "$CHART_VERSION" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Version: $CHART_VERSION"
+        echo "Check the status of $CHART_RELEASE"
+        INDEX=0
+        SLEEP=30
+        RETRIES=10
+        while true; do
+            INDEX=$(( INDEX + 1 ))
+            if [[ $INDEX -eq $RETRIES ]]; then
+                echo "The time of checking status of $CHART_RELEASE reach the highest value. Stop checking status."
+                HELM_CHARTS_EXITCODE=91;
+                break
+            else
+                STATUSOUTPUT=$(helm status $CHART_RELEASE)
+                if [[ $STATUSOUTPUT =~ "STATUS: pending-upgrade" ]]; then
+                    echo "The status of $CHART_RELEASE is pending-upgrade. Retry..."
+                    sleep $SLEEP
+                else
+                    echo "The status of $CHART_RELEASE is NOT pending-upgrade."
+                    break
+                fi
+            fi
+        done
+        
         echo "Upgrading helm release..."
         SLEEP=30
         RETRIES=3
@@ -102,6 +124,10 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
                 if [ $RESULT -ne 0 ]; then 
                     if [[ $OUTPUT =~ "timed out" ]]; then
                         echo "Time out reached. Retrying..."
+                        sleep $SLEEP
+                        continue
+                    elif [[ $OUTPUT =~ "release: already exists" ]]; then
+                        echo "Release: already exists. Retrying..."
                         sleep $SLEEP
                         continue
                     else
