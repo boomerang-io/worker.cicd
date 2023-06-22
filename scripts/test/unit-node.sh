@@ -223,8 +223,11 @@ if [ "$SRC_FOLDER" == "." ]; then
     echo "SONAR_EXCLUSIONS=$SONAR_EXCLUSIONS"
 fi
 
-# Set sonar.tests to SRC_FOLDER
-SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=$SRC_FOLDER"
+#####
+##### Removed - Cannot set "sonar.tests" to same location as "sonar.sources" as this causes duplicate index error in Sonarqube
+#####
+# # Set sonar.tests to SRC_FOLDER
+# SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=$SRC_FOLDER"
 
 # Set Node.js bin path
 NODE_PATH=$(which node)
