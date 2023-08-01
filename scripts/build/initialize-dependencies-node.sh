@@ -33,6 +33,8 @@ unset npm_config_prefix
 source ~/.nvm/nvm.sh
 nvm use $LANGUAGE_VERSION
 
+echo "  build Node: $(node --version)"
+
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
     echo "Enabling debug logging..."

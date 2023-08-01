@@ -12,6 +12,8 @@ SCOPE=$(node -pe "require('./package.json').name" | cut -d/ -f1);
 
 echo "$SCOPE"
 node -v
+ls
+cat package.json
 
 if [[ $SCOPE != @* ]]; then
     echo "Package name must include a scope e.g. '@scope/my-package'"
