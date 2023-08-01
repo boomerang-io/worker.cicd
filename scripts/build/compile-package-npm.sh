@@ -10,6 +10,9 @@ ART_PASSWORD=$4
 # Get the scope of the package from the name field
 SCOPE=$(node -pe "require('./package.json').name" | cut -d/ -f1);
 
+echo "$SCOPE"
+node -v
+
 if [[ $SCOPE != @* ]]; then
     echo "Package name must include a scope e.g. '@scope/my-package'"
     echo "The scope should be unique to your organization/team"
