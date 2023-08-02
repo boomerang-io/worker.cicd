@@ -7,18 +7,6 @@ ART_URL=$2
 ART_USER=$3
 ART_PASSWORD=$4
 
-# Get the scope of the package from the name field
-SCOPE=$(node -pe "require('./package.json').name")
-# SCOPE=${PACKAGE_NAME%%/*}
-
-echo "$SCOPE"
-
-if [[ $SCOPE != @* ]]; then
-    echo "Package name must include a scope e.g. '@scope/my-package'"
-    echo "The scope should be unique to your organization/team"
-    exit 95
-fi
-
 # Install configured version of Node.js via nvm if present
 if [ "$LANGUAGE_VERSION" == "undefined" ] || [ "$LANGUAGE_VERSION" == "" ]; then
     # Set Node.js version
@@ -30,6 +18,18 @@ echo "Running with nvm..."
 unset npm_config_prefix
 source ~/.nvm/nvm.sh
 nvm use $LANGUAGE_VERSION
+
+# Get the scope of the package from the name field
+SCOPE=$(node -pe "require('./package.json').name")
+# SCOPE=${PACKAGE_NAME%%/*}
+
+echo "$SCOPE"
+
+if [[ $SCOPE != @* ]]; then
+    echo "Package name must include a scope e.g. '@scope/my-package'"
+    echo "The scope should be unique to your organization/team"
+    exit 95
+fi
 
 DEBUG_OPTS=
 if [ "$DEBUG" == "true" ]; then
