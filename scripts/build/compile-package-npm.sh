@@ -8,12 +8,10 @@ ART_USER=$3
 ART_PASSWORD=$4
 
 # Get the scope of the package from the name field
-SCOPE=$(node -pe "require('./package.json').name" | cut -d/ -f1);
+PACKAGE_NAME=$(node -pe "require('./package.json').name")
+SCOPE=${PACKAGE_NAME%%/*}
 
 echo "$SCOPE"
-node -v
-ls
-cat package.json
 
 if [[ $SCOPE != @* ]]; then
     echo "Package name must include a scope e.g. '@scope/my-package'"
