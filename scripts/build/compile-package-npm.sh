@@ -8,8 +8,8 @@ ART_USER=$3
 ART_PASSWORD=$4
 
 # Get the scope of the package from the name field
-PACKAGE_NAME=$(node -pe "require('./package.json').name")
-SCOPE=${PACKAGE_NAME%%/*}
+SCOPE=$(node -pe "require('./package.json').name")
+# SCOPE=${PACKAGE_NAME%%/*}
 
 echo "$SCOPE"
 
