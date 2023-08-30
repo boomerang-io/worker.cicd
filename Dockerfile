@@ -4,7 +4,7 @@ FROM mikefarah/yq:4.6.1 as yq
 #Import the base docker image built on top of Alpine
 FROM alpine:3.17.3
 
-ADD ./alpine-mirrors /etc/apk/repositories
+# ADD ./alpine-mirrors /etc/apk/repositories
 
 COPY --from=yq /usr/bin/yq /usr/bin/yq
 
