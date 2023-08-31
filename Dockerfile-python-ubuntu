@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND noninteractive
 WORKDIR /opt/bin
 
 #Add Packages
-RUN apt-get -y update && apt-get --no-install-recommends -y install bash sed grep curl coreutils ca-certificates git jq make nodejs npm openssl openssh-client skopeo socat
+RUN apt-get -y update && apt-get --no-install-recommends -y install bash sed grep curl coreutils ca-certificates git jq make nodejs npm skopeo socat
 
 # Install img
 RUN curl -fSL "https://github.com/genuinetools/img/releases/download/v0.5.10/img-linux-amd64" -o "/opt/bin/img" && chmod a+x "/opt/bin/img"
