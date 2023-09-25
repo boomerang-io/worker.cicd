@@ -82,8 +82,8 @@ module.exports = {
 
     try {
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
+      // await exec(`${shellDir}/common/initialize.sh`);
+      // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {
         log.debug("Checking Maven Configuration");
@@ -108,7 +108,7 @@ module.exports = {
           common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
         }
       }
-
+      log.ci(fs.readFileSync(workdir + "/pom.xml"));
       log.debug("Testing artifacts");
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       if (testTypes.includes(TestType.Static)) {
