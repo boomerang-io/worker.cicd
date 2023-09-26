@@ -55,9 +55,11 @@ if [ "$BUILD_TOOL" == "maven" ]; then
     source ~/.profile
     echo "JAVA_HOME (sonar): $JAVA_HOME"
     echo "PATH (sonar): $PATH"
+    java -version
 
     # Run Sonarqube
-    mvn sonar:sonar -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Dsonar.login=$SONAR_APIKEY -Dsonar.host.url=$SONAR_URL -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true $SONAR_SCANNER_EXCLUSIONS
+    echo "SONAR_APIKEY: $SONAR_APIKEY"
+    # mvn sonar:sonar -DskipTests=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Dsonar.login=$SONAR_APIKEY -Dsonar.host.url=$SONAR_URL -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true $SONAR_SCANNER_EXCLUSIONS
 
 elif [ "$BUILD_TOOL" == "gradle" ]; then
     echo "ERROR: Gradle not implemented yet."
