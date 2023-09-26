@@ -82,7 +82,7 @@ module.exports = {
 
     try {
       log.ci("Initializing Dependencies");
-      // await exec(`${shellDir}/common/initialize.sh`);
+      await exec(`${shellDir}/common/initialize.sh`);
       // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {

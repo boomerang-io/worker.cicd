@@ -23,3 +23,7 @@ else
     echo "export JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk" >> ~/.profile
     echo "export PATH=/usr/lib/jvm/java-1.8-openjdk/bin:$PATH" >> ~/.profile
 fi
+
+source ~/.profile
+echo "JAVA_HOME (compile): $JAVA_HOME"
+echo "PATH (compile): $PATH"
