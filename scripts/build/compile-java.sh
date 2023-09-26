@@ -36,6 +36,10 @@ else
     export PATH=$JAVA_HOME/bin:$PATH
 fi
 
+echo "JAVA_HOME (compile): $JAVA_HOME"
+echo "PATH (compile): $PATH"
+java -version
+
 if [ "$BUILD_TOOL" == "maven" ]; then
     mkdir -p ~/.m2
     cat >> ~/.m2/settings.xml <<EOL

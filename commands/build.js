@@ -70,9 +70,9 @@ module.exports = {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       // await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
-      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh \
-      ${taskParams["buildTool"]} \
-      ${taskParams["buildToolVersion"]}`);
+      // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh \
+      // ${taskParams["buildTool"]} \
+      // ${taskParams["buildToolVersion"]}`);
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
