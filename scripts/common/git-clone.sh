@@ -76,7 +76,7 @@ if [ "$GIT_CLONE_URL" == "undefined" ]; then
     exit 1
 fi
 
-git clone --progress $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
+git clone --progress --recurse-submodules $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
 
 GIT_RC=$?
 if [ $GIT_RC != 0 ]; then
