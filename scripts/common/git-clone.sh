@@ -84,6 +84,8 @@ if [ $GIT_RC != 0 ]; then
     exit 1
 fi
 
+echo "Git clone successful"
+
 if  [ -d "$REPO_FOLDER" ]; then
     cd $REPO_FOLDER
     if [ "$DEBUG" == "true" ]; then
@@ -107,6 +109,8 @@ else
     echo "Git repository folder does not exist"
     exit 1
 fi
+
+echo "Git chcekout successful"
 
 if [ "$DEBUG" == "true" ]; then
     echo "Retrieving worker size..."
