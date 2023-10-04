@@ -96,21 +96,15 @@ if  [ -d "$REPO_FOLDER" ]; then
 
     GIT_RC=$?
     if [ $GIT_RC != 0 ]; then
-        # Handle git submodule differences between branches
-        git submodule init && git submodule update
-
-        GIT_RC=$?
-        if [ $GIT_RC != 0 ]; then
-            echo "Git checkout failed"
-            exit 1
-        fi
+        echo "Git checkout failed"
+        exit 1
     fi
 else
     echo "Git repository folder does not exist"
     exit 1
 fi
 
-echo "Git chcekout successful"
+echo "Git checkout successful"
 
 if [ "$DEBUG" == "true" ]; then
     echo "Retrieving worker size..."
