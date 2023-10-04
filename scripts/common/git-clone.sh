@@ -90,12 +90,18 @@ if  [ -d "$REPO_FOLDER" ]; then
         ls -ltr
     fi
 
-    git checkout --progress --recurse-submodules $GIT_COMMIT_ID
+    git checkout --progress --recurse-submodules $GIT_COMMIT_ID   
 
     GIT_RC=$?
     if [ $GIT_RC != 0 ]; then
-        echo "Git checkout failed"
-        exit 1
+        # Handle git submodule differences between branches
+        git submodule init && git submodule update
+
+        GIT_RC=$?
+        if [ $GIT_RC != 0 ]; then
+            echo "Git checkout failed"
+            exit 1
+        fi
     fi
 else
     echo "Git repository folder does not exist"
