@@ -73,8 +73,6 @@ echo "https.proxyPort=$PROXY_PORT" >> ${PROPERTY_FILE}.resolved
 
 mv -f ${PROPERTY_FILE}.resolved ${PROPERTY_FILE}
 
-apk add maven
-
 MAVEN_PROXY_IGNORE=`echo "$NO_PROXY" | sed -e 's/ //g' -e 's/\"\,\"/\|/g' -e 's/\,\"/\|/g' -e 's/\"$//' -e 's/\,/\|/g'`
 export MAVEN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts='$MAVEN_PROXY_IGNORE' -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT -Dhttps.nonProxyHosts='$MAVEN_PROXY_IGNORE'"
 
@@ -84,7 +82,7 @@ env http.proxyHost=$PROXY_HOST http.proxyPort=$PROXY_PORT https.proxyHost=$PROXY
 
 if [ -d "$REPORT_FOLDER" ]; then
   echo "Zip Selenium report and upload to Artifactory"
-  apk add zip
+  apt-get --no-install-recommends -y install zip
   zip -r SeleniumReport.zip $REPORT_FOLDER
   TEAM_NAME_ENCODED=$(urlencode "${TEAM_NAME}")
   echo "Uploading SeleniumReport.zip to ${ART_URL}/boomerang/ci/repos/${TEAM_NAME_ENCODED}/${COMPONENT_NAME}/${VERSION_NAME}/SeleniumReport.zip"

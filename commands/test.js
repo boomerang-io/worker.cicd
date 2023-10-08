@@ -83,7 +83,7 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
+      // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {
         log.debug("Checking Maven Configuration");
@@ -130,7 +130,7 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
-        await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
+        // await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
         shell.cd(workdir);
         await exec(`${shellDir}/test/unit-java.sh \
         ${taskParams["buildTool"]} \
@@ -237,8 +237,7 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
-      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
+      // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {
         log.debug("Checking Maven Configuration");
@@ -265,6 +264,8 @@ module.exports = {
       }
 
       log.ci("Testing artifacts");
+
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
         shell.cd(workdir);
@@ -277,9 +278,11 @@ module.exports = {
         ${taskParams["systemComponentName"]} \
         ${taskParams["sonarExclusions"]}`);
       }
+
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
-        await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
+        // await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
         shell.cd(workdir);
         await exec(`${shellDir}/test/unit-java.sh \
         ${taskParams["buildTool"]} \

@@ -22,21 +22,21 @@ fi
 
 if [ "$BUILD_LANGUAGE_VERSION" == "17" ]; then
     echo "Language version specified. Installing Java 17..."
-    export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+    export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
     export PATH=$JAVA_HOME/bin:$PATH
 elif [ "$BUILD_LANGUAGE_VERSION" == "11" ]; then
     echo "Language version specified. Installing Java 11..."
     # apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
-    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
     export PATH=$JAVA_HOME/bin:$PATH
 elif [ "$BUILD_LANGUAGE_VERSION" == "12" ]; then
     echo "Language version specified. Unfortunately we do not yet support Java 12. Reverting to Java 11."
     # apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
-    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
     export PATH=$JAVA_HOME/bin:$PATH
 else
     echo "No language version specified. Defaulting to Java 8..."
-    export JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
+    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
     export PATH=$JAVA_HOME/bin:$PATH
     # apk add openjdk8
 fi
