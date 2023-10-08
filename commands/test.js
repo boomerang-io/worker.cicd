@@ -127,7 +127,7 @@ module.exports = {
         ${taskParams["artifactoryPassword"]} \
         `);
       }
-      // await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
         await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
@@ -144,7 +144,7 @@ module.exports = {
         ${taskParams["artifactoryPassword"]} \
         `);
       }
-      // await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
+      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
