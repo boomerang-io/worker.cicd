@@ -93,6 +93,8 @@ if  [ -d "$REPO_FOLDER" ]; then
     fi
 
     git checkout --progress $GIT_COMMIT_ID
+    git submodule init
+    git submodule update --recursive
     # git checkout --progress --recurse-submodules $GIT_COMMIT_ID
 
     GIT_RC=$?
