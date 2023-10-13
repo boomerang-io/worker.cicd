@@ -92,7 +92,8 @@ if  [ -d "$REPO_FOLDER" ]; then
         ls -ltr
     fi
 
-    git checkout --progress --recurse-submodules $GIT_COMMIT_ID   
+    git checkout --progress $GIT_COMMIT_ID
+    # git checkout --progress --recurse-submodules $GIT_COMMIT_ID
 
     GIT_RC=$?
     if [ $GIT_RC != 0 ]; then
