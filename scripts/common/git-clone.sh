@@ -76,7 +76,7 @@ if [ "$GIT_CLONE_URL" == "undefined" ]; then
     exit 1
 fi
 
-git clone --progress $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
+git clone --progress --recurse-submodules $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
 
 GIT_RC=$?
 if [ $GIT_RC != 0 ]; then
@@ -84,13 +84,18 @@ if [ $GIT_RC != 0 ]; then
     exit 1
 fi
 
+echo "Git clone successful"
+
 if  [ -d "$REPO_FOLDER" ]; then
     cd $REPO_FOLDER
     if [ "$DEBUG" == "true" ]; then
         ls -ltr
     fi
 
-    git checkout --progress --recurse-submodules $GIT_COMMIT_ID
+    git checkout --progress $GIT_COMMIT_ID
+    git submodule init
+    git submodule update --recursive
+    # git checkout --progress --recurse-submodules $GIT_COMMIT_ID
 
     GIT_RC=$?
     if [ $GIT_RC != 0 ]; then
@@ -101,6 +106,8 @@ else
     echo "Git repository folder does not exist"
     exit 1
 fi
+
+echo "Git checkout successful"
 
 if [ "$DEBUG" == "true" ]; then
     echo "Retrieving worker size..."
