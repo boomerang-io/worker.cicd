@@ -9,6 +9,9 @@ DEPLOY_KUBE_VERSION=$6
 DEPLOY_KUBE_NAMESPACE=$7
 DEPLOY_KUBE_HOST=$8
 
+# Strip http(s):// prefix from Kube host if it exists
+DEPLOY_KUBE_HOST=$(echo $DEPLOY_KUBE_HOST | sed -E 's/^\s*.*:\/\///g')
+
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
     echo "HELM_REPO_URL=$HELM_REPO_URL"
@@ -18,7 +21,7 @@ if [ "$DEBUG" == "true" ]; then
     echo "VERSION_NAME=$VERSION_NAME"
     echo "DEPLOY_KUBE_VERSION=$DEPLOY_KUBE_VERSION"
     echo "DEPLOY_KUBE_NAMESPACE=$DEPLOY_KUBE_NAMESPACE"
-    echo "DEPLOY_KUBE_HOST=$DEDEPLOY_KUBE_HOST"
+    echo "DEPLOY_KUBE_HOST=$DEPLOY_KUBE_HOST"
 fi
 
 export KUBE_HOME=~/.kube
