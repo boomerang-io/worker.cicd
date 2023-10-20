@@ -7,6 +7,11 @@ ART_REGISTRY_HOST=$2
 ART_REPO_ID=$3
 ART_REPO_USER=$4
 ART_REPO_PASSWORD=$5
+REQUIREMENTS_FILE=$6
+
+if [ -z $REQUIREMENTS_FILE ]; then
+  REQUIREMENTS_FILE="requirements.txt"
+  echo "No requirements file input and use default requirements.txt."
 
 # Create Artifactory references for library download
 PIP_CONF=~/.pip.conf
@@ -32,30 +37,30 @@ else
 	fi
 	if [ -f Dockerfile ]; then
 		echo "Dockerfile exists in project"
-		if grep -q "requirements.txt" Dockerfile; then
-      echo "requirements.txt in Dockerfile"
+		if grep -q "$REQUIREMENTS_FILE" Dockerfile; then
+      		echo "$REQUIREMENTS_FILE in Dockerfile"
 		else
-			if [ -f requirements.txt ]; then
-			    echo "Using requirements.txt file found in project to install dependencies"
-			    pip3 install -r requirements.txt
+			if [ -f $REQUIREMENTS_FILE ]; then
+			    echo "Using $REQUIREMENTS_FILE file found in project to install dependencies"
+			    pip3 install -r $REQUIREMENTS_FILE
 				RESULT=$?
 				if [ $RESULT -ne 0 ] ; then
 					exit 89
 				fi
 			else
-			    echo "No requirements.txt file found in project"
+			    echo "No $REQUIREMENTS_FILE file found in project"
 			fi
 		fi
 	else
-		if [ -f requirements.txt ]; then
-		    echo "Using requirements.txt file found in project to install dependencies"
-		    pip3 install -r requirements.txt
+		if [ -f $REQUIREMENTS_FILE ]; then
+		    echo "Using $REQUIREMENTS_FILE file found in project to install dependencies"
+		    pip3 install -r $REQUIREMENTS_FILE
 			RESULT=$?
 			if [ $RESULT -ne 0 ] ; then
 				exit 89
 			fi
 		else
-		    echo "No requirements.txt file found in project"
+		    echo "No $REQUIREMENTS_FILE file found in project"
 		fi
 	fi
 fi
