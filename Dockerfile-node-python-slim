@@ -33,16 +33,17 @@ RUN pip install --no-cache-dir "invoke>2.0,<3.0" hunter pdbpp
 WORKDIR /
 ADD ./tasks ./tasks
 
-ENV UID=2000 \
-    USER=user
-ENV PATH=/home/$USER/.local/bin:$PATH
+# ENV UID=2000 \
+#     USER=user
+# ENV PATH=/home/$USER/.local/bin:$PATH
 
-RUN groupadd -g ${UID} -r ${USER} \
-    && useradd -l -u ${UID} -r -g ${USER} ${USER} && \
-    mkdir -p /home/${USER}/.local/bin && \
-    mkdir -p /home/${USER}/.cache && \
-    chown -R ${USER} /home/${USER}
-USER ${USER}
+# RUN groupadd -g ${UID} -r ${USER} \
+#     && useradd -l -u ${UID} -r -g ${USER} ${USER} && \
+#     mkdir -p /home/${USER}/.local/bin && \
+#     mkdir -p /home/${USER}/.cache && \
+#     chown -R ${USER} /home/${USER}
+# USER ${USER}
+
 RUN ibmcloud plugin install cdb ks sm
 # RUN inv install-oc install-yq
 ### END GeoFM Stuff
