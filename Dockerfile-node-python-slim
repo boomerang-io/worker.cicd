@@ -25,12 +25,6 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | b
     nvm use system && \
     nvm run system --version
 
-WORKDIR /cli
-ADD ./package.json ./package-lock.json ./.npmrc ./
-ADD ./scripts ./scripts
-ADD ./commands ./commands
-RUN npm install --production
-
 ### GeoFM Stuff
 RUN apt-get update && apt-get -yqq install git-core gettext
 RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
@@ -52,5 +46,11 @@ USER ${USER}
 RUN ibmcloud plugin install cdb ks sm
 # RUN inv install-oc install-yq
 ### END GeoFM Stuff
+
+WORKDIR /cli
+ADD ./package.json ./package-lock.json ./.npmrc ./
+ADD ./scripts ./scripts
+ADD ./commands ./commands
+RUN npm install --production
 
 ENTRYPOINT [ "npm", "start" ]
