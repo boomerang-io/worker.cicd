@@ -315,7 +315,7 @@ module.exports = {
       "${taskParams["repoId"]}" \
       "${taskParams["repoUser"]}" \
       "${taskParams["repoPassword"]}" \
-      "${taskParams["requrementsFileName"]}"`);
+      "${taskParams["requirementsFileName"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
