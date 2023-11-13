@@ -27,6 +27,7 @@ if [ -z $REQUIREMENTS_FILE ]; then
   REQUIREMENTS_FILE="requirements.txt"
   echo "No requirements file input and use default requirements.txt."
 # Install python dependencies
+fi
 if [ -f $REQUIREMENTS_FILE ]; then
   echo "Using $REQUIREMENTS_FILE file found in project to install dependencies"
   python3 -m pip install -r $REQUIREMENTS_FILE
