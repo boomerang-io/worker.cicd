@@ -12,6 +12,7 @@ REQUIREMENTS_FILE=$6
 if [ -z $REQUIREMENTS_FILE ]; then
   REQUIREMENTS_FILE="requirements.txt"
   echo "No requirements file input and use default requirements.txt."
+fi
 
 # Create Artifactory references for library download
 PIP_CONF=~/.pip.conf
