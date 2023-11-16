@@ -30,8 +30,8 @@ RUN apt-get update && apt-get -yqq install git-core gettext
 RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
 RUN pip install --no-cache-dir "invoke>2.0,<3.0" hunter pdbpp
 
-WORKDIR /
-ADD ./tasks ./tasks
+# WORKDIR /
+# ADD ./tasks ./tasks
 
 # ENV UID=2000 \
 #     USER=user
@@ -52,6 +52,7 @@ WORKDIR /cli
 ADD ./package.json ./package-lock.json ./.npmrc ./
 ADD ./scripts ./scripts
 ADD ./commands ./commands
+ADD ./tasks ./tasks
 RUN npm install --production
 
 ENTRYPOINT [ "npm", "start" ]
