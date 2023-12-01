@@ -195,6 +195,8 @@ module.exports = {
       "${taskParams["containerRegistryUser"]}" \
       "${taskParams["containerRegistryPassword"]}" \
       "${taskParams["containerRegistryPath"]}" \
+      "${taskParams["containerRegistryImageName"]}" \
+      "${taskParams["containerRegistryImageVersion"]}" \
       ${JSON.stringify(taskParams["globalContainerRegistryHost"])} \
       "${taskParams["globalContainerRegistryPort"]}" \
       "${taskParams["globalContainerRegistryUser"]}" \
