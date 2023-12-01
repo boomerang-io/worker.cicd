@@ -9,6 +9,7 @@ SONAR_APIKEY=$4
 SONAR_GATEID=2
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
+REQUIREMENTS_FILE=$7
 
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
@@ -19,18 +20,23 @@ if [ "$DEBUG" == "true" ]; then
     echo "SONAR_GATEID=$SONAR_GATEID"
     echo "COMPONENT_ID=$COMPONENT_ID"
     echo "COMPONENT_NAME=$COMPONENT_NAME"
+    echo "REQUIREMENTS_FILE=$REQUIREMENTS_FILE"
 fi
 
+if [ -z $REQUIREMENTS_FILE ]; then
+  REQUIREMENTS_FILE="requirements.txt"
+  echo "No requirements file input and use default requirements.txt."
 # Install python dependencies
-if [ -f requirements.txt ]; then
-  echo "Using requirements.txt file found in project to install dependencies"
-  python3 -m pip install -r requirements.txt
+fi
+if [ -f $REQUIREMENTS_FILE ]; then
+  echo "Using $REQUIREMENTS_FILE file found in project to install dependencies"
+  python3 -m pip install -r $REQUIREMENTS_FILE
   RESULT=$?
   if [ $RESULT -ne 0 ] ; then
     exit 89
   fi
 else
-  echo "No requirements.txt file found to install dependencies via pip"
+  echo "No $REQUIREMENTS_FILE file found to install dependencies via pip"
 fi
 
 # Retrieve Sonarqube project and current gate
