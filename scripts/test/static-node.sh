@@ -49,10 +49,14 @@ echo "Using build tool $BUILD_TOOL"
 # Set JS heap space
 export NODE_OPTIONS="--max-old-space-size=8192"
 
+echo "COMPONENT_NAME1 = $COMPONENT_NAME"
+
 # Check SonarQube
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
+
+echo "COMPONENT_NAME2 = $COMPONENT_NAME"
 
 # Install sonar-scanner
 # TODO: should be a CICD system property

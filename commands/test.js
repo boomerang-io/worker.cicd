@@ -79,6 +79,7 @@ module.exports = {
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+    const systemComponentName = encodeURIComponent(taskParams["systemComponentName"]);
 
     try {
       log.ci("Initializing Dependencies");
@@ -120,7 +121,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${taskParams["sonarExclusions"]} \
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
@@ -138,7 +139,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
@@ -149,7 +150,7 @@ module.exports = {
         log.debug("Commencing automated Selenium native tests");
         shell.cd(workdir);
         await exec(`${shellDir}/test/selenium-native.sh \
-        ${taskParams["systemComponentName"]} ${version} \
+        ${systemComponentName} ${version} \
         ${taskParams["saucelabsApiKey"]} \
         ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} \
         ${taskParams["browserName"]} \
@@ -167,7 +168,7 @@ module.exports = {
         shell.cd(workdir);
         await exec(`${shellDir}/test/selenium-custom.sh "\
         ${taskParams["teamName"]}" \
-        ${taskParams["systemComponentName"]} ${version} \
+        ${systemComponentName} ${version} \
         ${taskParams["seleniumApplicationPropertiesFile"]} \
         ${taskParams["seleniumApplicationPropertiesKey"]} \
         ${taskParams["saucelabsApiUrlWithCredentials"]} \
@@ -184,7 +185,7 @@ module.exports = {
         await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${taskParams["version"]} \
         ${version} \
         "${taskParams["teamName"]}" \
@@ -233,6 +234,7 @@ module.exports = {
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+    const systemComponentName = encodeURIComponent(taskParams["systemComponentName"]);
 
     try {
       log.ci("Initializing Dependencies");
@@ -274,7 +276,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${taskParams["sonarExclusions"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
@@ -287,7 +289,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]}`);
+        ${systemComponentName}`);
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Native Selenium testing type not supported for Jar");
@@ -301,7 +303,7 @@ module.exports = {
         await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${taskParams["version"]} \
         ${version} \
         "${taskParams["teamName"]}" \
@@ -347,6 +349,7 @@ module.exports = {
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+    const systemComponentName = encodeURIComponent(taskParams["systemComponentName"]);
 
     try {
       log.ci("Initializing Dependencies");
@@ -375,7 +378,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]}`);
@@ -389,7 +392,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
@@ -402,7 +405,7 @@ module.exports = {
         log.debug("Commencing automated Selenium native tests");
         await exec(
           `${shellDir}/test/selenium-native.sh \
-          ${taskParams["systemComponentName"]} \
+          ${systemComponentName} \
           ${version} \
           ${taskParams["saucelabsApiKey"]} \
           ${taskParams["saucelabsApiUser"]} \
@@ -427,7 +430,7 @@ module.exports = {
         await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${taskParams["version"]} \
         ${version} \
         "${taskParams["teamName"]}" \
@@ -473,6 +476,7 @@ module.exports = {
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+    const systemComponentName = encodeURIComponent(taskParams["systemComponentName"]);
 
     try {
       log.ci("Initializing Dependencies");
@@ -501,7 +505,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]}`);
+        ${systemComponentName}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
@@ -512,7 +516,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
@@ -533,7 +537,7 @@ module.exports = {
         await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${taskParams["version"]} \
         ${version} \
         "${taskParams["teamName"]}" \
@@ -579,6 +583,7 @@ module.exports = {
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+    const systemComponentName = encodeURIComponent(taskParams["systemComponentName"]);
 
     try {
       log.ci("Initializing Dependencies");
@@ -601,7 +606,7 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${taskParams["requirementsFileName"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
@@ -612,7 +617,7 @@ module.exports = {
         shell.cd(workdir);
         await exec(
           `${shellDir}/test/selenium-native.sh \
-          ${taskParams["systemComponentName"]} \
+          ${systemComponentName} \
           ${version} \
           ${taskParams["saucelabsApiKey"]} \
           ${taskParams["saucelabsApiUser"]} \
@@ -637,7 +642,7 @@ module.exports = {
         await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]} \
+        ${systemComponentName} \
         ${taskParams["version"]} \
         ${version} \
         "${taskParams["teamName"]}" \
