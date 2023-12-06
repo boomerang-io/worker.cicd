@@ -14,10 +14,6 @@ PLATFORM_VERSION=${9}
 WEB_TESTS_FOLDER=${10}
 GIT_USER=${11}
 GIT_PASSWORD=${12}
-SHELL_DIR=${13}
-TEST_DIR=${14}
-
-# cd $TEST_DIR
 
 # make java environment varaibles set by initialize-dependencies-java.sh effective.
 source ~/.profile
