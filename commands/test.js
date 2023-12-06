@@ -55,7 +55,7 @@ function workingDir(workingDir, subWorkingDir) {
   }
 }
 
-function checkMavenConfiguration(pomXml) {
+function checkMavenConfiguration(shellDir, pomXml) {
   log.debug("Checking Maven Configuration");
   if (!common.checkFileContainsStringWithProps(pomXml, "<plugins>", undefined, false)) {
     log.debug("No Maven plugins found, adding ...");
@@ -106,7 +106,7 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {
-        checkMavenConfiguration("pom.xml");
+        checkMavenConfiguration(shellDir, "pom.xml");
       }
 
       log.debug("Testing artifacts");
@@ -219,7 +219,7 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {
-        checkMavenConfiguration("pom.xml");
+        checkMavenConfiguration(shellDir, "pom.xml");
       }
 
       log.ci("Testing artifacts");
