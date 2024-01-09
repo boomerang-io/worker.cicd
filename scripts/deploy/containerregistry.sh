@@ -105,6 +105,11 @@ echo "- Destination: $DESTINATION_IMAGE"
 echo ""
 skopeo --insecure-policy $SKOPEO_OPTS copy --src-tls-verify=false --dest-tls-verify=false $GLOBAL_REGISTRY_CREDS $DESTINATION_REGISTRY_CREDS docker://$ORIGIN_IMAGE docker://$DESTINATION_IMAGE
 
+RESULT=$?
+if [ $RESULT -ne 0 ] ; then
+    exit 88
+fi
+
 if [ "$CISO_CODESIGN_ENABLE" == "true" ]; then
     echo "Installing Cosign Client..."
     apk add cosign --allow-untrusted --repository=https://dl-cdn.alpinelinux.org/alpine/v3.17/community
