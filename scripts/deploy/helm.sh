@@ -119,9 +119,10 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
                 break
             else
                 echo "Commencing deployment (attempt #$INDEX)..."
-                OUTPUT=$(helm upgrade --kube-context $DEPLOY_KUBE_HOST-context --reuse-values --set $HELM_IMAGE_KEY=$VERSION_NAME --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART)
+                OUTPUT=$(helm upgrade --kube-context $DEPLOY_KUBE_HOST-context --reuse-values --set $HELM_IMAGE_KEY=$VERSION_NAME --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART 2>&1)
                 RESULT=$?
                 if [ $RESULT -ne 0 ]; then 
+                    echo "The OUTPUT of helm upgrade is $OUTPUT"
                     if [[ $OUTPUT =~ "timed out" ]]; then
                         echo "Time out reached. Retrying..."
                         sleep $SLEEP
@@ -132,7 +133,6 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
                         continue
                     else
                         echo "Error encountered:"
-                        echo $OUTPUT
                         HELM_CHARTS_EXITCODE=91;
                         break
                     fi
