@@ -30,7 +30,8 @@ export NODE_OPTIONS="--max-old-space-size=8192"
 # This needs to be checking for undefined as thats whats returned by the node command
 SCRIPT=$(node -pe "require('./package.json').scripts.$BUILD_SCRIPT");
 if [ "$SCRIPT" != "undefined" ]; then
-    npm run $BUILD_SCRIPT $DEBUG_OPTS
+    # Fix: Set process.env.CI = false|disabled to prevent treating of warnings as errors"
+    CI= npm run $BUILD_SCRIPT $DEBUG_OPTS
     RESULT=$?
     if [ $RESULT -ne 0 ] ; then
         exit 89
