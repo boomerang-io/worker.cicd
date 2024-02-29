@@ -75,6 +75,7 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
         echo "Note: This only works if there is only one release of the chart in the provided namespace."
         CHART_RELEASE=$(helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml |
             yq eval '.[] | select (.chart == "*'"$CHART"'*") | .name as $name | $name' -)
+        echo "The detected chart release is $CHART_RELEASE"
         if [ $? -ne 0 ]; then echo "No Helm 3 chart release found in namespace: $DEPLOY_KUBE_NAMESPACE" && exit 94; fi
     elif [ -z "$CHART_RELEASE" ] && [ -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         HELM_CHARTS_EXITCODE=93
@@ -82,8 +83,12 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
     if [ ! -z "$CHART_RELEASE" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Release: $CHART_RELEASE"
         CHART_VERSION=$(helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq eval '.[].chart' - | rev | cut -d- -f1 | rev)
+        echo "The detected chart version is $CHART_VERSION"
         if [ $? -ne 0 ]; then exit 94; fi
     fi
+    echo "Chart release: $CHART_RELEASE"
+    echo "Chart version: $CHART_VERSION"
+    echo "helm list exit code: $HELM_CHARTS_EXITCODE"
     if [ ! -z "$CHART_RELEASE" ] && [ ! -z "$CHART_VERSION" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Version: $CHART_VERSION"
         echo "Check the status of $CHART_RELEASE"
