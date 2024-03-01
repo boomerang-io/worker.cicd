@@ -77,6 +77,7 @@ if [ "$SCRIPT" != "undefined" ] && [[ "$ESLINT_DEP" != "undefined" || "$ESLINT_D
     SONAR_FLAGS="$SONAR_FLAGS -Dsonar.eslint.reportPaths=$LINT_REPORT"
     ls -al $LINT_REPORT
 fi
+SONAR_FLAGS="$SONAR_FLAGS -Dsonar.sourceEncoding=UTF-8"
 echo "SONAR_FLAGS=$SONAR_FLAGS"
 
 # Set SonarQube scanning exclusions
