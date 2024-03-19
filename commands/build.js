@@ -55,6 +55,11 @@ module.exports = {
     config = {
       verbose: true
     };
+    let maxBufferSizeInMB = taskParams["maxBuffer"];
+    if (maxBufferSizeInMB && maxBufferSizeInMB != '""') {
+      log.debug("Using customized maxBuffer in MB: " + maxBufferSizeInMB);
+      config.maxBuffer = Number(maxBufferSizeInMB) * 1024 * 1024;
+    }
 
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
@@ -69,7 +74,8 @@ module.exports = {
       log.ci("Compile & Package Artifact(s)");
       // navigate to target working directory
       workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
-      await exec(`${shellDir}/build/compile-java.sh \
+      await exec(
+        `${shellDir}/build/compile-java.sh \
       "${taskParams["languageVersion"]}" \
       ${taskParams["buildTool"]} \
       ${taskParams["buildToolVersion"]} \
@@ -77,7 +83,9 @@ module.exports = {
       ${JSON.stringify(taskParams["repoUrl"])} \
       ${taskParams["repoId"]} \
       ${taskParams["repoUser"]} \
-      "${taskParams["repoPassword"]}"`);
+      "${taskParams["repoPassword"]}"`,
+        config
+      );
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);

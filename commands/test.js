@@ -89,6 +89,11 @@ module.exports = {
     config = {
       verbose: true
     };
+    let maxBufferSizeInMB = taskParams["maxBuffer"];
+    if (maxBufferSizeInMB && maxBufferSizeInMB != '""') {
+      log.debug("Using customized maxBuffer in MB: " + maxBufferSizeInMB);
+      config.maxBuffer = Number(maxBufferSizeInMB) * 1024 * 1024;
+    }
 
     let buildTool = taskParams["buildTool"];
     log.debug("Build Tool: ", buildTool);
@@ -112,7 +117,8 @@ module.exports = {
       log.debug("Testing artifacts");
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        await exec(`${shellDir}/test/static-java.sh \
+        await exec(
+          `${shellDir}/test/static-java.sh \
         ${taskParams["buildTool"]} \
         ${version} \
         ${taskParams["sonarUrl"]} \
@@ -123,12 +129,15 @@ module.exports = {
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
-        `);
+        `,
+          config
+        );
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
         await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
-        await exec(`${shellDir}/test/unit-java.sh \
+        await exec(
+          `${shellDir}/test/unit-java.sh \
         ${taskParams["buildTool"]} \
         ${version} \
         ${taskParams["sonarUrl"]} \
@@ -138,11 +147,14 @@ module.exports = {
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
-        `);
+        `,
+          config
+        );
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
-        await exec(`${shellDir}/test/selenium-native.sh \
+        await exec(
+          `${shellDir}/test/selenium-native.sh \
         ${taskParams["systemComponentName"]} ${version} \
         ${taskParams["saucelabsApiKey"]} \
         ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} \
@@ -153,11 +165,14 @@ module.exports = {
         ${taskParams["webTestsFolder"]} \
         ${taskParams["gitUser"]} \
         ${taskParams["gitPassword"]} \
-        `);
+        `,
+          config
+        );
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Commencing automated Selenium custom tests");
-        await exec(`${shellDir}/test/selenium-custom.sh "\
+        await exec(
+          `${shellDir}/test/selenium-custom.sh "\
         ${taskParams["teamName"]}" \
         ${taskParams["systemComponentName"]} ${version} \
         ${taskParams["seleniumApplicationPropertiesFile"]} \
@@ -167,12 +182,15 @@ module.exports = {
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
-        `);
+        `,
+          config
+        );
       }
       if (testTypes.includes(TestType.Library)) {
         log.debug("Commencing WhiteSource scan");
         await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
-        await exec(`${shellDir}/test/whitesource.sh \
+        await exec(
+          `${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
         ${taskParams["version"]} \
@@ -183,7 +201,9 @@ module.exports = {
         ${taskParams["whitesourceProductName"]} \
         ${taskParams["whitesourceProductToken"]} \
         ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
-        `);
+        `,
+          config
+        );
       }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
