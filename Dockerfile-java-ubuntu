@@ -7,15 +7,15 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBCONF_NOWARNINGS="yes"
 
-WORKDIR /opt/bin
-
 #Add Packages
-RUN apt-get -y update && apt-get --no-install-recommends -y install bash sed grep curl coreutils ca-certificates git jq make nodejs npm skopeo socat
+RUN apt-get -y update && apt-get --no-install-recommends -y install bash sed grep curl coreutils ca-certificates maven gradle openjdk-8-jdk openjdk-11-jdk openjdk-17-jdk
 
-# Install img
-RUN curl -fSL "https://github.com/genuinetools/img/releases/download/v0.5.10/img-linux-amd64" -o "/opt/bin/img" && chmod a+x "/opt/bin/img"
-
-RUN apt-get -y update && apt-get --no-install-recommends -y install maven gradle openjdk-8-jdk openjdk-11-jdk openjdk-17-jdk
+# Install nodejs 16
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash && \
+    source ~/.nvm/nvm.sh && \
+    nvm install v10 && \
+    nvm use v10 && \
+    ln -s "$(which node)" /usr/bin/node &&  ln -s "$(which npm)" /usr/bin/npm
 
 WORKDIR /cli
 ADD ./package.json ./package-lock.json ./.npmrc ./
