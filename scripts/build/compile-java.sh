@@ -56,7 +56,7 @@ EOL
         export MAVEN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts='$MAVEN_PROXY_IGNORE' -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT -Dhttps.nonProxyHosts='$MAVEN_PROXY_IGNORE'"
     fi
     echo "MAVEN_OPTS=$MAVEN_OPTS"
-    mvn clean package --batch-mode -Dmaven.test.skip=true -Dversion.name=$VERSION_NAME
+    mvn clean package -q --batch-mode -Dmaven.test.skip=true -Dversion.name=$VERSION_NAME
     RESULT=$?
     if [ $RESULT -ne 0 ] ; then
         exit 89
