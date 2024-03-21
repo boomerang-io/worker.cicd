@@ -44,11 +44,13 @@ function workingDir(workingDir, subWorkingDir) {
     dir = workingDir + "/repository";
   }
   log.ci("Navigate to Working Directory: " + dir);
-  shell.cd(dir);
+  exec("cd " + dir);
+  // shell.cd(dir);
 
   if (subWorkingDir && subWorkingDir != '""') {
     log.ci("Navigate to Sub Working Directory: " + subWorkingDir);
-    shell.cd(subWorkingDir);
+    exec("cd " + subWorkingDir);
+    // shell.cd(subWorkingDir);
   }
 }
 
