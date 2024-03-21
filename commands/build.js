@@ -1,35 +1,36 @@
 const { log, utils, CICDError } = require("@boomerang-io/worker-core");
 // const shell = require("shelljs");
-const util = require("util");
-const exec = util.promisify(require("child_process").exec);
-async function execuateShell(command, config) {
-  log.debug("Command to execute:", command);
-  try {
-    await exec(command, config, function(error, stdout, stderr) {
-      if (error) {
-        console.error(`exec error: ${error}`);
-        return;
-      }
-      console.log(`stdout: ${stdout}`);
-      console.error(`stderr: ${stderr}`);
-    });
-  } catch (e) {
-    console.error(e); // should contain code (exit code) and signal (that caused the termination).
-  }
-}
-
-// function exec(command) {
-//   return new Promise(function(resolve, reject) {
-//     log.debug("Command directory:", shell.pwd().toString());
-//     log.debug("Command to execute:", command);
-//     shell.exec(command, config, function(code, stdout, stderr) {
-//       if (code) {
-//         reject(new CICDError(code, stderr));
+// const util = require("util");
+const exec = require("child_process").exec;
+// const exec = util.promisify(require("child_process").exec);
+// async function execuateShell(command, config) {
+//   log.debug("Command to execute:", command);
+//   try {
+//     await exec(command, config, function(error, stdout, stderr) {
+//       if (error) {
+//         console.error(`exec error: ${error}`);
+//         return;
 //       }
-//       resolve(stdout ? stdout : stderr);
+//       console.log(`stdout: ${stdout}`);
+//       console.error(`stderr: ${stderr}`);
 //     });
-//   });
+//   } catch (e) {
+//     console.error(e); // should contain code (exit code) and signal (that caused the termination).
+//   }
 // }
+
+function execuateShell(command) {
+  return new Promise(function(resolve, reject) {
+    log.debug("Command directory:", config.cwd);
+    log.debug("Command to execute:", command);
+    exec(command, config, function(code, stdout, stderr) {
+      if (code) {
+        reject(new CICDError(code, stderr));
+      }
+      resolve(stdout ? stdout : stderr);
+    });
+  });
+}
 
 function parseVersion(version, appendBuildNumber) {
   var parsedVersion = version;
