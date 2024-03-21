@@ -118,11 +118,11 @@ module.exports = {
       log.ci("Initializing Dependencies");
       await execuateShell(`${shellDir}/common/initialize.sh`);
       await execuateShell(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
-      await execuateShell(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
+      // await execuateShell(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
-      if (buildTool === "maven") {
-        checkMavenConfiguration(shellDir, "pom.xml");
-      }
+      // if (buildTool === "maven") {
+      //   checkMavenConfiguration(shellDir, "pom.xml");
+      // }
 
       log.debug("Testing artifacts");
       if (testTypes.includes(TestType.Static)) {
@@ -139,8 +139,7 @@ module.exports = {
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
-        `,
-          config
+        `
         );
       }
       if (testTypes.includes(TestType.Unit)) {
@@ -157,8 +156,7 @@ module.exports = {
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
-        `,
-          config
+        `
         );
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
@@ -175,8 +173,7 @@ module.exports = {
         ${taskParams["webTestsFolder"]} \
         ${taskParams["gitUser"]} \
         ${taskParams["gitPassword"]} \
-        `,
-          config
+        `
         );
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
@@ -192,8 +189,7 @@ module.exports = {
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
-        `,
-          config
+        `
         );
       }
       if (testTypes.includes(TestType.Library)) {
@@ -211,15 +207,14 @@ module.exports = {
         ${taskParams["whitesourceProductName"]} \
         ${taskParams["whitesourceProductToken"]} \
         ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
-        `,
-          config
+        `
         );
       }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      await exec(shellDir + "/common/footer.sh");
+      await execuateShell(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Java test activity");
     }
   },

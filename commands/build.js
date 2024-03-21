@@ -93,14 +93,13 @@ module.exports = {
       ${JSON.stringify(taskParams["repoUrl"])} \
       ${taskParams["repoId"]} \
       ${taskParams["repoUser"]} \
-      "${taskParams["repoPassword"]}"`,
-        config
+      "${taskParams["repoPassword"]}"`
       );
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      await exec(shellDir + "/common/footer.sh");
+      await execuateShell(shellDir + "/common/footer.sh");
       log.debug("Finished Boomerang CICD Java build activity");
     }
   },
