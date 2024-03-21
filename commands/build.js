@@ -4,9 +4,13 @@ const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 async function execuateShell(command) {
   log.debug("Command to execute:", command);
-  const { stdout, stderr } = await exec(command);
-  log.debug("stdout:", stdout);
-  log.debug("stderr:", stderr);
+  try {
+    const { stdout, stderr } = await exec(command);
+    console.log("stdout:", stdout);
+    console.log("stderr:", stderr);
+  } catch (e) {
+    console.error(e); // should contain code (exit code) and signal (that caused the termination).
+  }
 }
 
 // function exec(command) {
