@@ -1,18 +1,26 @@
 const { log, utils, CICDError } = require("@boomerang-io/worker-core");
-const shell = require("shelljs");
-
-function exec(command) {
-  return new Promise(function(resolve, reject) {
-    log.debug("Command directory:", shell.pwd().toString());
-    log.debug("Command to execute:", command);
-    shell.exec(command, config, function(code, stdout, stderr) {
-      if (code) {
-        reject(new CICDError(code, stderr));
-      }
-      resolve(stdout ? stdout : stderr);
-    });
-  });
+// const shell = require("shelljs");
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
+async function execuateShell(command) {
+  log.debug("Command to execute:", command);
+  const { stdout, stderr } = await exec(command);
+  log.debug("stdout:", stdout);
+  log.debug("stderr:", stderr);
 }
+
+// function exec(command) {
+//   return new Promise(function(resolve, reject) {
+//     log.debug("Command directory:", shell.pwd().toString());
+//     log.debug("Command to execute:", command);
+//     shell.exec(command, config, function(code, stdout, stderr) {
+//       if (code) {
+//         reject(new CICDError(code, stderr));
+//       }
+//       resolve(stdout ? stdout : stderr);
+//     });
+//   });
+// }
 
 function parseVersion(version, appendBuildNumber) {
   var parsedVersion = version;
@@ -65,16 +73,16 @@ module.exports = {
 
     try {
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/common/initialize.sh`);
+      await execuateShell(`${shellDir}/common/initialize.sh`);
       // await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
-      await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh \
-      ${taskParams["buildTool"]} \
-      ${taskParams["buildToolVersion"]}`);
+      // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh \
+      // ${taskParams["buildTool"]} \
+      // ${taskParams["buildToolVersion"]}`);
 
       log.ci("Compile & Package Artifact(s)");
       // navigate to target working directory
       workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
-      await exec(
+      await execuateShell(
         `${shellDir}/build/compile-java.sh \
       "${taskParams["languageVersion"]}" \
       ${taskParams["buildTool"]} \
