@@ -1,7 +1,10 @@
 const { log, utils, CICDError, common } = require("@boomerang-io/worker-core");
 // const shell = require("shelljs");
 const fs = require("fs");
-const exec = require("child_process").exec;
+const child_process = require("child_process");
+function execuateShell(command, config) {
+  child_process.execSync(command, config);
+}
 // const util = require("util");
 // const exec = util.promisify(require("child_process").exec);
 // async function execuateShell(command, config) {
@@ -29,19 +32,6 @@ const TestType = {
 };
 
 Object.freeze(TestType);
-
-function execuateShell(command) {
-  return new Promise(function(resolve, reject) {
-    log.debug("Command directory:", config.cwd);
-    log.debug("Command to execute:", command);
-    exec(command, config, function(code, stdout, stderr) {
-      if (code) {
-        reject(new CICDError(code, stderr));
-      }
-      resolve(stdout ? stdout : stderr);
-    });
-  });
-}
 
 function parseVersion(version, appendBuildNumber) {
   var parsedVersion = version;
@@ -110,11 +100,11 @@ module.exports = {
     config = {
       cwd: sourceDir
     };
-    // let maxBufferSizeInMB = taskParams["maxBuffer"];
-    // if (maxBufferSizeInMB && maxBufferSizeInMB != '""') {
-    //   log.debug("Using customized maxBuffer in MB: " + maxBufferSizeInMB);
-    //   config.maxBuffer = Number(maxBufferSizeInMB) * 1024 * 1024;
-    // }
+    let maxBufferSizeInMB = taskParams["maxBuffer"];
+    if (maxBufferSizeInMB && maxBufferSizeInMB != '""') {
+      log.debug("Using customized maxBuffer in MB: " + maxBufferSizeInMB);
+      config.maxBuffer = Number(maxBufferSizeInMB) * 1024 * 1024;
+    }
 
     let buildTool = taskParams["buildTool"];
     log.debug("Build Tool: ", buildTool);
@@ -124,9 +114,9 @@ module.exports = {
 
     try {
       log.ci("Initializing Dependencies");
-      await execuateShell(`${shellDir}/common/initialize.sh`, config);
-      await execuateShell(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`, config);
-      // await execuateShell(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
+      execuateShell(`${shellDir}/common/initialize.sh`, config);
+      execuateShell(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`, config);
+      execuateShell(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       // if (buildTool === "maven") {
       //   checkMavenConfiguration(shellDir, "pom.xml");
@@ -135,7 +125,7 @@ module.exports = {
       log.debug("Testing artifacts");
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        await execuateShell(
+        execuateShell(
           `${shellDir}/test/static-java.sh \
         ${taskParams["buildTool"]} \
         ${version} \
@@ -153,8 +143,8 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
-        await execuateShell(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
-        await execuateShell(
+        execuateShell(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
+        execuateShell(
           `${shellDir}/test/unit-java.sh \
         ${taskParams["buildTool"]} \
         ${version} \
@@ -171,7 +161,7 @@ module.exports = {
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
-        await execuateShell(
+        execuateShell(
           `${shellDir}/test/selenium-native.sh \
         ${taskParams["systemComponentName"]} ${version} \
         ${taskParams["saucelabsApiKey"]} \
@@ -189,7 +179,7 @@ module.exports = {
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Commencing automated Selenium custom tests");
-        await execuateShell(
+        execuateShell(
           `${shellDir}/test/selenium-custom.sh "\
         ${taskParams["teamName"]}" \
         ${taskParams["systemComponentName"]} ${version} \
@@ -206,8 +196,8 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Library)) {
         log.debug("Commencing WhiteSource scan");
-        await execuateShell(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`, config);
-        await execuateShell(
+        execuateShell(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`, config);
+        execuateShell(
           `${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
@@ -227,7 +217,7 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      await execuateShell(shellDir + "/common/footer.sh", config);
+      execuateShell(shellDir + "/common/footer.sh", config);
       log.debug("Finished Boomerang CICD Java test activity");
     }
   },

@@ -1,7 +1,10 @@
 const { log, utils, CICDError } = require("@boomerang-io/worker-core");
-// const shell = require("shelljs");
+const child_process = require("child_process");
+function execuateShell(command, config) {
+  child_process.execSync(command, config);
+}
+
 // const util = require("util");
-const exec = require("child_process").exec;
 // const exec = util.promisify(require("child_process").exec);
 // async function execuateShell(command, config) {
 //   log.debug("Command to execute:", command);
@@ -18,19 +21,6 @@ const exec = require("child_process").exec;
 //     console.error(e); // should contain code (exit code) and signal (that caused the termination).
 //   }
 // }
-
-function execuateShell(command) {
-  return new Promise(function(resolve, reject) {
-    log.debug("Command directory:", config.cwd);
-    log.debug("Command to execute:", command);
-    exec(command, config, function(code, stdout, stderr) {
-      if (code) {
-        reject(new CICDError(code, stderr));
-      }
-      resolve(stdout ? stdout : stderr);
-    });
-  });
-}
 
 function parseVersion(version, appendBuildNumber) {
   var parsedVersion = version;
@@ -74,17 +64,17 @@ module.exports = {
     config = {
       cwd: sourceDir
     };
-    // let maxBufferSizeInMB = taskParams["maxBuffer"];
-    // if (maxBufferSizeInMB && maxBufferSizeInMB != '""') {
-    //   log.debug("Using customized maxBuffer in MB: " + maxBufferSizeInMB);
-    //   config.maxBuffer = Number(maxBufferSizeInMB) * 1024 * 1024;
-    // }
+    let maxBufferSizeInMB = taskParams["maxBuffer"];
+    if (maxBufferSizeInMB && maxBufferSizeInMB != '""') {
+      log.debug("Using customized maxBuffer in MB: " + maxBufferSizeInMB);
+      config.maxBuffer = Number(maxBufferSizeInMB) * 1024 * 1024;
+    }
 
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
       log.ci("Initializing Dependencies");
-      await execuateShell(`${shellDir}/common/initialize.sh`, config);
+      execuateShell(`${shellDir}/common/initialize.sh`, config);
       // await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh \
       // ${taskParams["buildTool"]} \
@@ -93,7 +83,7 @@ module.exports = {
       log.ci("Compile & Package Artifact(s)");
       // navigate to target working directory
       // workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
-      await execuateShell(
+      execuateShell(
         `${shellDir}/build/compile-java.sh \
       "${taskParams["languageVersion"]}" \
       ${taskParams["buildTool"]} \
@@ -109,7 +99,7 @@ module.exports = {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      await execuateShell(shellDir + "/common/footer.sh", config);
+      execuateShell(shellDir + "/common/footer.sh", config);
       log.debug("Finished Boomerang CICD Java build activity");
     }
   },
