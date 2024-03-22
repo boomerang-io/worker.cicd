@@ -98,7 +98,7 @@ module.exports = {
 
     // navigate to target working directory
     const sourceDir = getWorkingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
-    config = {
+    let config = {
       cwd: sourceDir
     };
     let maxBufferSizeInMB = taskParams["maxBuffer"];
@@ -117,7 +117,7 @@ module.exports = {
       log.ci("Initializing Dependencies");
       execuateShell(`${shellDir}/common/initialize.sh`, config);
       execuateShell(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`, config);
-      execuateShell(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
+      execuateShell(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`, config);
 
       // if (buildTool === "maven") {
       //   checkMavenConfiguration(shellDir, "pom.xml");

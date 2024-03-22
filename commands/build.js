@@ -62,7 +62,7 @@ module.exports = {
     // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     const sourceDir = getWorkingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
-    config = {
+    let config = {
       cwd: sourceDir
     };
     let maxBufferSizeInMB = taskParams["maxBuffer"];
