@@ -3,6 +3,7 @@ const { log, utils, CICDError, common } = require("@boomerang-io/worker-core");
 const fs = require("fs");
 const child_process = require("child_process");
 function execuateShell(command, config) {
+  log.debug("Command to execute:", command);
   config.stdio = "inherit";
   child_process.execSync(command, config);
 }
