@@ -145,7 +145,7 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
-        execuateShell(`${shellDir}/test/initialize-dependencies-unit-java.sh`, config);
+        // execuateShell(`${shellDir}/test/initialize-dependencies-unit-java.sh`, config);
         execuateShell(
           `${shellDir}/test/unit-java.sh \
         ${taskParams["buildTool"]} \
