@@ -11,11 +11,13 @@ COMPONENT_NAME=$6
 
 if [ "$BUILD_TOOL" == "maven" ]; then
     echo "Testing with Maven"
+    MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=128m"
     if [ "$HTTP_PROXY" != "" ]; then
         # Swap , for |
         MAVEN_PROXY_IGNORE=`echo "$NO_PROXY" | sed -e 's/ //g' -e 's/\"\,\"/\|/g' -e 's/\,\"/\|/g' -e 's/\"$//' -e 's/\,/\|/g'`
-        export MAVEN_OPTS="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts='$MAVEN_PROXY_IGNORE' -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT -Dhttps.nonProxyHosts='$MAVEN_PROXY_IGNORE'"
+        MAVEN_OPTS+="-Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts='$MAVEN_PROXY_IGNORE' -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT -Dhttps.nonProxyHosts='$MAVEN_PROXY_IGNORE'"
     fi
+    export MAVEN_OPTS=$MAVEN_OPTS
     echo "MAVEN_OPTS=$MAVEN_OPTS"
     DEBUG_OPTS=
     if [ "$DEBUG" == "true" ]; then
