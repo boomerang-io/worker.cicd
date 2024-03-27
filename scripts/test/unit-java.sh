@@ -9,9 +9,12 @@ SONAR_APIKEY=$4
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
 
+# Set JS heap space
+export NODE_OPTIONS="--max-old-space-size=8192"
+
 if [ "$BUILD_TOOL" == "maven" ]; then
     echo "Testing with Maven"
-    MAVEN_OPTS="-Xmx1024m -XX:MaxMetaspaceSize=1024m"
+    MAVEN_OPTS="-Xmx2048m -XX:MaxMetaspaceSize=512m"
     if [ "$HTTP_PROXY" != "" ]; then
         # Swap , for |
         MAVEN_PROXY_IGNORE=`echo "$NO_PROXY" | sed -e 's/ //g' -e 's/\"\,\"/\|/g' -e 's/\,\"/\|/g' -e 's/\"$//' -e 's/\,/\|/g'`
