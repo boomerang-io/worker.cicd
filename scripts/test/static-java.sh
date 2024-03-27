@@ -19,7 +19,7 @@ export NODE_OPTIONS="--max-old-space-size=8192"
 
 if [ "$BUILD_TOOL" == "maven" ]; then
     echo "Testing with Maven"    
-    MAVEN_OPTS="-Xmx2048m -XX:MaxMetaspaceSize=512m"
+    MAVEN_OPTS="-Xmx4096m -XX:MaxMetaspaceSize=512m"
     if [ "$HTTP_PROXY" != "" ]; then
         # Swap , for |
         MAVEN_PROXY_IGNORE=`echo "$NO_PROXY" | sed -e 's/ //g' -e 's/\"\,\"/\|/g' -e 's/\,\"/\|/g' -e 's/\"$//' -e 's/\,/\|/g'`
@@ -41,7 +41,7 @@ if [ "$BUILD_TOOL" == "maven" ]; then
     fi
     echo "SONAR_SCANNER_EXCLUSIONS=$SONAR_SCANNER_EXCLUSIONS"
 
-    export SONAR_SCANNER_OPTS="-Xmx1024m"
+    export SONAR_SCANNER_OPTS="-Xmx4096m"
 
     # Set java environment varaibles as per initialize-dependencies-java.sh
     source ~/.profile
