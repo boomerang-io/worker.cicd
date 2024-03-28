@@ -17,6 +17,7 @@ curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qu
 
 if [ "$BUILD_TOOL" == "maven" ]; then
     echo "Testing with Maven"    
+    MAVEN_OPTS="-Xmx2048m -XX:MaxMetaspaceSize=512m"
     if [ "$HTTP_PROXY" != "" ]; then
         # Swap , for |
         MAVEN_PROXY_IGNORE=`echo "$NO_PROXY" | sed -e 's/ //g' -e 's/\"\,\"/\|/g' -e 's/\,\"/\|/g' -e 's/\"$//' -e 's/\,/\|/g'`
