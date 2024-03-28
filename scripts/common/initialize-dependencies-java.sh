@@ -16,8 +16,8 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "11" ]; then
     echo "export PATH=/usr/lib/jvm/java-11-openjdk-amd64/bin:$PATH" >> ~/.profile
 elif [ "$BUILD_LANGUAGE_VERSION" == "12" ]; then
     echo "Language version specified. Unfortunately we do not yet support Java 12. Reverting to Java 11."
-    echo "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk" >> ~/.profile
-    echo "export PATH=/usr/lib/jvm/java-11-openjdk/bin:$PATH" >> ~/.profile
+    echo "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" >> ~/.profile
+    echo "export PATH=/usr/lib/jvm/java-11-openjdk-amd64/bin:$PATH" >> ~/.profile
 else
     echo "No language version specified. Defaulting to Java 8..."
     echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> ~/.profile

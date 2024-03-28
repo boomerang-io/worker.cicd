@@ -21,7 +21,7 @@ if [ "$BUILD_TOOL" == "maven" ]; then
     fi
     export MAVEN_OPTS=$MAVEN_OPTS
     echo "MAVEN_OPTS=$MAVEN_OPTS"
-    
+
     DEBUG_OPTS=
     if [ "$DEBUG" == "true" ]; then
         echo "Enabling debug logging..."
@@ -39,8 +39,8 @@ if [ "$BUILD_TOOL" == "maven" ]; then
 
     # Set to Java 17 for Sonarqube
     echo "Set to Java 17 for Sonarqube..."
-    echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk" >> ~/.profile
-    echo "export PATH=/usr/lib/jvm/java-17-openjdk/bin:$PATH" >> ~/.profile
+    echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> ~/.profile
+    echo "export PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH" >> ~/.profile
 
     source ~/.profile
     echo "JAVA_HOME (sonar): $JAVA_HOME"
