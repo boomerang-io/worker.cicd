@@ -54,12 +54,15 @@ function workingDir(workingDir, subWorkingDir) {
     dir = workingDir + "/repository";
   }
   log.ci("Navigate to Working Directory: " + dir);
-  shell.cd(dir);
+  // shell.cd(dir);
 
   if (subWorkingDir && subWorkingDir != '""') {
     log.ci("Navigate to Sub Working Directory: " + subWorkingDir);
-    shell.cd(subWorkingDir);
+    // shell.cd(subWorkingDir);
+    dir = dir + "/" + subWorkingDir;
   }
+
+  return dir;
 }
 
 function checkMavenConfiguration(shellDir, pomXml) {
@@ -108,9 +111,6 @@ module.exports = {
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
-
-    // navigate to target working directory
-    workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
 
     try {
       log.ci("Initializing Dependencies");
