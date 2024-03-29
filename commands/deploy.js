@@ -25,16 +25,23 @@ function parseVersion(version, appendBuildNumber) {
   return parsedVersion;
 }
 
-function workingDir(workingDir) {
+function workingDir(workingDir, subWorkingDir) {
+  log.ci("Working Directory: " + workingDir);
+  log.ci("Sub Working Directory: " + subWorkingDir);
   let dir;
   if (!workingDir || workingDir === '""') {
-    dir = "/data";
-    log.debug("No working directory specified. Defaulting...");
+    dir = "/data/repository";
+    log.ci("No working directory specified. Defaulting to " + dir);
   } else {
-    dir = workingDir;
+    dir = workingDir + "/repository";
   }
-  log.debug("Working Directory: ", dir);
-  return dir;
+  log.ci("Navigate to Working Directory: " + dir);
+  shell.cd(dir);
+
+  if (subWorkingDir && subWorkingDir != '""') {
+    log.ci("Navigate to Sub Working Directory: " + subWorkingDir);
+    shell.cd(subWorkingDir);
+  }
 }
 
 module.exports = {
@@ -43,14 +50,11 @@ module.exports = {
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
-    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh \
@@ -77,7 +81,6 @@ module.exports = {
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
-    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
@@ -118,13 +121,11 @@ module.exports = {
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
-    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
 
-    // const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
     try {
       log.ci("Initializing Dependencies");
 
@@ -158,14 +159,10 @@ module.exports = {
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
-    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
-
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
 
     log.ci("Deploying...");
     try {
@@ -195,6 +192,8 @@ module.exports = {
       "${taskParams["containerRegistryUser"]}" \
       "${taskParams["containerRegistryPassword"]}" \
       "${taskParams["containerRegistryPath"]}" \
+      "${taskParams["containerRegistryImageName"]}" \
+      "${taskParams["containerRegistryImageVersion"]}" \
       ${JSON.stringify(taskParams["globalContainerRegistryHost"])} \
       "${taskParams["globalContainerRegistryPort"]}" \
       "${taskParams["globalContainerRegistryUser"]}" \
@@ -220,9 +219,8 @@ module.exports = {
     };
 
     log.ci("Deploying...");
-    let dir = workingDir(taskParams["workingDir"]);
-    log.debug("Working Directory: ", dir);
-    shell.cd(dir + "/repository");
+    // navigate to target working directory
+    workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
     await exec("ls -ltr");
     try {
       await exec(`${shellDir}/deploy/containerregistry-tar.sh \
@@ -245,29 +243,4 @@ module.exports = {
     }
     log.debug("Finished Boomerang CICD Container Registry deploy activity...");
   }
-  // async helmChart() {
-  //   log.debug("Starting Boomerang CICD Helm deploy activity...");
-
-  //   //Destructure and get properties ready.
-  //   const taskParams = utils.resolveInputParameters();
-  //   // const { path, script } = taskParams;
-  //   const shellDir = "/cli/scripts";
-  //   config = {
-  //     verbose: true
-  //   };
-
-  //   let dir = "/workspace/" + taskParams["workflow-activity-id"];
-  //   log.debug("Working Directory: ", dir);
-
-  //   const version = parseVersion(taskParams["version"], false);
-
-  //   log.ci("Initializing Dependencies");
-  //   await exec(`${shellDir}/deploy/initialize-dependencies-kube.sh "${taskParams["kubeVersion"]}" "${taskParams["kubeNamespace"]}" "${taskParams["kubeHost"]}" "${taskParams["kubeIP"]}" "${taskParams["kubeToken"]}"`);
-  //   await exec(`${shellDir}/common/initialize-dependencies-helm.sh "${taskParams["helmVersion"]}"`);
-
-  //   // TODO: determine how to accommodate deploying the helm chart to an environment
-  //   await exec(`${shellDir}/deploy/helm-chart.sh "${JSON.stringify(taskParams["global/helm.repo.url"])} "${taskParams["deploy.helm.chart"]}" "${taskParams["deploy.helm.release"]}" "${version}" "${taskParams["deploy.kube.version"]}" "${taskParams["deploy.kube.namespace"]}" "${taskParams["deploy.kube.host"]}" "${taskParams["git.ref"]}"`);
-
-  //   log.debug("Finished Boomerang CICD Helm deploy activity...");
-  // }
 };

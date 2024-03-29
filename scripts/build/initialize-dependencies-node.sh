@@ -4,6 +4,8 @@
 
 LANGUAGE_VERSION=$1
 BUILD_TOOL=$2
+CARBON_TELEMETRY_DISABLED=$3
+
 
 [[ "$BUILD_TOOL" == "npm" ]] && USE_NPM=true || USE_NPM=false
 [[ "$BUILD_TOOL" == "yarn" ]] && USE_YARN=true || USE_YARN=false
@@ -50,6 +52,12 @@ export CYPRESS_INSTALL_BINARY=0
 # Set Husky hook flag
 echo "Disabling Husky hooks..."
 export HUSKY=0
+
+# Set participation in Carbon’s telemetry
+if [ ! -z "$CARBON_TELEMETRY_DISABLED" ]; then
+    echo "Set CARBON_TELEMETRY_DISABLED to $CARBON_TELEMETRY_DISABLED"
+    export CARBON_TELEMETRY_DISABLED=$CARBON_TELEMETRY_DISABLED
+fi
 
 # Determine how to install dependencies based on package manager and lockfile
 if  [ "$USE_NPM" == true ]; then

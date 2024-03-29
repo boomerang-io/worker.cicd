@@ -9,6 +9,9 @@ DEPLOY_KUBE_VERSION=$6
 DEPLOY_KUBE_NAMESPACE=$7
 DEPLOY_KUBE_HOST=$8
 
+# Strip http(s):// prefix from Kube host if it exists
+DEPLOY_KUBE_HOST=$(echo $DEPLOY_KUBE_HOST | sed -E 's/^\s*.*:\/\///g')
+
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
     echo "HELM_REPO_URL=$HELM_REPO_URL"
@@ -18,7 +21,7 @@ if [ "$DEBUG" == "true" ]; then
     echo "VERSION_NAME=$VERSION_NAME"
     echo "DEPLOY_KUBE_VERSION=$DEPLOY_KUBE_VERSION"
     echo "DEPLOY_KUBE_NAMESPACE=$DEPLOY_KUBE_NAMESPACE"
-    echo "DEPLOY_KUBE_HOST=$DEDEPLOY_KUBE_HOST"
+    echo "DEPLOY_KUBE_HOST=$DEPLOY_KUBE_HOST"
 fi
 
 export KUBE_HOME=~/.kube
@@ -72,6 +75,7 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
         echo "Note: This only works if there is only one release of the chart in the provided namespace."
         CHART_RELEASE=$(helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml |
             yq eval '.[] | select (.chart == "*'"$CHART"'*") | .name as $name | $name' -)
+        echo "The detected chart release is $CHART_RELEASE"
         if [ $? -ne 0 ]; then echo "No Helm 3 chart release found in namespace: $DEPLOY_KUBE_NAMESPACE" && exit 94; fi
     elif [ -z "$CHART_RELEASE" ] && [ -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         HELM_CHARTS_EXITCODE=93
@@ -79,8 +83,12 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
     if [ ! -z "$CHART_RELEASE" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Release: $CHART_RELEASE"
         CHART_VERSION=$(helm list --kube-context $DEPLOY_KUBE_HOST-context --filter ^$CHART_RELEASE$ -o yaml | yq eval '.[].chart' - | rev | cut -d- -f1 | rev)
+        echo "The detected chart version is $CHART_VERSION"
         if [ $? -ne 0 ]; then exit 94; fi
     fi
+    echo "Chart release: $CHART_RELEASE"
+    echo "Chart version: $CHART_VERSION"
+    echo "helm list exit code: $HELM_CHARTS_EXITCODE"
     if [ ! -z "$CHART_RELEASE" ] && [ ! -z "$CHART_VERSION" ] && [ $HELM_CHARTS_EXITCODE -eq 0 ]; then
         echo "Current Chart Version: $CHART_VERSION"
         echo "Check the status of $CHART_RELEASE"
@@ -119,9 +127,10 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
                 break
             else
                 echo "Commencing deployment (attempt #$INDEX)..."
-                OUTPUT=$(helm upgrade --kube-context $DEPLOY_KUBE_HOST-context --reuse-values --set $HELM_IMAGE_KEY=$VERSION_NAME --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART)
+                OUTPUT=$(helm upgrade --kube-context $DEPLOY_KUBE_HOST-context --reuse-values --set $HELM_IMAGE_KEY=$VERSION_NAME --version $CHART_VERSION $CHART_RELEASE boomerang-charts/$CHART 2>&1)
                 RESULT=$?
                 if [ $RESULT -ne 0 ]; then 
+                    echo "The OUTPUT of helm upgrade is $OUTPUT"
                     if [[ $OUTPUT =~ "timed out" ]]; then
                         echo "Time out reached. Retrying..."
                         sleep $SLEEP
@@ -132,7 +141,6 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
                         continue
                     else
                         echo "Error encountered:"
-                        echo $OUTPUT
                         HELM_CHARTS_EXITCODE=91;
                         break
                     fi

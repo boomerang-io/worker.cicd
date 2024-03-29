@@ -31,16 +31,23 @@ function parseVersion(version, appendBuildNumber) {
   return parsedVersion;
 }
 
-function workingDir(workingDir) {
+function workingDir(workingDir, subWorkingDir) {
+  log.ci("Working Directory: " + workingDir);
+  log.ci("Sub Working Directory: " + subWorkingDir);
   let dir;
   if (!workingDir || workingDir === '""') {
-    dir = "/data";
-    log.debug("No working directory specified. Defaulting...");
+    dir = "/data/repository";
+    log.ci("No working directory specified. Defaulting to " + dir);
   } else {
-    dir = workingDir;
+    dir = workingDir + "/repository";
   }
-  log.debug("Working Directory: ", dir);
-  return dir;
+  log.ci("Navigate to Working Directory: " + dir);
+  shell.cd(dir);
+
+  if (subWorkingDir && subWorkingDir != '""') {
+    log.ci("Navigate to Sub Working Directory: " + subWorkingDir);
+    shell.cd(subWorkingDir);
+  }
 }
 
 module.exports = {
@@ -51,7 +58,9 @@ module.exports = {
     const taskParams = utils.resolveInputParameters();
     // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
-    const sourceDir = getWorkingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
+
+    // navigate to target working directory
+    const sourceDir = workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
     let config = {
       cwd: sourceDir
     };
@@ -60,21 +69,6 @@ module.exports = {
       log.debug("Using customized maxBuffer in MB: " + maxBufferSizeInMB);
       config.maxBuffer = Number(maxBufferSizeInMB) * 1024 * 1024;
     }
-
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-    log.debug("Working Directory: ", dir);
-
-    // ----------------
-    // shell.config.silent = true; //set to silent otherwise CD will print out no such file or directory if the directory doesn't exist
-    // shell.cd(dir);
-    // //shell.cd -> does not have an error handling call back and will default to current directory of /cli
-    // if (shell.pwd().toString() !== dir.toString()) {
-    //   log.err("No such file or directory:", dir);
-    //   return process.exit(1);
-    // }
-    // shell.config.silent = false;
-    // ----------------
 
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
@@ -87,7 +81,8 @@ module.exports = {
       // ${taskParams["buildToolVersion"]}`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd(dir + "/repository");
+
+      // shell.cd(dir + "/repository");
       execuateShell(
         `${shellDir}/build/compile-java.sh \
       "${taskParams["languageVersion"]}" \
@@ -119,10 +114,6 @@ module.exports = {
       verbose: true
     };
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-    log.debug("Working Directory: ", dir);
-
     const version = parseVersion(taskParams["version"], false);
 
     try {
@@ -132,7 +123,8 @@ module.exports = {
       // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd(dir + "/repository");
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
       await exec(`${shellDir}/build/compile-package-jar.sh \
       "${taskParams["languageVersion"]}" \
       ${taskParams["buildTool"]} \
@@ -161,10 +153,6 @@ module.exports = {
       verbose: true
     };
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-    log.debug("Working Directory: ", dir);
-
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
     try {
@@ -172,7 +160,8 @@ module.exports = {
       await exec(`${shellDir}/common/initialize.sh`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd(dir + "/repository");
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
       await exec("ls -ltr");
       var dockerFile = taskParams["dockerfile"] !== undefined && taskParams["dockerfile"] !== null ? taskParams["dockerfile"] : "";
       var dockerImageName =
@@ -226,10 +215,6 @@ module.exports = {
       verbose: true
     };
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-    log.debug("Working Directory: ", dir);
-
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
@@ -242,10 +227,12 @@ module.exports = {
       "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd(dir + "/repository");
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
       await exec(`${shellDir}/build/initialize-dependencies-node.sh \
       "${taskParams["languageVersion"]}" \
-      "${taskParams["buildTool"]}"`);
+      "${taskParams["buildTool"]}" \
+      "${taskParams["carbonTelemetryDisabled"]}"`);
 
       await exec(`${shellDir}/build/compile-node.sh \
       "${taskParams["languageVersion"]}" \
@@ -270,10 +257,6 @@ module.exports = {
       verbose: true
     };
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-    log.debug("Working Directory: ", dir);
-
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
@@ -284,10 +267,12 @@ module.exports = {
       "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd(dir + "/repository");
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
       await exec(`${shellDir}/build/initialize-dependencies-node.sh \
       "${taskParams["languageVersion"]}" \
-      "${taskParams["buildTool"]}"`);
+      "${taskParams["buildTool"]}" \
+      "${taskParams["carbonTelemetryDisabled"]}"`);
 
       await exec(`${shellDir}/build/compile-package-npm.sh \
       "${taskParams["languageVersion"]}" \
@@ -313,23 +298,21 @@ module.exports = {
       verbose: true
     };
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-    log.debug("Working Directory: ", dir);
-
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskParams["languageVersion"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd(dir + "/repository");
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
       await exec(`${shellDir}/build/compile-python.sh \
       "${taskParams["languageVersion"]}" \
       "${JSON.stringify(taskParams["repoUrl"])}" \
       "${taskParams["repoId"]}" \
       "${taskParams["repoUser"]}" \
-      "${taskParams["repoPassword"]}"`);
+      "${taskParams["repoPassword"]}" \
+      "${taskParams["requirementsFileName"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
@@ -349,10 +332,6 @@ module.exports = {
       verbose: true
     };
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-    log.debug("Working Directory: ", dir);
-
     const version = parseVersion(taskParams["version"], false);
 
     try {
@@ -361,7 +340,8 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-python.sh "${taskParams["languageVersion"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd(dir + "/repository");
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
       await exec(`${shellDir}/build/compile-package-python-wheel.sh \
       "${taskParams["languageVersion"]}" \
       "${version}" \
@@ -388,10 +368,6 @@ module.exports = {
       verbose: true
     };
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-    log.debug("Working Directory: ", dir);
-
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
@@ -399,28 +375,8 @@ module.exports = {
       "${taskParams["buildToolVersion"]}"`);
 
       log.ci("Compile & Package Artifact(s)");
-      shell.cd(dir + "/repository");
-      // await exec(`${shellDir}/build/package-helm.sh \
-      // "${taskParams["build.tool"]}" \
-      // "${taskParams["version.name"]}" \
-      // "${taskParams["helm.repo.url"]}" \
-      // "${taskParams["helm.chart.directory"]}" \
-      // "${taskParams["helm.chart.ignore"]}" \
-      // "${taskParams["helm.chart.version.increment"]}" \
-      // "${taskParams["helm.chart.version.tag"]}" \
-      // "${taskParams["git.ref"]}"`);
-
-      // await exec(`${shellDir}/build/validate-sync-helm.sh \
-      // "${taskParams["build.tool"]}" \
-      // "${taskParams["helm.repo.type"]}" \
-      // "${taskParams["helm.repo.url"]}" \
-      // "${taskParams["helm.repo.user"]}" \
-      // "${taskParams["helm.repo.password"]}" \
-      // "${taskParams["component/repoOwner"]}" \
-      // "${taskParams["component/repoName"]}" \
-      // "${taskParams["git.commit.id"]}" \
-      // "${taskParams["helm.repo.index.branch"]}"`);
-
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
       await exec(`${shellDir}/build/package-helm.sh \
       "${taskParams["repoUrl"]}" \
       "${taskParams["chartDirectory"]}" \

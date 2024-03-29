@@ -43,16 +43,47 @@ function parseVersion(version, appendBuildNumber) {
   return parsedVersion;
 }
 
-function workingDir(workingDir) {
+function workingDir(workingDir, subWorkingDir) {
+  log.ci("Working Directory: " + workingDir);
+  log.ci("Sub Working Directory: " + subWorkingDir);
   let dir;
   if (!workingDir || workingDir === '""') {
-    dir = "/data";
-    log.debug("No working directory specified. Defaulting...");
+    dir = "/data/repository";
+    log.ci("No working directory specified. Defaulting to " + dir);
   } else {
-    dir = workingDir;
+    dir = workingDir + "/repository";
   }
-  log.debug("Working Directory: ", dir);
-  return dir;
+  log.ci("Navigate to Working Directory: " + dir);
+  shell.cd(dir);
+
+  if (subWorkingDir && subWorkingDir != '""') {
+    log.ci("Navigate to Sub Working Directory: " + subWorkingDir);
+    shell.cd(subWorkingDir);
+  }
+}
+
+function checkMavenConfiguration(shellDir, pomXml) {
+  log.debug("Checking Maven Configuration");
+  if (!common.checkFileContainsStringWithProps(pomXml, "<plugins>", undefined, false)) {
+    log.debug("No Maven plugins found, adding ...");
+    const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
+    common.replaceStringInFileWithProps(pomXml, "<plugins>", replacementString, undefined, false);
+  }
+  if (!common.checkFileContainsStringWithProps(pomXml, "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
+    log.debug("Adding jacoco-maven-plugin ...");
+    const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
+    common.replaceStringInFileWithProps(pomXml, "<plugins>", replacementString, undefined, false);
+  }
+  if (!common.checkFileContainsStringWithProps(pomXml, "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
+    log.debug("Adding sonar-maven-plugin ...");
+    const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
+    common.replaceStringInFileWithProps(pomXml, "<plugins>", replacementString, undefined, false);
+  }
+  if (!common.checkFileContainsStringWithProps(pomXml, "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
+    log.debug("Adding maven-surefire-report-plugin ...");
+    const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
+    common.replaceStringInFileWithProps(pomXml, "<plugins>", replacementString, undefined, false);
+  }
 }
 
 module.exports = {
@@ -61,9 +92,8 @@ module.exports = {
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
-    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
-    const sourceDir = getWorkingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
+    const sourceDir = workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
     let config = {
       cwd: sourceDir
     };
@@ -73,25 +103,14 @@ module.exports = {
       config.maxBuffer = Number(maxBufferSizeInMB) * 1024 * 1024;
     }
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-
-    let workdir = dir + "/repository";
-    log.debug("Working Directory: ", workdir);
-
-    let testdir = "/test";
-    shell.mkdir("-p", testdir);
-    log.debug("Test Directory: ", testdir);
-
     let buildTool = taskParams["buildTool"];
     log.debug("Build Tool: ", buildTool);
 
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", testdir);
-
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+
+    // navigate to target working directory
+    workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
 
     try {
       log.ci("Initializing Dependencies");
@@ -99,34 +118,15 @@ module.exports = {
       // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {
-        log.debug("Checking Maven Configuration");
-        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<plugins>", undefined, false)) {
-          log.debug("No Maven plugins found, adding ...");
-          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
-          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-        }
-        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
-          log.debug("Adding jacoco-maven-plugin ...");
-          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
-          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-        }
-        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
-          log.debug("Adding sonar-maven-plugin ...");
-          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
-          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-        }
-        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
-          log.debug("Adding maven-surefire-report-plugin ...");
-          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
-          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-        }
+        checkMavenConfiguration(shellDir, "pom.xml");
       }
 
       log.debug("Testing artifacts");
+
       execuateShell(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`, config);
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        shell.cd(workdir);
+        // shell.cd(workdir);
         execuateShell(
           `${shellDir}/test/static-java.sh \
         ${taskParams["buildTool"]} \
@@ -143,6 +143,7 @@ module.exports = {
           config
         );
       }
+
       execuateShell(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`, config);
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
@@ -163,6 +164,7 @@ module.exports = {
           config
         );
       }
+
       execuateShell(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`, config);
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
@@ -236,31 +238,19 @@ module.exports = {
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
-    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
 
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-
-    let workdir = dir + "/repository";
-    log.debug("Working Directory: ", workdir);
-
-    let testdir = "/test";
-    shell.mkdir("-p", testdir);
-    log.debug("Test Directory: ", testdir);
-
     let buildTool = taskParams["buildTool"];
     log.debug("Build Tool: ", buildTool);
 
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", testdir);
-
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+
+    // navigate to target working directory
+    workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
 
     try {
       log.ci("Initializing Dependencies");
@@ -268,27 +258,7 @@ module.exports = {
       // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {
-        log.debug("Checking Maven Configuration");
-        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<plugins>", undefined, false)) {
-          log.debug("No Maven plugins found, adding ...");
-          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-plugins.xml`, "utf-8");
-          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-        }
-        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>jacoco-maven-plugin</artifactId>", undefined, false)) {
-          log.debug("Adding jacoco-maven-plugin ...");
-          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-jacoco.xml`, "utf-8");
-          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-        }
-        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>sonar-maven-plugin</artifactId>", undefined, false)) {
-          log.debug("Adding sonar-maven-plugin ...");
-          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-sonar.xml`, "utf-8");
-          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-        }
-        if (!common.checkFileContainsStringWithProps(workdir + "/pom.xml", "<artifactId>maven-surefire-report-plugin</artifactId>", undefined, false)) {
-          log.debug("Adding maven-surefire-report-plugin ...");
-          const replacementString = fs.readFileSync(`${shellDir}/test/unit-java-maven-surefire.xml`, "utf-8");
-          common.replaceStringInFileWithProps(workdir + "/pom.xml", "<plugins>", replacementString, undefined, false);
-        }
+        checkMavenConfiguration(shellDir, "pom.xml");
       }
 
       log.ci("Testing artifacts");
@@ -296,7 +266,6 @@ module.exports = {
       await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
-        shell.cd(workdir);
         await exec(`${shellDir}/test/static-java.sh \
         ${taskParams["buildTool"]} \
         ${version} \
@@ -328,7 +297,6 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Library)) {
         log.debug("Commencing WhiteSource scan");
-        shell.cd(workdir);
         await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
@@ -356,25 +324,10 @@ module.exports = {
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
-    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
-
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-
-    let workdir = dir + "/repository";
-    log.debug("Working Directory: ", workdir);
-
-    let testdir = "/test";
-    shell.mkdir("-p", testdir);
-    log.debug("Test Directory: ", testdir);
-
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -391,7 +344,8 @@ module.exports = {
       "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Test Artifacts");
-      shell.cd(workdir);
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
       await exec(`${shellDir}/test/initialize-dependencies-node.sh \
       ${taskParams["languageVersion"]} \
       ${taskParams["buildTool"]} \
@@ -445,8 +399,7 @@ module.exports = {
           ${taskParams["webTestsFolder"]} \
           ${taskParams["gitUser"]} \
           ${taskParams["gitPassword"]} \
-          ${shellDir} \
-          ${testdir}`
+          `
         );
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
@@ -454,7 +407,6 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Library)) {
         log.debug("Commencing WhiteSource scan");
-        shell.cd(workdir);
         await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
@@ -482,25 +434,10 @@ module.exports = {
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
-    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
-
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-
-    let workdir = dir + "/repository";
-    log.debug("Working Directory: ", workdir);
-
-    let testdir = "/test";
-    shell.mkdir("-p", testdir);
-    log.debug("Test Directory: ", testdir);
-
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -517,7 +454,8 @@ module.exports = {
       "${taskParams["featureNodeCache"]}"`);
 
       log.ci("Test Artifacts");
-      shell.cd(workdir);
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
       await exec(`${shellDir}/test/initialize-dependencies-node.sh \
       ${taskParams["languageVersion"]} \
       ${taskParams["buildTool"]} \
@@ -560,7 +498,6 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Library)) {
         log.debug("Commencing WhiteSource scan");
-        shell.cd(workdir);
         await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
@@ -600,14 +537,6 @@ module.exports = {
     let workdir = dir + "/repository";
     log.debug("Working Directory: ", workdir);
 
-    let testdir = "/test";
-    shell.mkdir("-p", testdir);
-    log.debug("Test Directory: ", testdir);
-
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", testdir);
-
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
 
@@ -616,6 +545,9 @@ module.exports = {
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-python.sh \
       ${taskParams["languageVersion"]}`);
+
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
 
       if (testTypes.includes(TestType.Static)) {
         log.ci("Commencing static tests");
@@ -626,20 +558,19 @@ module.exports = {
         ${taskParams["pypiRepoUser"]} \
         ${taskParams["pypiRepoPassword"]}`);
 
-        shell.cd(workdir);
         await exec(`${shellDir}/test/static-python.sh \
         ${taskParams["buildTool"]} ${version} \
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]}`);
+        ${taskParams["systemComponentName"]} \
+        ${taskParams["requirementsFileName"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Python");
       }
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
-        shell.cd(workdir);
         await exec(
           `${shellDir}/test/selenium-native.sh \
           ${taskParams["systemComponentName"]} \
@@ -654,8 +585,7 @@ module.exports = {
           ${taskParams["webTestsFolder"]} \
           ${taskParams["gitUser"]} \
           ${taskParams["gitPassword"]} \
-          ${shellDir} \
-          ${testdir}`
+          `
         );
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
@@ -663,7 +593,6 @@ module.exports = {
       }
       if (testTypes.includes(TestType.Library)) {
         log.debug("Commencing WhiteSource scan");
-        shell.cd(workdir);
         await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
         await exec(`${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
@@ -691,25 +620,10 @@ module.exports = {
 
     //Destructure and get properties ready.
     const taskParams = utils.resolveInputParameters();
-    // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
     config = {
       verbose: true
     };
-
-    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
-    let dir = workingDir(taskParams["workingDir"]);
-
-    let workdir = dir + "/repository";
-    log.debug("Working Directory: ", workdir);
-
-    let testdir = "/test";
-    shell.mkdir("-p", testdir);
-    log.debug("Test Directory: ", testdir);
-
-    // log.debug("Copy source code from shared drive to container");
-    // shell.mkdir("-p", workdir);
-    // shell.cp("-R", dir + "/repository/*", testdir);
 
     const testTypes = typeof taskParams["testType"] === "string" ? taskParams["testType"].split(",") : [];
     const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
@@ -719,9 +633,11 @@ module.exports = {
       await exec(`${shellDir}/common/initialize.sh`);
       await exec(`${shellDir}/common/initialize-dependencies-helm.sh ${taskParams["buildToolVersion"]}"`);
 
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
+
       if (testTypes.includes(TestType.Static)) {
         log.debug("Linting Helm Chart(s)");
-        shell.cd(workdir);
         await exec(`${shellDir}/test/lint-helm.sh \
         ${taskParams["buildTool"]} \
         ${taskParams["helmRepoUrl"]} \

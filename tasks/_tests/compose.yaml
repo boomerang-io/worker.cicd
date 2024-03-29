@@ -1,0 +1,11 @@
+services:
+  test:
+    image: ${IMAGE:-python:3.11}
+    entrypoint: /workdir/tasks/_tests/entrypoint.sh
+    working_dir: /workdir/
+    # Override this with linux/amd64 or linux/arm64
+    platform: "${PLATFORM:-}"
+    environment:
+      - PATH=/workdir/:$PATH
+    volumes:
+      - ${PWD}:/workdir/tasks/

@@ -12,8 +12,6 @@ REPORT_FOLDER=${7}
 ART_URL=${8}
 ART_USER=${9}
 ART_PASSWORD=${10}
-SHELL_DIR=${11}
-TEST_DIR=${12}
 
 # make java environment varaibles set by initialize-dependencies-java.sh effective.
 source ~/.profile
@@ -38,8 +36,6 @@ urlencode() {
     LC_COLLATE=$old_lc_collate
 }
 
-# cd $TEST_DIR
-
 echo "TEAM_NAME=$TEAM_NAME"
 echo "COMPONENT_NAME=$COMPONENT_NAME"
 echo "VERSION_NAME=$VERSION_NAME"
@@ -50,8 +46,6 @@ echo "REPORT_FOLDER=$REPORT_FOLDER"
 echo "ART_URL=$ART_URL"
 echo "ART_USER=$ART_USER"
 echo "ART_PASSWORD=*****"
-echo "SHELL_DIR=$SHELL_DIR"
-echo "TEST_DIR=$TEST_DIR"
 
 touch ${PROPERTY_FILE}.resolved
 

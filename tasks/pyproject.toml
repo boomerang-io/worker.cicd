@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "taskfiles"
+version = "0.1.0"
+description = ""
+authors = ["Nahuel Defosse"]
+license = "BSD-3"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8"
+invoke = "^2.0.0"
+
+[tool.poetry.group.dev.dependencies]
+hunter = "^3.5.1"
+shiv = "^1.0.3"
+pdbpp = "^0.10.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+# Allow lines to be as long as 120 characters.
+line-length = 120
+
+[tool.ruff.mccabe]
+max-complexity = 5
