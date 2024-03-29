@@ -1,5 +1,5 @@
 const { log, utils, CICDError, common } = require("@boomerang-io/worker-core");
-const shell = require("shelljs");
+// const shell = require("shelljs");
 const fs = require("fs");
 
 const TestType = {
@@ -12,17 +12,24 @@ const TestType = {
 
 Object.freeze(TestType);
 
-function exec(command) {
-  return new Promise(function(resolve, reject) {
-    log.debug("Command directory:", shell.pwd().toString());
-    log.debug("Command to execute:", command);
-    shell.exec(command, config, function(code, stdout, stderr) {
-      if (code) {
-        reject(new CICDError(code, stderr));
-      }
-      resolve(stdout ? stdout : stderr);
-    });
-  });
+// function exec(command) {
+//   return new Promise(function(resolve, reject) {
+//     log.debug("Command directory:", shell.pwd().toString());
+//     log.debug("Command to execute:", command);
+//     shell.exec(command, config, function(code, stdout, stderr) {
+//       if (code) {
+//         reject(new CICDError(code, stderr));
+//       }
+//       resolve(stdout ? stdout : stderr);
+//     });
+//   });
+// }
+
+const child_process = require("child_process");
+function execuateShell(command, config) {
+  log.debug("Command to execute:", command);
+  config.stdio = "inherit";
+  child_process.execSync(command, config);
 }
 
 function parseVersion(version, appendBuildNumber) {
@@ -56,9 +63,15 @@ module.exports = {
     const taskParams = utils.resolveInputParameters();
     // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
-    config = {
-      verbose: true
+    const sourceDir = getWorkingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
+    let config = {
+      cwd: sourceDir
     };
+    let maxBufferSizeInMB = taskParams["maxBuffer"];
+    if (maxBufferSizeInMB && maxBufferSizeInMB != '""') {
+      log.debug("Using customized maxBuffer in MB: " + maxBufferSizeInMB);
+      config.maxBuffer = Number(maxBufferSizeInMB) * 1024 * 1024;
+    }
 
     // let dir = "/workspace/" + taskParams["workflow-activity-id"];
     let dir = workingDir(taskParams["workingDir"]);
@@ -82,7 +95,7 @@ module.exports = {
 
     try {
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/common/initialize.sh`);
+      execuateShell(`${shellDir}/common/initialize.sh`, config);
       // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {
@@ -110,11 +123,12 @@ module.exports = {
       }
 
       log.debug("Testing artifacts");
-      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
+      execuateShell(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`, config);
       if (testTypes.includes(TestType.Static)) {
         log.debug("Commencing static tests");
         shell.cd(workdir);
-        await exec(`${shellDir}/test/static-java.sh \
+        execuateShell(
+          `${shellDir}/test/static-java.sh \
         ${taskParams["buildTool"]} \
         ${version} \
         ${taskParams["sonarUrl"]} \
@@ -125,14 +139,17 @@ module.exports = {
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
-        `);
+        `,
+          config
+        );
       }
-      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
+      execuateShell(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`, config);
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Commencing unit tests");
         // await exec(`${shellDir}/test/initialize-dependencies-unit-java.sh`);
-        shell.cd(workdir);
-        await exec(`${shellDir}/test/unit-java.sh \
+        // shell.cd(workdir);
+        execuateShell(
+          `${shellDir}/test/unit-java.sh \
         ${taskParams["buildTool"]} \
         ${version} \
         ${taskParams["sonarUrl"]} \
@@ -142,13 +159,16 @@ module.exports = {
         ${JSON.stringify(taskParams["artifactoryUrl"])} \
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
-        `);
+        `,
+          config
+        );
       }
-      await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
+      execuateShell(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`, config);
       if (testTypes.includes(TestType.SeleniumNative)) {
         log.debug("Commencing automated Selenium native tests");
-        shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-native.sh \
+        // shell.cd(workdir);
+        execuateShell(
+          `${shellDir}/test/selenium-native.sh \
         ${taskParams["systemComponentName"]} ${version} \
         ${taskParams["saucelabsApiKey"]} \
         ${taskParams["saucelabsApiUser"]} ${JSON.stringify(taskParams["saucelabsApiUrl"])} \
@@ -160,12 +180,15 @@ module.exports = {
         ${taskParams["gitUser"]} \
         ${taskParams["gitPassword"]} \
         ${shellDir} \
-        ${testdir}`);
+        ${testdir}`,
+          config
+        );
       }
       if (testTypes.includes(TestType.SeleniumCustom)) {
         log.debug("Commencing automated Selenium custom tests");
-        shell.cd(workdir);
-        await exec(`${shellDir}/test/selenium-custom.sh "\
+        // shell.cd(workdir);
+        execuateShell(
+          `${shellDir}/test/selenium-custom.sh "\
         ${taskParams["teamName"]}" \
         ${taskParams["systemComponentName"]} ${version} \
         ${taskParams["seleniumApplicationPropertiesFile"]} \
@@ -176,13 +199,16 @@ module.exports = {
         ${taskParams["artifactoryUser"]} \
         ${taskParams["artifactoryPassword"]} \
         ${shellDir} \
-        ${testdir}`);
+        ${testdir}`,
+          config
+        );
       }
       if (testTypes.includes(TestType.Library)) {
         log.debug("Commencing WhiteSource scan");
-        shell.cd(workdir);
-        await exec(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`);
-        await exec(`${shellDir}/test/whitesource.sh \
+        // shell.cd(workdir);
+        execuateShell(`${shellDir}/test/initialize-dependencies-whitesource.sh ${JSON.stringify(taskParams["whitesourceAgentDownloadUrl"])}`, config);
+        execuateShell(
+          `${shellDir}/test/whitesource.sh \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
         ${taskParams["version"]} \
@@ -193,13 +219,15 @@ module.exports = {
         ${taskParams["whitesourceProductName"]} \
         ${taskParams["whitesourceProductToken"]} \
         ${JSON.stringify(taskParams["whitesourceWssUrl"])} \
-        `);
+        `,
+          config
+        );
       }
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      await exec(shellDir + "/common/footer.sh");
+      execuateShell(shellDir + "/common/footer.sh", config);
       log.debug("Finished Boomerang CICD Java test activity");
     }
   },

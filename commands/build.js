@@ -1,17 +1,23 @@
 const { log, utils, CICDError } = require("@boomerang-io/worker-core");
-const shell = require("shelljs");
+// const shell = require("shelljs");
 
-function exec(command) {
-  return new Promise(function(resolve, reject) {
-    log.debug("Command directory:", shell.pwd().toString());
-    log.debug("Command to execute:", command);
-    shell.exec(command, config, function(code, stdout, stderr) {
-      if (code) {
-        reject(new CICDError(code, stderr));
-      }
-      resolve(stdout ? stdout : stderr);
-    });
-  });
+// function exec(command) {
+//   return new Promise(function(resolve, reject) {
+//     log.debug("Command directory:", shell.pwd().toString());
+//     log.debug("Command to execute:", command);
+//     shell.exec(command, config, function(code, stdout, stderr) {
+//       if (code) {
+//         reject(new CICDError(code, stderr));
+//       }
+//       resolve(stdout ? stdout : stderr);
+//     });
+//   });
+// }
+const child_process = require("child_process");
+function execuateShell(command, config) {
+  log.debug("Command to execute:", command);
+  config.stdio = "inherit";
+  child_process.execSync(command, config);
 }
 
 function parseVersion(version, appendBuildNumber) {
@@ -45,9 +51,15 @@ module.exports = {
     const taskParams = utils.resolveInputParameters();
     // const { path, script } = taskParams;
     const shellDir = "/cli/scripts";
-    config = {
-      verbose: true
+    const sourceDir = getWorkingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
+    let config = {
+      cwd: sourceDir
     };
+    let maxBufferSizeInMB = taskParams["maxBuffer"];
+    if (maxBufferSizeInMB && maxBufferSizeInMB != '""') {
+      log.debug("Using customized maxBuffer in MB: " + maxBufferSizeInMB);
+      config.maxBuffer = Number(maxBufferSizeInMB) * 1024 * 1024;
+    }
 
     // let dir = "/workspace/" + taskParams["workflow-activity-id"];
     let dir = workingDir(taskParams["workingDir"]);
@@ -68,7 +80,7 @@ module.exports = {
 
     try {
       log.ci("Initializing Dependencies");
-      await exec(`${shellDir}/common/initialize.sh`);
+      execuateShell(`${shellDir}/common/initialize.sh`, config);
       // await exec(`${shellDir}/common/initialize-dependencies-java.sh ${taskParams["languageVersion"]}`);
       // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh \
       // ${taskParams["buildTool"]} \
@@ -76,7 +88,8 @@ module.exports = {
 
       log.ci("Compile & Package Artifact(s)");
       shell.cd(dir + "/repository");
-      await exec(`${shellDir}/build/compile-java.sh \
+      execuateShell(
+        `${shellDir}/build/compile-java.sh \
       "${taskParams["languageVersion"]}" \
       ${taskParams["buildTool"]} \
       ${taskParams["buildToolVersion"]} \
@@ -84,12 +97,14 @@ module.exports = {
       ${JSON.stringify(taskParams["repoUrl"])} \
       ${taskParams["repoId"]} \
       ${taskParams["repoUser"]} \
-      "${taskParams["repoPassword"]}"`);
+      "${taskParams["repoPassword"]}"`,
+        config
+      );
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
     } finally {
-      await exec(shellDir + "/common/footer.sh");
+      execuateShell(shellDir + "/common/footer.sh", config);
       log.debug("Finished Boomerang CICD Java build activity");
     }
   },
