@@ -118,7 +118,7 @@ module.exports = {
       // await exec(`${shellDir}/common/initialize-dependencies-java-tool.sh ${taskParams["buildTool"]} ${taskParams["buildToolVersion"]}`);
 
       if (buildTool === "maven") {
-        checkMavenConfiguration(sourceDir, "pom.xml");
+        checkMavenConfiguration(shellDir, sourceDir + "/pom.xml");
       }
 
       log.debug("Testing artifacts");
