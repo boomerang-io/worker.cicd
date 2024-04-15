@@ -73,7 +73,12 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
     if [[ -z "$CHART_RELEASE" ]] && [ ! -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         echo "Auto detecting chart release..."
         echo "Note: This only works if there is only one release of the chart in the provided namespace."
-        while [[ -z "$CHART_RELEASE" ]]; do
+        INDEX=0
+        SLEEP=30
+        RETRIES=10
+        while [[ -z "$CHART_RELEASE" ]] && [[ $INDEX < $RETRIES ]]; do
+            INDEX=$(( INDEX + 1 ))
+            sleep $SLEEP
             CHART_RELEASE=$(helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml |
                 yq eval '.[] | select (.chart == "*'"$CHART"'*") | .name as $name | $name' -)
             echo "The detected chart release is $CHART_RELEASE"
