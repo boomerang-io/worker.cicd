@@ -73,9 +73,11 @@ for CHART in "${HELM_CHARTS_ARRAY[@]}"; do
     if [[ -z "$CHART_RELEASE" ]] && [ ! -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         echo "Auto detecting chart release..."
         echo "Note: This only works if there is only one release of the chart in the provided namespace."
-        CHART_RELEASE=$(helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml |
-            yq eval '.[] | select (.chart == "*'"$CHART"'*") | .name as $name | $name' -)
-        echo "The detected chart release is $CHART_RELEASE"
+        while [[ -z "$CHART_RELEASE" ]]; do
+            CHART_RELEASE=$(helm list --kube-context $DEPLOY_KUBE_HOST-context -n $DEPLOY_KUBE_NAMESPACE -o yaml |
+                yq eval '.[] | select (.chart == "*'"$CHART"'*") | .name as $name | $name' -)
+            echo "The detected chart release is $CHART_RELEASE"
+        done
         if [ $? -ne 0 ]; then echo "No Helm 3 chart release found in namespace: $DEPLOY_KUBE_NAMESPACE" && exit 94; fi
     elif [ -z "$CHART_RELEASE" ] && [ -z "$DEPLOY_KUBE_NAMESPACE" ]; then
         HELM_CHARTS_EXITCODE=93
