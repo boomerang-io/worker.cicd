@@ -229,6 +229,10 @@ fi
 # # Set sonar.tests to SRC_FOLDER
 # SONAR_FLAGS="$SONAR_FLAGS -Dsonar.tests=$SRC_FOLDER"
 
+# Set sonar.sourceEncoding to UTF-8
+SONAR_FLAGS="$SONAR_FLAGS -Dsonar.sourceEncoding=UTF-8"
+echo "SONAR_FLAGS=$SONAR_FLAGS"
+
 # Set Node.js bin path
 NODE_PATH=$(which node)
 echo "NODE_PATH=$NODE_PATH"
