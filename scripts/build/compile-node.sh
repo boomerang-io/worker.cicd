@@ -8,7 +8,7 @@ BUILD_SCRIPT=$2
 # Install configured version of Node.js via nvm if present
 if [ "$LANGUAGE_VERSION" == "undefined" ] || [ "$LANGUAGE_VERSION" == "" ]; then
     # Set Node.js version
-    LANGUAGE_VERSION=12
+    LANGUAGE_VERSION=16
 fi
 
 # Install configured version of Node.js via nvm if present
