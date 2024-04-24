@@ -15,6 +15,9 @@ if [ "$6" != "" ]; then
     GIT_LFS=$6
 fi
 
+echo "Git version..."
+git version
+
 if [ "$DEBUG" == "true" ]; then
     echo "REPO_FOLDER=$REPO_FOLDER"
     echo "GIT_SSH_URL=$GIT_SSH_URL"
@@ -60,10 +63,10 @@ host $GIT_REPO_HOST
 EOL
 fi
 
-if [ "$GIT_LFS" == "true" ]; then
-    echo "Enabling Git LFS"
-    apk add git-lfs
-fi
+# if [ "$GIT_LFS" == "true" ]; then
+#     echo "Enabling Git LFS"
+#     apk add git-lfs
+# fi
 
 GIT_OPTS=
 if [ "$DEBUG" == "true" ]; then
