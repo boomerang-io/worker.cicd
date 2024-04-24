@@ -79,7 +79,9 @@ if [ "$GIT_CLONE_URL" == "undefined" ]; then
     exit 1
 fi
 
-git clone --progress --recurse-submodules $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
+echo "Cloning git repository..."
+git clone --progress --recurse-submodules $GIT_OPTS $GIT_CLONE_URL $REPO_FOLDER
+# git clone --progress --recurse-submodules $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
 
 GIT_RC=$?
 if [ $GIT_RC != 0 ]; then
@@ -95,7 +97,7 @@ if  [ -d "$REPO_FOLDER" ]; then
         ls -ltr
     fi
 
-    echo "Git update submodules"
+    echo "Git update submodules..."
     git submodule update --init --recursive --remote --checkout --force
     GIT_RC=$?
     if [ $GIT_RC != 0 ]; then
@@ -103,8 +105,8 @@ if  [ -d "$REPO_FOLDER" ]; then
         exit 1
     fi
 
-    echo "Git checkout commit"
-    git checkout --progress $GIT_COMMIT_ID
+    echo "Git checkout commit: $GIT_COMMIT_ID ..."
+    git checkout --progress --recurse-submodules $GIT_COMMIT_ID
     GIT_RC=$?
     if [ $GIT_RC != 0 ]; then
         echo "Git checkout failed"
