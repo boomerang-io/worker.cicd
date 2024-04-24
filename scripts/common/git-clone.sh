@@ -93,13 +93,13 @@ if  [ -d "$REPO_FOLDER" ]; then
     fi
 
     echo "Git update submodules"
-    git submodule update --init --recursive --remote
+    git submodule update --init --recursive --remote --checkout --force
     GIT_RC=$?
     if [ $GIT_RC != 0 ]; then
         echo "Git update submodules failed"
         exit 1
     fi
-    
+
     echo "Git checkout commit"
     git checkout --progress $GIT_COMMIT_ID
     GIT_RC=$?
@@ -115,6 +115,9 @@ fi
 echo "Git checkout successful"
 
 if [ "$DEBUG" == "true" ]; then
+    echo "Listing cloned files and folders..."
+    ls -altR
+    
     echo "Retrieving worker size..."
     df -h
 fi
