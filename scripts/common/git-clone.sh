@@ -75,7 +75,7 @@ if [ "$GIT_CLONE_URL" == "undefined" ]; then
 fi
 
 echo "Cloning git repository..."
-git clone --progress --recurse-submodules $GIT_OPTS $GIT_CLONE_URL $REPO_FOLDER
+git clone --progress --recurse-submodules --no-checkout $GIT_OPTS $GIT_CLONE_URL $REPO_FOLDER
 
 GIT_RC=$?
 if [ $GIT_RC != 0 ]; then
