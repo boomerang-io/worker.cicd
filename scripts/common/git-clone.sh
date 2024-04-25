@@ -15,6 +15,9 @@ if [ "$6" != "" ]; then
     GIT_LFS=$6
 fi
 
+echo "Git version..."
+git version
+
 if [ "$DEBUG" == "true" ]; then
     echo "REPO_FOLDER=$REPO_FOLDER"
     echo "GIT_SSH_URL=$GIT_SSH_URL"
@@ -60,11 +63,6 @@ host $GIT_REPO_HOST
 EOL
 fi
 
-if [ "$GIT_LFS" == "true" ]; then
-    echo "Enabling Git LFS"
-    apk add git-lfs
-fi
-
 GIT_OPTS=
 if [ "$DEBUG" == "true" ]; then
     GIT_OPTS+=--verbose
@@ -76,7 +74,8 @@ if [ "$GIT_CLONE_URL" == "undefined" ]; then
     exit 1
 fi
 
-git clone --progress --recurse-submodules $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
+echo "Cloning git repository..."
+git clone --progress --recurse-submodules $GIT_OPTS $GIT_CLONE_URL $REPO_FOLDER
 
 GIT_RC=$?
 if [ $GIT_RC != 0 ]; then
@@ -92,11 +91,16 @@ if  [ -d "$REPO_FOLDER" ]; then
         ls -ltr
     fi
 
-    git checkout --progress $GIT_COMMIT_ID
-    git submodule init
-    git submodule update --recursive
-    # git checkout --progress --recurse-submodules $GIT_COMMIT_ID
+    echo "Git update submodules..."
+    git submodule update --init --recursive --remote --checkout --force
+    GIT_RC=$?
+    if [ $GIT_RC != 0 ]; then
+        echo "Git update submodules failed"
+        exit 1
+    fi
 
+    echo "Git checkout commit: $GIT_COMMIT_ID ..."
+    git checkout --progress --recurse-submodules $GIT_COMMIT_ID
     GIT_RC=$?
     if [ $GIT_RC != 0 ]; then
         echo "Git checkout failed"
@@ -110,6 +114,9 @@ fi
 echo "Git checkout successful"
 
 if [ "$DEBUG" == "true" ]; then
+    echo "Listing cloned files and folders..."
+    ls -altR
+    
     echo "Retrieving worker size..."
     df -h
 fi
