@@ -63,11 +63,6 @@ host $GIT_REPO_HOST
 EOL
 fi
 
-# if [ "$GIT_LFS" == "true" ]; then
-#     echo "Enabling Git LFS"
-#     apk add git-lfs
-# fi
-
 GIT_OPTS=
 if [ "$DEBUG" == "true" ]; then
     GIT_OPTS+=--verbose
@@ -81,7 +76,6 @@ fi
 
 echo "Cloning git repository..."
 git clone --progress --recurse-submodules $GIT_OPTS $GIT_CLONE_URL $REPO_FOLDER
-# git clone --progress --recurse-submodules $GIT_OPTS -n $GIT_CLONE_URL $REPO_FOLDER
 
 GIT_RC=$?
 if [ $GIT_RC != 0 ]; then
