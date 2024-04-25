@@ -91,19 +91,19 @@ if  [ -d "$REPO_FOLDER" ]; then
         ls -ltr
     fi
 
-    echo "Git update submodules..."
-    git submodule update --init --recursive --remote --checkout --force
-    GIT_RC=$?
-    if [ $GIT_RC != 0 ]; then
-        echo "Git update submodules failed"
-        exit 1
-    fi
-
     echo "Git checkout commit: $GIT_COMMIT_ID ..."
     git checkout --progress --recurse-submodules --force $GIT_COMMIT_ID
     GIT_RC=$?
     if [ $GIT_RC != 0 ]; then
         echo "Git checkout failed"
+        exit 1
+    fi
+
+    echo "Git update submodules..."
+    git submodule update --init --recursive --remote --checkout --force
+    GIT_RC=$?
+    if [ $GIT_RC != 0 ]; then
+        echo "Git update submodules failed"
         exit 1
     fi
 else
