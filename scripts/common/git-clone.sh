@@ -100,7 +100,7 @@ if  [ -d "$REPO_FOLDER" ]; then
     fi
 
     echo "Git checkout commit: $GIT_COMMIT_ID ..."
-    git checkout --progress --recurse-submodules $GIT_COMMIT_ID
+    git checkout --progress --recurse-submodules --force $GIT_COMMIT_ID
     GIT_RC=$?
     if [ $GIT_RC != 0 ]; then
         echo "Git checkout failed"
