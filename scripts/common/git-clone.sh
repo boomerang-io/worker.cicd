@@ -15,6 +15,10 @@ if [ "$6" != "" ]; then
     GIT_LFS=$6
 fi
 
+add-apt-repository ppa:git-core/ppa
+apt update
+apt-get -f update git
+
 echo "Git version..."
 git version
 
