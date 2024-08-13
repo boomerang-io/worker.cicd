@@ -15,12 +15,6 @@ if [ "$6" != "" ]; then
     GIT_LFS=$6
 fi
 
-apt update
-apt-get -y install software-properties-common
-add-apt-repository -y ppa:git-core/ppa
-apt update
-apt-get -y install git
-
 echo "Git version..."
 git version
 
@@ -37,7 +31,7 @@ fi
 #Make folders if not already created
 mkdir -p ~/.ssh
 mkdir -p $REPO_FOLDER
-upgradeGitVersion
+
 # upper to lower ensures that the host is all lower case to be accepted in match to the ssh host but also the proxy
 if [[ "$GIT_SSH_URL" =~ ^http.* ]]; then
     echo "Adjusting clone for http/s"
