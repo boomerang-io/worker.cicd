@@ -8,12 +8,16 @@ HELM_CHART_VERSION_TAG=$5
 GIT_REF=$6
 
 if [ "$DEBUG" == "true" ]; then
+    echo "GIT_REF=$GIT_REF"
     echo "HELM_REPO_URL=$HELM_REPO_URL"
     echo "HELM_CHART_DIR=$HELM_CHART_DIR"
-    echo "HELM_CHART_IGNORE=[${HELM_CHART_IGNORE[*]}]"
     echo "HELM_CHART_VERSION_INCREMENT=$HELM_CHART_VERSION_INCREMENT"
     echo "HELM_CHART_VERSION_TAG=$HELM_CHART_VERSION_TAG"
-    echo "GIT_REF=$GIT_REF"
+    IFS=' ' read -r -a helmChartIgnoreArray <<< "$HELM_CHART_IGNORE"
+    for index in "${!helmChartIgnoreArray[@]}"
+    do
+        echo "HELM_CHART_IGNORE: $index:${helmChartIgnoreArray[index]}"
+    done
 fi
 
 helm repo add boomerang-charts $HELM_REPO_URL
