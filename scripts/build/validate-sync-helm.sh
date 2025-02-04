@@ -130,6 +130,7 @@ fi
 
 # Validate charts have correct version
 SKIPPED_CHARTS=0
+VALIDATED_CHARTS=0
 for chartPackage in `ls -1 $chartStableDir/*tgz | rev | cut -f1 -d/ | rev`
 do
     echo "Found: $chartPackage"
@@ -166,6 +167,7 @@ do
     else
         echo "  New chart version validated."
         cp $chartStableDir/$chartPackage $chartCurrentDir
+        VALIDATED_CHARTS=$((VALIDATED_CHARTS+1))
     fi
 done
 
@@ -174,30 +176,34 @@ if [ "$HELM_REPO_TYPE" == "github" ]; then
 fi
 
 # Release / Upload the packages
-for filename in `ls -1 $chartCurrentDir/*tgz | rev | cut -f1 -d/ | rev`
-do
-    if [ -f $chartCurrentDir/$filename ]; then
-        echo "Pushing chart package: $filename"
-        if [ "$HELM_REPO_TYPE" == "artifactory" ]; then
-            curl -# --insecure -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -T $chartCurrentDir/$filename "$HELM_REPO_URL/$filename"
-        elif [ "$HELM_REPO_TYPE" == "github" ]; then
-            RELEASE_NAME=`echo $filename | sed -r 's@^(.*)(\.tgz)$@\1@g'`
-            github_release $RELEASE_NAME $chartCurrentDir/$filename
-            cp $chartCurrentDir/$filename $chartIndexDir/$filename
-            helm repo index --merge index.yaml --url https://github.com/${GIT_OWNER}/${GIT_REPO}/releases/download/${RELEASE_NAME} $chartIndexDir
-            mv $chartIndexDir/index.yaml index.yaml
-            rm $chartIndexDir/$filename
+if [ "$VALIDATED_CHARTS" != "0" ]; then
+    for filename in `ls -1 $chartCurrentDir/*tgz | rev | cut -f1 -d/ | rev`
+    do
+        if [ -f $chartCurrentDir/$filename ]; then
+            echo "Pushing chart package: $filename"
+            if [ "$HELM_REPO_TYPE" == "artifactory" ]; then
+                curl -# --insecure -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -T $chartCurrentDir/$filename "$HELM_REPO_URL/$filename"
+            elif [ "$HELM_REPO_TYPE" == "github" ]; then
+                RELEASE_NAME=`echo $filename | sed -r 's@^(.*)(\.tgz)$@\1@g'`
+                github_release $RELEASE_NAME $chartCurrentDir/$filename
+                cp $chartCurrentDir/$filename $chartIndexDir/$filename
+                helm repo index --merge index.yaml --url https://github.com/${GIT_OWNER}/${GIT_REPO}/releases/download/${RELEASE_NAME} $chartIndexDir
+                mv $chartIndexDir/index.yaml index.yaml
+                rm $chartIndexDir/$filename
+            fi
         fi
-    fi
-done
+    done
+fi
 
 # Index Charts
-if [ "$HELM_REPO_TYPE" == "artifactory" ]; then
-    HELM_REPO_ID=`echo $HELM_REPO_URL | rev | cut -f1 -d'/' | rev`
-    HELM_INDEX_URL=`echo $HELM_REPO_URL | sed -r 's@^(.*)(/\$HELM_REPO_ID)$@\1@g'`
-    curl -# -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -X POST "$HELM_INDEX_URL/api/helm/$HELM_REPO_ID-local/reindex"
-elif [ "$HELM_REPO_TYPE" == "github" ]; then
-    github_upload_index
+if [ "$VALIDATED_CHARTS" != "0" ]; then
+    if [ "$HELM_REPO_TYPE" == "artifactory" ]; then
+        HELM_REPO_ID=`echo $HELM_REPO_URL | rev | cut -f1 -d'/' | rev`
+        HELM_INDEX_URL=`echo $HELM_REPO_URL | sed -r 's@^(.*)(/\$HELM_REPO_ID)$@\1@g'`
+        curl -# -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -X POST "$HELM_INDEX_URL/api/helm/$HELM_REPO_ID-local/reindex"
+    elif [ "$HELM_REPO_TYPE" == "github" ]; then
+        github_upload_index
+    fi
 fi
 
 # Display warning if charts were skipped
