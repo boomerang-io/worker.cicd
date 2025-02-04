@@ -129,6 +129,7 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 # Validate charts have correct version
+SKIPPED_CHARTS=0
 for chartPackage in `ls -1 $chartStableDir/*tgz | rev | cut -f1 -d/ | rev`
 do
     echo "Found: $chartPackage"
@@ -136,7 +137,7 @@ do
     # Attempt to pull down chart package from Artifactory
     chartName=`echo $chartPackage | sed 's/\(.*\)-.*/\1/'`
     chartVersion=`echo $chartPackage | rev | sed '/\..*\./s/^[^.]*\.//' | cut -d '-' -f 1 | rev`
-    helm pull --version $chartVersion --destination $chartCurrentDir boomerang-charts/$chartName
+    helm pull --version $chartVersion --destination $chartCurrentDir boomerang-charts/$chartName > /dev/null 2>&1
     if [ -f $chartCurrentDir/$chartPackage ]; then
         # If there is an existing file, a check will be made to see if the content of the old tar and new tar are the exact same. 
         # The digest and sha of the tar are not trustworthy when containing tgz files. 
@@ -158,8 +159,9 @@ do
             rm -f $chartCurrentDir/$chartPackage
         else
             # These files differ, but do not have a version number update
-            echo "  ERROR: Same version but different content"
-            exit 1
+            echo "  ERROR: Same version but different content, skipping this chart"
+            rm -f $chartCurrentDir/$chartPackage
+            SKIPPED_CHARTS=$((SKIPPED_CHARTS+1))
         fi
     else
         echo "  New chart version validated."
@@ -196,4 +198,9 @@ if [ "$HELM_REPO_TYPE" == "artifactory" ]; then
     curl -# -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -X POST "$HELM_INDEX_URL/api/helm/$HELM_REPO_ID-local/reindex"
 elif [ "$HELM_REPO_TYPE" == "github" ]; then
     github_upload_index
+fi
+
+# Display warning if charts were skipped
+if [ "$SKIPPED_CHARTS" != "0" ]; then
+    echo "  WARNING: There were ${SKIPPED_CHARTS} skipped charts.  Check logs for more detail."
 fi
