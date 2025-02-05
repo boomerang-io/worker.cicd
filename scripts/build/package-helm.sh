@@ -43,6 +43,7 @@ for chart in $chartList
 do
     #use sed -E instead of -r when testing on Mac
     chartName=`echo "$chart" | sed -r "s@\.\/(.*\/)?([^\/]+)\/Chart.yaml@\2@g"`
+    printf "  Packaging Chart: $chartName\n"
     ( printf '\n'; printf '%.0s-' {1..30}; printf " Packaging Chart: $chartName "; printf '%.0s-' {1..30}; printf '\n' )
     printf "  Chart Path: $chart\n"
     if [[ ! " ${chartIgnoreList[@]} " =~ " $chartName " ]] && [[ "$chart" =~ ^\.(\/)?$chartFolder(\/)?$chartName\/.*$ ]]; then
