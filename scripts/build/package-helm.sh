@@ -7,8 +7,6 @@ HELM_CHART_VERSION_INCREMENT=$4
 HELM_CHART_VERSION_TAG=$5
 GIT_REF=$6
 
-HELM_EXPERIMENTAL_OCI=1
-
 echo "GIT_REF=$GIT_REF"
 echo "HELM_REPO_URL=$HELM_REPO_URL"
 echo "HELM_CHART_DIR=$HELM_CHART_DIR"
@@ -50,7 +48,7 @@ do
     printf "  Chart Path: $chart\n"
     chartNameFolder=$(echo $chart | rev | cut -d'/' -f2- | rev)
     printf "  Chart Folder: $chartNameFolder\n"
-    if [[ ! " ${chartIgnoreList[@]} " =~ " $chartName " ]]; then
+    if [[ ! "${chartIgnoreList[@]}" =~ "$chartName" ]] && [[ ! "$chartNameFolder" =~ "${chartIgnoreList[@]}" ]]; then
         if [[ -z "$chartFolder" ]] || [[ "$chartNameFolder" =~ "$chartFolder" ]]; then
             chartVersion=`helm show chart $chartNameFolder | sed -nr 's@(^version: )(.+)@\2@p'`
             printf "  Existing Chart Version: $chartVersion\n"
