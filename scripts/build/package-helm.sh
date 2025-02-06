@@ -48,7 +48,7 @@ do
     printf "  Chart Path: $chart\n"
     chartNameFolder=$(echo $chart | rev | cut -d'/' -f2- | rev)
     printf "  Chart Folder: $chartNameFolder\n"
-    if [[ ! "${chartIgnoreList[@]}" =~ "$chartName" ]] && [[ ! "$chartNameFolder" =~ "${chartIgnoreList[@]}" ]]; then
+    if [[ -z "$chartIgnoreList" ]] || [[ ! "${chartIgnoreList[@]}" =~ "$chartName" ]]; then
         if [[ -z "$chartFolder" ]] || [[ "$chartNameFolder" =~ "$chartFolder" ]]; then
             chartVersion=`helm show chart $chartNameFolder | sed -nr 's@(^version: )(.+)@\2@p'`
             printf "  Existing Chart Version: $chartVersion\n"
