@@ -7,14 +7,16 @@ HELM_CHART_VERSION_INCREMENT=$4
 HELM_CHART_VERSION_TAG=$5
 GIT_REF=$6
 
-if [ "$DEBUG" == "true" ]; then
-    echo "HELM_REPO_URL=$HELM_REPO_URL"
-    echo "HELM_CHART_DIR=$HELM_CHART_DIR"
-    echo "HELM_CHART_IGNORE=$HELM_CHART_IGNORE"
-    echo "HELM_CHART_VERSION_INCREMENT=$HELM_CHART_VERSION_INCREMENT"
-    echo "HELM_CHART_VERSION_TAG=$HELM_CHART_VERSION_TAG"
-    echo "GIT_REF=$GIT_REF"
-fi
+echo "GIT_REF=$GIT_REF"
+echo "HELM_REPO_URL=$HELM_REPO_URL"
+echo "HELM_CHART_DIR=$HELM_CHART_DIR"
+echo "HELM_CHART_VERSION_INCREMENT=$HELM_CHART_VERSION_INCREMENT"
+echo "HELM_CHART_VERSION_TAG=$HELM_CHART_VERSION_TAG"
+IFS=' ' read -r -a helmChartIgnoreArray <<< "$HELM_CHART_IGNORE"
+for index in "${!helmChartIgnoreArray[@]}"
+do
+    echo "HELM_CHART_IGNORE: $index:${helmChartIgnoreArray[index]}"
+done
 
 helm repo add boomerang-charts $HELM_REPO_URL
 RESULT=$?
@@ -41,59 +43,62 @@ for chart in $chartList
 do
     #use sed -E instead of -r when testing on Mac
     chartName=`echo "$chart" | sed -r "s@\.\/(.*\/)?([^\/]+)\/Chart.yaml@\2@g"`
+    printf "  Packaging Chart: $chartName\n"
     ( printf '\n'; printf '%.0s-' {1..30}; printf " Packaging Chart: $chartName "; printf '%.0s-' {1..30}; printf '\n' )
     printf "  Chart Path: $chart\n"
-    if [[ ! " ${chartIgnoreList[@]} " =~ " $chartName " ]] && [[ "$chart" =~ ^\.(\/)?$chartFolder(\/)?$chartName\/.*$ ]]; then
-        chartVersion=`helm show chart ./$chartFolder/$chartName | sed -nr 's@(^version: )(.+)@\2@p'`
-        printf "  Existing Chart Version: $chartVersion\n"
-        if [[ "$HELM_CHART_VERSION_INCREMENT" == "true" ]]; then
-            printf "  Auto Incrementing Chart Version...\n"
-            newMajorMinor=`echo $chartVersion | sed -r 's@^([0-9]+\.[0-9]+\.).*@\1@g'`
-            newIteration=`echo $chartVersion |  cut -d . -f3 | sed -r 's@^([0-9\.]+)([\-]?.*)$@\1@g'`
-            postIteration=`echo $chartVersion |  cut -d . -f3 | sed -r 's@^([0-9\.]+)([\-]?.*)$@\2@g'`
-            chartVersion=$newMajorMinor$((newIteration+1))$postIteration
-        fi
-        if [[ "$HELM_CHART_VERSION_TAG" == "true" ]] && [[ "$GIT_REF" =~ "refs/tags/" ]]; then
-            printf "  Seting Chart Version to Tag...\n"
-            chartVersion=`echo $GIT_REF | cut -d / -f3`
-        fi
-        printf "  Chart Version: $chartVersion\n"
-        DEPENDENCY_YAML_FILE='Chart.yaml'
-        if [ -z "$chartFolder" ]; then
-            DEPENDENCY_YAML_PATH="$chartName/$DEPENDENCY_YAML_FILE"
+    chartNameFolder=$(echo $chart | rev | cut -d'/' -f2- | rev)
+    printf "  Chart Folder: $chartNameFolder\n"
+    if [[ -z "$chartIgnoreList" ]] || [[ ! "${chartIgnoreList[@]}" =~ "$chartName" ]]; then
+        if [[ -z "$chartFolder" ]] || [[ "$chartNameFolder" =~ "$chartFolder" ]]; then
+            chartVersion=`helm show chart $chartNameFolder | sed -nr 's@(^version: )(.+)@\2@p'`
+            printf "  Existing Chart Version: $chartVersion\n"
+            if [[ "$HELM_CHART_VERSION_INCREMENT" == "true" ]]; then
+                printf "  Auto Incrementing Chart Version...\n"
+                newMajorMinor=`echo $chartVersion | sed -r 's@^([0-9]+\.[0-9]+\.).*@\1@g'`
+                newIteration=`echo $chartVersion |  cut -d . -f3 | sed -r 's@^([0-9\.]+)([\-]?.*)$@\1@g'`
+                postIteration=`echo $chartVersion |  cut -d . -f3 | sed -r 's@^([0-9\.]+)([\-]?.*)$@\2@g'`
+                chartVersion=$newMajorMinor$((newIteration+1))$postIteration
+            fi
+            if [[ "$HELM_CHART_VERSION_TAG" == "true" ]] && [[ "$GIT_REF" =~ "refs/tags/" ]]; then
+                printf "  Seting Chart Version to Tag...\n"
+                chartVersion=`echo $GIT_REF | cut -d / -f3`
+            fi
+            printf "  Chart Version: $chartVersion\n"
+            DEPENDENCY_YAML_FILE='Chart.yaml'
+            DEPENDENCY_YAML_PATH="$chartNameFolder/$DEPENDENCY_YAML_FILE"
+            printf "  Checking for additional dependencies in $DEPENDENCY_YAML_PATH...\n"
+            if [ -f $DEPENDENCY_YAML_PATH ]; then
+                # Loop through and ensure all custom dependencies are added
+                echo $(yq eval '.dependencies[].repository' $DEPENDENCY_YAML_PATH)
+    #             IFS='
+    # ' #set as newline
+                DEP_ARRAY_STRING=`echo $(yq eval '.dependencies[].repository' $DEPENDENCY_YAML_PATH) | tr '\n' ' '`
+                echo "Dependencies found in string: $DEP_ARRAY_STRING"
+                read -ra DEP_ARRAY <<< $DEP_ARRAY_STRING
+                echo "Dependencies found array: ${DEP_ARRAY[@]}"
+                for DEP in "${DEP_ARRAY[@]}"; do
+                    if [[ $DEP =~ ^http ]]; then
+                        echo "Adding dependency $DEP..."
+                        read -ra DEP_NAME <<<$(yq eval '.dependencies[] | select (.repository == "'"$DEP"'") | .name as $name | $name' "$DEPENDENCY_YAML_PATH")
+                        helm repo add $DEP_NAME $DEP
+                    else
+                        echo "Skipping '$DEP' as not a URL"
+                    fi
+                done
+                # IFS=$' '
+            else
+                printf "  Skipping as no dependencies found in $DEPENDENCY_YAML_FILE.\n"
+            fi
+            helm dependency update $chartNameFolder/ && \
+            helm package --version $chartVersion -d $chartStableDir/ $chartNameFolder/
+            RESULT=$?
+            if [ $RESULT -ne 0 ] ; then
+                exit 89
+            fi
         else
-            DEPENDENCY_YAML_PATH="$chartFolder/$chartName/$DEPENDENCY_YAML_FILE"
-        fi
-        printf "  Checking for additional dependencies in $DEPENDENCY_YAML_PATH...\n"
-        if [ -f $DEPENDENCY_YAML_PATH ]; then
-            # Loop through and ensure all custom dependencies are added
-            echo $(yq eval '.dependencies[].repository' $DEPENDENCY_YAML_PATH)
-#             IFS='
-# ' #set as newline
-            DEP_ARRAY_STRING=`echo $(yq eval '.dependencies[].repository' $DEPENDENCY_YAML_PATH) | tr '\n' ' '`
-            echo "Dependencies found in string: $DEP_ARRAY_STRING"
-            read -ra DEP_ARRAY <<< $DEP_ARRAY_STRING
-            echo "Dependencies found array: ${DEP_ARRAY[@]}"
-            for DEP in "${DEP_ARRAY[@]}"; do
-                if [[ $DEP =~ ^http ]]; then
-                    echo "Adding dependency $DEP..."
-                    read -ra DEP_NAME <<<$(yq eval '.dependencies[] | select (.repository == "'"$DEP"'") | .name as $name | $name' "$DEPENDENCY_YAML_PATH")
-                    helm repo add $DEP_NAME $DEP
-                else
-                    echo "Skipping '$DEP' as not a URL"
-                fi
-            done
-            # IFS=$' '
-        else
-            printf "  Skipping as no dependencies found in $DEPENDENCY_YAML_FILE.\n"
-        fi
-        helm dependency update ./$chartFolder/$chartName/ && \
-        helm package --version $chartVersion -d $chartStableDir/ ./$chartFolder/$chartName/
-        RESULT=$?
-        if [ $RESULT -ne 0 ] ; then
-            exit 89
+            printf "Skipping chart based on directory path...\n"
         fi
     else
-        printf "Skipping chart based on ignore list or directory path...\n"
+        printf "Skipping chart based on ignore list...\n"
     fi
 done
