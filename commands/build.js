@@ -377,8 +377,8 @@ module.exports = {
         "${taskParams["gitRepoOwner"]}" \
         "${taskParams["gitRepoName"]}" \
         "${taskParams["gitCommitId"]}" \
-        "${taskParams["repoIndexBranch"]}"`
-      );
+        "${taskParams["repoIndexBranch"]}" \
+        "${taskParams["failOnError"]}"`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);

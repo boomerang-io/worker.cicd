@@ -21,6 +21,8 @@ HELM_INDEX_BRANCH=$8
 if [ -z "$HELM_INDEX_BRANCH" ]; then
     HELM_INDEX_BRANCH="index"
 fi
+HELM_FAIL_ON_ERROR=$9
+
 GIT_API_URL=https://api.github.com
 INDEX_URL=${GIT_API_URL}/repos/${GIT_OWNER}/${GIT_REPO}/contents/index.yaml
 
@@ -162,7 +164,11 @@ do
             # These files differ, but do not have a version number update
             echo "  ERROR: Same version but different content, skipping this chart"
             rm -f $chartCurrentDir/$chartPackage
-            SKIPPED_CHARTS=$((SKIPPED_CHARTS+1))
+            if [[ ! -z "$HELM_FAIL_ON_ERROR" ]] && [[ "$HELM_FAIL_ON_ERROR" == "true" ]]; then
+                exit 1
+            else
+                SKIPPED_CHARTS=$((SKIPPED_CHARTS+1))
+            fi
         fi
     else
         echo "  New chart version validated."
