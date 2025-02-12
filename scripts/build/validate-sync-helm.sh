@@ -161,12 +161,13 @@ do
             echo "  Previously shipped version, with acceptable source change due to subchart version difference."
             rm -f $chartCurrentDir/$chartPackage
         else
-            # These files differ, but do not have a version number update
-            echo "  ERROR: Same version but different content, skipping this chart"
+            # These files differ, but do not have a version number update            
             rm -f $chartCurrentDir/$chartPackage
             if [[ ! -z "$HELM_FAIL_ON_ERROR" ]] && [[ "$HELM_FAIL_ON_ERROR" == "true" ]]; then
+                echo "  ERROR: Same version but different content"
                 exit 1
             else
+                echo "  INFO: Same version but different content, skipping this chart"
                 SKIPPED_CHARTS=$((SKIPPED_CHARTS+1))
             fi
         fi
