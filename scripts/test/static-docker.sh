@@ -7,6 +7,7 @@ SONAR_APIKEY=$2
 SONAR_GATEID=2
 COMPONENT_ID=$3
 COMPONENT_NAME=$4
+VERSION_NAME=$5
 
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
@@ -14,6 +15,7 @@ if [ "$DEBUG" == "true" ]; then
     echo "SONAR_APIKEY=*****"
     echo "COMPONENT_ID=$COMPONENT_ID"
     echo "COMPONENT_NAME=$COMPONENT_NAME"
+    echo "VERSION_NAME=$VERSION_NAME"
 fi
 
 # Retrieve Sonarqube project and current gate
@@ -43,4 +45,4 @@ fi
 REPORT_HOME=..
 
 SONAR_FLAGS="$SONAR_FLAGS -Dsonar.exclusions=**/bin/**"
-$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. $SONAR_FLAGS
+$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion="$VERSION_NAME" -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. $SONAR_FLAGS

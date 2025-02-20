@@ -598,7 +598,8 @@ module.exports = {
         ${taskParams["sonarUrl"]} \
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
-        ${taskParams["systemComponentName"]}`);
+        ${taskParams["systemComponentName"]} \
+        ${version}`);
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);
