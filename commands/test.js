@@ -571,6 +571,43 @@ module.exports = {
       log.debug("Finished Boomerang CICD Python test activity");
     }
   },
+  async docker() {
+    log.debug("Started Boomerang CICD Docker Test Activity");
+
+    //Destructure and get properties ready.
+    const taskParams = utils.resolveInputParameters();
+    // const { path, script } = taskParams;
+    const shellDir = "/cli/scripts";
+    config = {
+      verbose: true
+    };
+
+    // let dir = "/workspace/" + taskParams["workflow-activity-id"];
+    let dir = workingDir(taskParams["workingDir"]);
+
+    let workdir = dir + "/repository";
+    log.debug("Working Directory: ", workdir);
+
+    const version = parseVersion(taskParams["version"], taskParams["appendBuildNumber"]);
+
+    try {
+      // navigate to target working directory
+      workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
+
+      await exec(`${shellDir}/test/static-docker.sh \
+        ${taskParams["sonarUrl"]} \
+        ${taskParams["sonarApiKey"]} \
+        ${taskParams["systemComponentId"]} \
+        ${taskParams["systemComponentName"]} \
+        ${version}`);
+    } catch (e) {
+      log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
+      process.exit(1);
+    } finally {
+      await exec(shellDir + "/common/footer.sh");
+      log.debug("Finished Boomerang CICD Docker test activity");
+    }
+  },
   async helm() {
     log.debug("Started Boomerang CICD Helm Test Activity");
 
