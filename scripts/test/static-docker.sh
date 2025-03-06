@@ -45,4 +45,4 @@ fi
 REPORT_HOME=..
 
 SONAR_FLAGS="$SONAR_FLAGS -Dsonar.exclusions=**/bin/**"
-$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion="$VERSION_NAME" -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. $SONAR_FLAGS
+$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.token=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion="$VERSION_NAME" -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. $SONAR_FLAGS
