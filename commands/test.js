@@ -624,7 +624,8 @@ module.exports = {
     try {
       log.ci("Initializing Dependencies");
       await exec(`${shellDir}/common/initialize.sh`);
-      await exec(`${shellDir}/common/initialize-dependencies-helm.sh ${taskParams["buildToolVersion"]}"`);
+      await exec(`${shellDir}/common/initialize-dependencies-helm.sh \
+      "${taskParams["buildToolVersion"]}"`);
 
       // navigate to target working directory
       workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
@@ -632,10 +633,10 @@ module.exports = {
       if (testTypes.includes(TestType.Static)) {
         log.debug("Linting Helm Chart(s)");
         await exec(`${shellDir}/test/lint-helm.sh \
-        ${taskParams["buildTool"]} \
-        ${taskParams["helmRepoUrl"]} \
-        ${taskParams["helmChartDirectory"]} \
-        ${taskParams["helmChartIgnore"]}`);
+        "${taskParams["buildToolVersion"]}" \
+        "${taskParams["helmRepoUrl"]}" \
+        "${taskParams["helmChartDirectory"]}" \
+        "${taskParams["helmChartIgnore"]}"`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Helm");
