@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_TOOL=$1
+BUILD_TOOL_VERSION=$1
 HELM_REPO_URL=$2
 HELM_CHART_DIR=$3
 HELM_CHART_IGNORE=$4
@@ -10,7 +10,12 @@ HELM_CHART_IGNORE=$4
 HELM_RESOURCE_PATH=/tmp/.helm
 # END
 
-if [ "$BUILD_TOOL" == "helm3" ]; then
+HELM_VERSION=v3.16.2
+if [ ! -z "$BUILD_TOOL_VERSION" ]; then
+    HELM_VERSION=v$BUILD_TOOL_VERSION
+fi
+
+if [[ "$HELM_VERSION" == v3* ]]; then
     helm repo add boomerang-charts $HELM_REPO_URL
 else
     helm repo add boomerang-charts $HELM_REPO_URL --home $HELM_RESOURCE_PATH

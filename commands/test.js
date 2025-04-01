@@ -633,7 +633,7 @@ module.exports = {
       if (testTypes.includes(TestType.Static)) {
         log.debug("Linting Helm Chart(s)");
         await exec(`${shellDir}/test/lint-helm.sh \
-        "${taskParams["buildTool"]}" \
+        "${taskParams["buildToolVersion"]}" \
         "${taskParams["helmRepoUrl"]}" \
         "${taskParams["helmChartDirectory"]}" \
         "${taskParams["helmChartIgnore"]}"`);
