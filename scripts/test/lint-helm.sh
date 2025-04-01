@@ -21,7 +21,7 @@ else
     helm repo add boomerang-charts $HELM_REPO_URL --home $HELM_RESOURCE_PATH
 fi
 RESULT=$?
-if [ $RESULT -ne 0 ] ; then
+if [ $RESULT -ne 0 ]; then
     exit 89
 fi
 
@@ -38,8 +38,15 @@ do
     chartPath=`echo "$chart" | sed -r "s@(\.\/.*)\/Chart.yaml@\1@g"`
     printf "  Chart Path: $chart\n"
     helm lint $chartPath
-    # RESULT=$?
-    # if [ $RESULT -ne 0 ] ; then
-    #     exit 89
-    # fi
 done
+
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+    echo ""
+    echo "========================================================"
+    echo "Errors were found - Check linting reports for each chart"
+    echo "========================================================"
+    echo ""
+fi
+
+exit 0
