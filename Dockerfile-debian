@@ -1,0 +1,31 @@
+FROM debian:bullseye
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBCONF_NOWARNINGS="yes"
+
+RUN apt-get update
+RUN apt-get install -y build-essential
+RUN apt-get install -y curl zip unzip wget nodejs npm apt-transport-https bash sed grep coreutils ca-certificates git git-lfs jq make openssl openssh-client skopeo socat python3 libxml2-utils
+
+RUN apt-get autoclean
+RUN apt-get clean
+RUN apt autoremove
+RUN find /var/cache/apt/archives -name "*.deb" -delete
+
+RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null
+RUN echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
+RUN apt-get update
+
+RUN apt-get install -y temurin-17-jdk
+
+RUN curl -fSL "https://github.com/genuinetools/img/releases/download/v0.5.10/img-linux-amd64" -o "/usr/bin/img" && chmod a+x "/usr/bin/img"
+
+WORKDIR /cli
+ADD ./package.json ./package-lock.json ./.npmrc ./
+ADD ./scripts ./scripts
+ADD ./commands ./commands
+RUN npm install --production
+
+ENTRYPOINT [ "npm", "start" ]

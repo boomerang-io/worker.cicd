@@ -23,11 +23,9 @@ curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$SONAR_URL/api/qualitygates/select?projectKey=$COMPONENT_ID&gateId=$SONAR_GATEID"
 
-# Dependency for sonarscanner
-apt-get install -y openjdk-17-jdk
-
-# Install unzip
-apt-get install -y unzip
+# Set to Java 17 for Sonarqube
+echo "Set to Java 17 for Sonarqube..."
+update-alternatives --set java /usr/lib/jvm/temurin-17-jdk-amd64/bin/java
 
 # TODO: should be a CICD system property
 curl --insecure -o /opt/sonarscanner.zip -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856.zip
