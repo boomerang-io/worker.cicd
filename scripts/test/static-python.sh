@@ -10,6 +10,8 @@ SONAR_GATEID=2
 COMPONENT_ID=$5
 COMPONENT_NAME=$6
 REQUIREMENTS_FILE=$7
+SOURCE=$8
+TESTS=$9
 
 if [ "$DEBUG" == "true" ]; then
     echo "DEBUG - Script input variables..."
@@ -39,6 +41,16 @@ else
   echo "No $REQUIREMENTS_FILE file found to install dependencies via pip"
 fi
 
+if [ -z $SOURCE ]; then
+  SOURCE="src"
+  echo "No source path set so defaulting to src"
+fi
+
+if [ -z $TESTS ]; then
+  TESTS="tests"
+  echo "No test path set so defaulting to tests"
+fi
+
 # Retrieve Sonarqube project and current gate
 curl --noproxy $NO_PROXY -I --insecure $SONAR_URL/about
 curl --noproxy $NO_PROXY --insecure -X POST -u $SONAR_APIKEY: "$( echo "$SONAR_URL/api/projects/create?&project=$COMPONENT_ID&name="$COMPONENT_NAME"" | sed 's/ /%20/g' )"
@@ -66,14 +78,21 @@ fi
 REPORT_HOME=..
 
 pylint --generate-rcfile > .pylintrc
-pylint --rcfile=.pylintrc $(find . -iname "*.py" -print) -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > $REPORT_HOME/pylintrp.txt
+
+pylint --rcfile=.pylintrc $SOURCE -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --output-format=parseable --output=$REPORT_HOME/pylintrp.txt
 
 echo "pylintrp.txt:"
 cat $REPORT_HOME/pylintrp.txt
 echo "----------------------------------------------------------------------------------------------"
 
+bandit -r ./$SOURCE --format json --output $REPORT_HOME/bandit-report.json
+echo "bandit:"
+cat $REPORT_HOME/bandit-report.json
+echo "----------------------------------------------------------------------------------------------"
+
 echo "pytest:"
-pytest --cov=. --cov-report=xml:$REPORT_HOME/coverage.xml --junit-xml=$REPORT_HOME/pytests.xml
+coverage run -m pytest --junitxml=$REPORT_HOME/pytests.xml $TESTS
+pytest --cov=$SRC --cov-report=xml:$REPORT_HOME/coverage.xml --junit-xml=$REPORT_HOME/pytests.xml
 echo "----------------------------------------------------------------------------------------------"
 
 echo "pytests.xml:"
@@ -84,5 +103,5 @@ echo "coverage.xml:"
 cat $REPORT_HOME/coverage.xml
 echo "----------------------------------------------------------------------------------------------"
 
-SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylintrp.txt -Dsonar.python.xunit.reportPath=$REPORT_HOME/pytests.xml -Dsonar.python.coverage.reportPath=$REPORT_HOME/coverage.xml -Dsonar.exclusions=**/bin/**"
-$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=. -Dsonar.language=py $SONAR_FLAGS
+SONAR_FLAGS="$SONAR_FLAGS -Dsonar.python.pylint.reportPaths=$REPORT_HOME/pylintrp.txt -Dsonar.python.bandit.reportPaths=$REPORT_HOME/bandit-report.json -Dsonar.python.xunit.reportPath=$REPORT_HOME/pytests.xml -Dsonar.python.coverage.reportPaths=$REPORT_HOME/coverage.xml -Dsonar.exclusions=**/bin/**"
+$SONAR_HOME/bin/sonar-scanner -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_APIKEY -Dsonar.projectKey=$COMPONENT_ID -Dsonar.projectName="$COMPONENT_NAME" -Dsonar.projectVersion=$VERSION_NAME -Dsonar.verbose=true -Dsonar.scm.disabled=true -Dsonar.sources=$SOURCE -Dsonar.tests=$TESTS -Dsonar.language=py $SONAR_FLAGS
