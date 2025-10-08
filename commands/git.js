@@ -48,8 +48,9 @@ module.exports = {
       ${JSON.stringify(taskParams["repoSshUrl"])} \
       ${JSON.stringify(taskParams["repoUrl"])} \
       ${taskParams["commitId"]} \
-      ${taskParams["lfsEnabled"]}`);
-
+      ${taskParams["lfsEnabled"]} \
+      ${taskParams["gitPullRequestFork"]} \
+      ${taskParams["gitPullRequestForkGitUrl"]}`);
       log.sys("Finished Git Clone task...");
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
