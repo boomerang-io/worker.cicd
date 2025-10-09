@@ -38,6 +38,7 @@ elif [ "$BUILD_LANGUAGE_VERSION" == "3" ]; then
 	python3 -m pip install --upgrade pytest
 	python3 -m pip install --upgrade pytest-cov
 	python3 -m pip install --upgrade pylint
+	python3 -m pip install --upgrade bandit
 	python3 -m pip install --upgrade nose
 	python3 -m pip install --upgrade coverage
 	python3 -m pip install --upgrade nosexcover

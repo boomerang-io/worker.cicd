@@ -520,7 +520,9 @@ module.exports = {
         ${taskParams["sonarApiKey"]} \
         ${taskParams["systemComponentId"]} \
         ${taskParams["systemComponentName"]} \
-        ${taskParams["requirementsFileName"]}`);
+        ${taskParams["requirementsFileName"]} \
+        ${taskParams["sourcePath"]} \
+        ${taskParams["testsPath"]}`);
       }
       if (testTypes.includes(TestType.Unit)) {
         log.debug("Unit tests not implemented for Python");
