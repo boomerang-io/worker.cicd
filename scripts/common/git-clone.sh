@@ -14,19 +14,21 @@ GIT_LFS=false
 if [ "$6" != "" ]; then
     GIT_LFS=$6
 fi
+GIT_PR_FORK=$7
+GIT_PR_FORK_GIT_URL=$8
 
 echo "Git version..."
 git version
 
-if [ "$DEBUG" == "true" ]; then
-    echo "REPO_FOLDER=$REPO_FOLDER"
-    echo "GIT_SSH_URL=$GIT_SSH_URL"
-    echo "GIT_REPO_URL=$GIT_REPO_URL"
-    echo "GIT_REPO_HOST=$GIT_REPO_HOST"
-    echo "GIT_CLONE_URL=$GIT_CLONE_URL"
-    echo "GIT_COMMIT_ID=$GIT_COMMIT_ID"
-    echo "GIT_LFS=$GIT_LFS"
-fi
+echo "REPO_FOLDER=$REPO_FOLDER"
+echo "GIT_SSH_URL=$GIT_SSH_URL"
+echo "GIT_REPO_URL=$GIT_REPO_URL"
+echo "GIT_REPO_HOST=$GIT_REPO_HOST"
+echo "GIT_CLONE_URL=$GIT_CLONE_URL"
+echo "GIT_COMMIT_ID=$GIT_COMMIT_ID"
+echo "GIT_LFS=$GIT_LFS"
+echo "GIT_PR_FORK=$GIT_PR_FORK"
+echo "GIT_PR_FORK_GIT_URL=$GIT_PR_FORK_GIT_URL"
 
 #Make folders if not already created
 mkdir -p ~/.ssh
@@ -89,6 +91,13 @@ if  [ -d "$REPO_FOLDER" ]; then
     cd $REPO_FOLDER
     if [ "$DEBUG" == "true" ]; then
         ls -ltr
+    fi
+
+    echo "Check if PR and source is a fork ..."
+    if [ "$GIT_PR_FORK" == "true" ]; then
+        echo "Add new remote for fork repository ..."
+        git remote add fork $GIT_PR_FORK_GIT_URL
+        git fetch fork
     fi
 
     echo "Git checkout commit: $GIT_COMMIT_ID ..."
