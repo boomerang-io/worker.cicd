@@ -1,11 +1,13 @@
 #!/bin/bash
 
 HELM_REPO_URL=$1
-HELM_CHART_DIR=$2
-HELM_CHART_IGNORE=$3
-HELM_CHART_VERSION_INCREMENT=$4
-HELM_CHART_VERSION_TAG=$5
-GIT_REF=$6
+HELM_REPO_USER=$2
+HELM_REPO_PASSWORD=$3
+HELM_CHART_DIR=$4
+HELM_CHART_IGNORE=$5
+HELM_CHART_VERSION_INCREMENT=$6
+HELM_CHART_VERSION_TAG=$7
+GIT_REF=$8
 
 echo "GIT_REF=$GIT_REF"
 echo "HELM_REPO_URL=$HELM_REPO_URL"
@@ -18,7 +20,7 @@ do
     echo "HELM_CHART_IGNORE: $index:${helmChartIgnoreArray[index]}"
 done
 
-helm repo add boomerang-charts $HELM_REPO_URL
+helm repo add boomerang-charts $HELM_REPO_URL --username $HELM_REPO_USER --password $HELM_REPO_PASSWORD
 RESULT=$?
 if [ $RESULT -ne 0 ] ; then
     exit 89
