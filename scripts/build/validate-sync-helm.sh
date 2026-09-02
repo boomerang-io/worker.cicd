@@ -182,7 +182,8 @@ if [ "$VALIDATED_CHARTS" != "0" ]; then
         if [ -f $chartCurrentDir/$filename ]; then
             echo "Pushing chart package: $filename"
             if [ "$HELM_REPO_TYPE" == "artifactory" ]; then
-                curl -# --insecure -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -T $chartCurrentDir/$filename "$HELM_REPO_URL/$filename"
+                # curl -# --insecure -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -T $chartCurrentDir/$filename "$HELM_REPO_URL/$filename"
+                curl -# -u $HELM_REPO_USER:$HELM_REPO_PASSWORD --upload-file $filename $HELM_REPO_URL
             elif [ "$HELM_REPO_TYPE" == "github" ]; then
                 RELEASE_NAME=`echo $filename | sed -r 's@^(.*)(\.tgz)$@\1@g'`
                 github_release $RELEASE_NAME $chartCurrentDir/$filename
@@ -200,7 +201,8 @@ if [ "$VALIDATED_CHARTS" != "0" ]; then
     if [ "$HELM_REPO_TYPE" == "artifactory" ]; then
         HELM_REPO_ID=`echo $HELM_REPO_URL | rev | cut -f1 -d'/' | rev`
         HELM_INDEX_URL=`echo $HELM_REPO_URL | sed -r 's@^(.*)(/\$HELM_REPO_ID)$@\1@g'`
-        curl -# -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -X POST "$HELM_INDEX_URL/api/helm/$HELM_REPO_ID-local/reindex"
+        # curl -# -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -X POST "$HELM_INDEX_URL/api/helm/$HELM_REPO_ID-local/reindex"
+        echo "Note: Nexus Helm repository does not required manual reindexing..."
     elif [ "$HELM_REPO_TYPE" == "github" ]; then
         github_upload_index
     fi

@@ -23,10 +23,11 @@ do
 done
 
 echo "Adding $HELM_REPO_URL to helm repo list..."
+echo "Command: helm repo add boomerang-charts $HELM_REPO_URL --username $HELM_REPO_USER --password $HELM_REPO_PASSWORD"
 helm repo add boomerang-charts $HELM_REPO_URL --username $HELM_REPO_USER --password $HELM_REPO_PASSWORD
 
-echo "Sleeping 3600 seconds..."
-sleep 3600
+# echo "Sleeping 3600 seconds..."
+# sleep 3600
 
 RESULT=$?
 if [ $RESULT -ne 0 ] ; then
