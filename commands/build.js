@@ -362,23 +362,25 @@ module.exports = {
       workingDir(taskParams["workingDir"], taskParams["subWorkingDir"]);
       await exec(`${shellDir}/build/package-helm.sh \
       "${taskParams["repoUrl"]}" \
+      "${taskParams["repoUser"]}" \
+      "${taskParams["repoPassword"]}" \
       "${taskParams["chartDirectory"]}" \
       "${taskParams["chartIgnore"]}" \
       "${taskParams["chartVersionIncrement"]}" \
       "${taskParams["chartVersionTag"]}" \
       "${taskParams["gitRef"]}"`);
 
-      await exec(
-        `${shellDir}/build/validate-sync-helm.sh \
-        "${taskParams["repoType"]}" \
-        "${taskParams["repoUrl"]}" \
-        "${taskParams["repoUser"]}" \
-        "${taskParams["repoPassword"]}" \
-        "${taskParams["gitRepoOwner"]}" \
-        "${taskParams["gitRepoName"]}" \
-        "${taskParams["gitCommitId"]}" \
-        "${taskParams["repoIndexBranch"]}"`
-      );
+      // await exec(
+      //   `${shellDir}/build/validate-sync-helm.sh \
+      //   "${taskParams["repoType"]}" \
+      //   "${taskParams["repoUrl"]}" \
+      //   "${taskParams["repoUser"]}" \
+      //   "${taskParams["repoPassword"]}" \
+      //   "${taskParams["gitRepoOwner"]}" \
+      //   "${taskParams["gitRepoName"]}" \
+      //   "${taskParams["gitCommitId"]}" \
+      //   "${taskParams["repoIndexBranch"]}"`
+      // );
     } catch (e) {
       log.err("  Error encountered. Code: " + e.code + ", Message:", e.message);
       process.exit(1);

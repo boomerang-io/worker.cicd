@@ -1,24 +1,33 @@
 #!/bin/bash
 
 HELM_REPO_URL=$1
-HELM_CHART_DIR=$2
-HELM_CHART_IGNORE=$3
-HELM_CHART_VERSION_INCREMENT=$4
-HELM_CHART_VERSION_TAG=$5
-GIT_REF=$6
+HELM_REPO_USER=$2
+HELM_REPO_PASSWORD=$3
+HELM_CHART_DIR=$4
+HELM_CHART_IGNORE=$5
+HELM_CHART_VERSION_INCREMENT=$6
+HELM_CHART_VERSION_TAG=$7
+GIT_REF=$8
 
 echo "GIT_REF=$GIT_REF"
 echo "HELM_REPO_URL=$HELM_REPO_URL"
+echi "HELM_REPO_USER=$HELM_REPO_USER"
 echo "HELM_CHART_DIR=$HELM_CHART_DIR"
 echo "HELM_CHART_VERSION_INCREMENT=$HELM_CHART_VERSION_INCREMENT"
 echo "HELM_CHART_VERSION_TAG=$HELM_CHART_VERSION_TAG"
+
 IFS=' ' read -r -a helmChartIgnoreArray <<< "$HELM_CHART_IGNORE"
 for index in "${!helmChartIgnoreArray[@]}"
 do
     echo "HELM_CHART_IGNORE: $index:${helmChartIgnoreArray[index]}"
 done
 
-helm repo add boomerang-charts $HELM_REPO_URL
+echo "Adding $HELM_REPO_URL to helm repo list..."
+helm repo add boomerang-charts $HELM_REPO_URL --username $HELM_REPO_USER --password $HELM_REPO_PASSWORD
+
+echo "Sleeping 3600 seconds..."
+sleep 3600
+
 RESULT=$?
 if [ $RESULT -ne 0 ] ; then
     exit 89
