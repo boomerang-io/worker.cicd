@@ -183,7 +183,7 @@ if [ "$VALIDATED_CHARTS" != "0" ]; then
             echo "Pushing chart package: $filename"
             if [ "$HELM_REPO_TYPE" == "artifactory" ]; then
                 # curl -# --insecure -u $HELM_REPO_USER:$HELM_REPO_PASSWORD -T $chartCurrentDir/$filename "$HELM_REPO_URL/$filename"
-                curl -# -u $HELM_REPO_USER:$HELM_REPO_PASSWORD --upload-file $chartCurrentDir/$filename $HELM_REPO_URL
+                curl -# -u $HELM_REPO_USER:$HELM_REPO_PASSWORD --upload-file $chartCurrentDir/$filename $HELM_REPO_URL/
             elif [ "$HELM_REPO_TYPE" == "github" ]; then
                 RELEASE_NAME=`echo $filename | sed -r 's@^(.*)(\.tgz)$@\1@g'`
                 github_release $RELEASE_NAME $chartCurrentDir/$filename
